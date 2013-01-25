@@ -15,7 +15,9 @@ requires = [
     'pyramid_who',
     'passlib',
     'py-bcrypt',
-    'repoze.who>=2.0'
+    'repoze.who>=2.0',
+    'colander',
+    'deform',
     ]
 
 setup(

@@ -1,9 +1,12 @@
 from pyramid.config import Configurator
 
+from speak_friend.views import accounts
+
 
 def includeme(config):
     # Placeholder for now.
-    pass
+    config.add_route('create_account', '/create_account')
+    config.add_view(accounts.create_account, route_name='create_account')
 
 
 def main(global_config, **settings):
@@ -26,6 +29,7 @@ def main(global_config, **settings):
     # Configuring URLs
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
+    includeme(config)
     config.scan()
 
     return config.make_wsgi_app()
