@@ -1,12 +1,17 @@
 from pyramid.config import Configurator
+from pyramid.events import BeforeRender
 
 from speak_friend.views import accounts
+from speak_friend.subscribers import register_api
+
 
 
 def includeme(config):
     # Placeholder for now.
     config.add_route('create_account', '/create_account')
-    config.add_view(accounts.create_account, route_name='create_account')
+    config.add_view(accounts.create_account, route_name='create_account',
+                    renderer='templates/create_account.pt')
+    config.add_subscriber(register_api, BeforeRender)
 
 
 def main(global_config, **settings):
