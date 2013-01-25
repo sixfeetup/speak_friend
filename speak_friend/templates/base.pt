@@ -1,0 +1,18 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal">
+    <head>
+    </head>
+    <body>
+        <div id="header">
+            <metal:content define-slot="header" />
+        </div>
+        <div id="breadcrumbs">
+            <metal:content define-slot="breadcrumbs" />
+        </div>
+        <div id="content">
+            <metal:content define-slot="content" />
+        </div>
+        <div id="footer">
+            <metal:content define-slot="footer" />
+        </div>
+    </body>
+</html>

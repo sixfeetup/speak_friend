@@ -4,7 +4,7 @@ from pyramid.response import Response
 
 
 def create_account(request):
-    return Response("Create Account")
+    return {}
 
 
 def edit_account(request):
