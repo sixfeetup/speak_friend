@@ -39,6 +39,7 @@ setup(
       install_requires=requires,
       tests_require=requires,
       test_suite="speak_friend",
+      extras_require={'test': ['mock']},
       entry_points="""\
       [paste.app_factory]
       main = speak_friend:main
