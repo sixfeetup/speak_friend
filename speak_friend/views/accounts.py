@@ -1,11 +1,14 @@
 # Views related to account management (creating, editing, deactivating)
 
-from pyramid.response import Response
+
+from speak_friend.forms.profiles import profile_form
 
 
-def create_account(request):
-    return {}
+def create_profile(request):
+    form = profile_form.render()
+    return {'form': form}
 
 
-def edit_account(request):
-    return Response("Edit Account")
+def edit_profile(request):
+    form = profile_form.render()
+    return {'form': form}

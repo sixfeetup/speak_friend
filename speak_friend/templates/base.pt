@@ -1,5 +1,8 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
+        <link rel="stylesheet" href="/static/css/form.css" type="text/css" />
+        <script src="/static/scripts/jquery-1.4.2.min.js"></script>
+        <script src="/static/scripts/deform.js"></script>
     </head>
     <body>
         <div id="header">
@@ -14,5 +17,10 @@
         <div id="footer">
             <metal:content define-slot="footer" />
         </div>
+
+        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
+        <script>
+            deform.load()
+        </script>
     </body>
 </html>

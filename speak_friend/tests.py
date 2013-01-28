@@ -4,7 +4,7 @@ from pyramid import testing
 
 from .api import TemplateAPI
 from .subscribers import register_api
-from .views.accounts import create_account
+from .views.accounts import create_profile, edit_profile
 
 
 class SFBaseCase(TestCase):
@@ -17,10 +17,15 @@ class SFBaseCase(TestCase):
 
 
 class ViewTests(SFBaseCase):
-    def test_create_account_view(self):
+    def test_create_profile_view(self):
         request = testing.DummyRequest()
-        info = create_account(request)
-        self.assertEqual(len(info.keys()), 0)
+        info = create_profile(request)
+        self.assertTrue('form' in info)
+
+    def test_edit_profile_view(self):
+        request = testing.DummyRequest()
+        info = edit_profile(request)
+        self.assertTrue('form' in info)
 
 
 class SubscriberTests(SFBaseCase):

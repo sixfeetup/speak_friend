@@ -8,10 +8,12 @@ from speak_friend.subscribers import register_api
 
 def includeme(config):
     # Placeholder for now.
-    config.add_route('create_account', '/create_account')
-    config.add_view(accounts.create_account, route_name='create_account',
-                    renderer='templates/create_account.pt')
+    config.add_route('create_profile', '/create_profile')
+    config.add_view(accounts.create_account, route_name='create_profile',
+                    renderer='templates/create_profile.pt')
     config.add_subscriber(register_api, BeforeRender)
+
+    config.add_static_view('static', 'deform:static')
 
 
 def main(global_config, **settings):
