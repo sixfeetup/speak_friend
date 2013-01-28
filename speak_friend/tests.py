@@ -3,6 +3,7 @@ from unittest import TestCase
 from pyramid import testing
 
 from .api import TemplateAPI
+from .forms import profiles
 from .subscribers import register_api
 from .views.accounts import create_profile, edit_profile
 
@@ -39,3 +40,17 @@ class TemplateAPITests(SFBaseCase):
     def test_settings(self):
         api = TemplateAPI()
         self.assertTrue(hasattr(api, 'settings'))
+
+
+class FormTests(TestCase):
+    def test_profile_form_policy_title(self):
+        self.assertEqual(profiles.profile_form['agree_to_policy'].title,
+                         'I agree to the usage policy.')
+
+    def test_profile_form_email_fields(self):
+        self.assertEqual(profiles.profile_form['password'].widget.__class__.__name__,
+                         'CheckedPasswordWidget')
+
+    def test_profile_form_password_fields(self):
+        self.assertEqual(profiles.profile_form['email'].widget.__class__.__name__,
+                         'CheckedInputWidget')
