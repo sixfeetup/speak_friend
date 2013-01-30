@@ -20,6 +20,10 @@ requires = [
     'deform',
     ]
 
+tests_require = requires + [
+    'nose'
+]
+
 setup(
       name='speak_friend',
       version=version,
@@ -39,8 +43,8 @@ setup(
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
-      tests_require=requires,
-      test_suite="speak_friend",
+      tests_require=tests_require,
+      test_suite="nose.collector",
       extras_require={'test': ['mock']},
       entry_points="""\
       [paste.app_factory]
