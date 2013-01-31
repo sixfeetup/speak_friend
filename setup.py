@@ -12,10 +12,8 @@ requires = [
     'pyramid',
     'pyramid_tm',
     'waitress',
-    'pyramid_who',
     'passlib',
     'py-bcrypt',
-    'repoze.who>=2.0',
     'colander',
     'deform',
     ]
