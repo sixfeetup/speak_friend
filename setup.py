@@ -16,6 +16,7 @@ requires = [
     'py-bcrypt',
     'colander',
     'deform',
+    'python-openid',
     ]
 
 tests_require = requires + [
