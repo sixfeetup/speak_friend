@@ -17,6 +17,8 @@ requires = [
     'colander',
     'deform',
     'python-openid',
+    'psycopg2',
+    'SQLAlchemy',
     ]
 
 tests_require = requires + [
