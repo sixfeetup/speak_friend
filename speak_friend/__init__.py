@@ -1,6 +1,9 @@
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 
+from sqlalchemy import engine_from_config
+
+from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.subscribers import register_api
 
@@ -19,6 +22,9 @@ def includeme(config):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    DBSession.configure(bind=engine)
+    Base.metadata.bind = engine
     config = Configurator(settings=settings)
 
     # Includes for any packages that hook into configuration.

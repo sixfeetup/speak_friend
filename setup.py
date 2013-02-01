@@ -19,6 +19,8 @@ requires = [
     'python-openid',
     'psycopg2',
     'SQLAlchemy',
+    'transaction',
+    'zope.sqlalchemy',
     ]
 
 tests_require = requires + [
@@ -50,5 +52,7 @@ setup(
       entry_points="""\
       [paste.app_factory]
       main = speak_friend:main
+      [console_scripts]
+      initialize_speak_friend_db = speak_friend.scripts.initializedb:main
       """,
       )
