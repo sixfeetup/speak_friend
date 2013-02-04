@@ -5,6 +5,7 @@ from pyramid import testing
 from .api import TemplateAPI
 from .forms import profiles
 from .subscribers import register_api
+from .models.openid import SFOpenIDStore
 from .views.accounts import create_profile, edit_profile
 
 
@@ -54,3 +55,12 @@ class FormTests(TestCase):
     def test_profile_form_password_fields(self):
         self.assertEqual(profiles.profile_form['email'].widget.__class__.__name__,
                          'CheckedInputWidget')
+
+
+class OpenIDStoreTest(TestCase):
+    def test_method_presence(self):
+        store = SFOpenIDStore()
+        self.assertTrue(hasattr(store, 'storeAssociation'))
+        self.assertTrue(hasattr(store, 'getAssociation'))
+        self.assertTrue(hasattr(store, 'removeAssociation'))
+        self.assertTrue(hasattr(store, 'useNonce'))

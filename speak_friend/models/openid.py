@@ -27,5 +27,17 @@ class Nonce(Base):
     salt = Column(UnicodeText, primary_key=True)
 
 
-class OpenIDStore(object):
+class SFOpenIDStore(object):
     implements(IOpenIDStore)
+
+    def storeAssociation(self, server_url, association):
+        pass
+
+    def getAssociation(self, server_url, handle=None):
+        pass
+
+    def removeAssociation(self, server_url, handle):
+        pass
+
+    def useNonce(self, server_url, timestamp, salt):
+        pass
