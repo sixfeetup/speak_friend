@@ -14,6 +14,13 @@ def includeme(config):
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.create_profile, route_name='create_profile',
                     renderer='templates/create_profile.pt')
+    
+    # view to display 'token expired' message 
+    # https://trac.sixfeetup.com/sfari/ticket/1515:
+    config.add_route('token_expired', '/token_expired')
+    config.add_view(accounts.token_expired, route_name='token_expired',
+                    renderer='templates/token_expired.pt')
+
     config.add_subscriber(register_api, BeforeRender)
 
     config.add_static_view('static', 'deform:static')
