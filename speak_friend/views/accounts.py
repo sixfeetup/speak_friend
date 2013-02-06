@@ -12,3 +12,8 @@ def create_profile(request):
 def edit_profile(request):
     form = profile_form.render()
     return {'form': form}
+
+
+def token_expired(request):
+    request.response.status = "400 Bad Request"
+    return {'message': u'That token has expired'}
