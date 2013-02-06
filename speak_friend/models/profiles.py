@@ -18,7 +18,7 @@ class UserProfile(Base):
     password_hash = Column(UnicodeText)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
-    admin_disabled = Column(Boolean, default=False, nullable=False)
+    admin_disabled = Column(Boolean, default=False)
 
 
     def __init__(self, username, first_name, last_name, email,
