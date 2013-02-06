@@ -9,6 +9,7 @@ from pyramid.paster import get_appsettings, setup_logging
 
 from speak_friend.models import DBSession, Base
 from speak_friend.models.openid import Association, Nonce
+from speak_friend.models.profiles import UserProfile
 
 
 def usage(argv):
