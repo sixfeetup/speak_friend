@@ -1,6 +1,5 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <title><metal:title define-slot="pagetitle">SFID</metal:title></title>
         <link rel="stylesheet" href="/static/css/form.css" type="text/css" />
         <script src="/static/scripts/jquery-1.4.2.min.js"></script>
         <script src="/static/scripts/deform.js"></script>

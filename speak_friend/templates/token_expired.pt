@@ -1,7 +1,0 @@
-<metal:main use-macro="load: base.pt">
-    <tal:pagetitle metal:fill-slot="pagetitle">Error: Token Expired</tal:pagetitle>
-    <p metal:fill-slot="header">Welcome to ${api.settings['site_name']}</p>
-    <div metal:fill-slot="content">
-      <h1>${message}</h1>
-    </div>
-</metal:main>
