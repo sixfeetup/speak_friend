@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.subscribers import register_api
-
+from speak_friend.configuration import set_password_hash
 
 
 def includeme(config):
@@ -15,6 +15,7 @@ def includeme(config):
     config.add_view(accounts.create_profile, route_name='create_profile',
                     renderer='templates/create_profile.pt')
     config.add_subscriber(register_api, BeforeRender)
+    config.add_directive('set_password_hash', set_password_hash)
 
     config.add_static_view('static', 'deform:static')
 
@@ -43,6 +44,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     includeme(config)
+    config.set_password_hash('passlib.hash.bcrypt')
     config.scan()
 
     return config.make_wsgi_app()
