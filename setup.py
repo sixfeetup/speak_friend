@@ -21,6 +21,8 @@ requires = [
     'SQLAlchemy',
     'transaction',
     'zope.sqlalchemy',
+    'pyramid_exclog',
+    'mailinglogger',
     ]
 
 tests_require = requires + [

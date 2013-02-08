@@ -17,6 +17,7 @@ def includeme(config):
     config.add_subscriber(register_api, BeforeRender)
 
     config.add_static_view('static', 'deform:static')
+    config.include('pyramid_exclog')
 
 
 def main(global_config, **settings):
