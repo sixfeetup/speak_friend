@@ -5,7 +5,11 @@ from unittest import TestCase
 from mock import Mock, call
 
 from speak_friend.tests.mocks import MockQuery
-from speak_friend.models.openid import SFOpenIDStore, Association, Nonce
+from speak_friend.models.open_id import SFOpenIDStore, Association, Nonce
+
+
+
+__all__ = [ 'OpenIDStoreTest', 'AssociationTests' ]
 
 
 def mock_filter(**kwargs):
@@ -170,7 +174,51 @@ class OpenIDStoreTest(TestCase):
         returned = store.removeAssociation(server_url, handle='asdf')
         self.assertEqual(returned, False)
 
+    def test_use_nonce_success(self):
+        server_url = "http://test.net"
+        timestamp = int(time.time())
+        salt = "asdfgadfgj"
 
+        session = Mock()
+        session.query = MockQuery()
+
+        store = SFOpenIDStore(session)
+        use_nonce = store.useNonce(server_url, timestamp, salt)
+        self.assertEqual(use_nonce, True)
+
+    def test_use_nonce_fail(self):
+        server_url = "http://test.net"
+        timestamp = int(time.time())
+        salt = "asdfgadfgj"
+
+        nonce = Nonce(server_url, timestamp, salt)
+
+        session = Mock()
+        session.query = MockQuery(store=[nonce])
+
+        store = SFOpenIDStore(session)
+        use_nonce = store.useNonce(server_url, timestamp, salt)
+        self.assertEqual(use_nonce, False)
+
+    def test_use_nonce_out_of_skew_pass(self):
+        from openid.store.nonce import SKEW
+        server_url = "http://test.net"
+        timestamp = int(time.time())
+        salt = "asdfgadfgj"
+
+        nonce = Nonce(server_url, timestamp + SKEW + 5, salt)
+
+        session = Mock()
+        session.query = MockQuery(store=[nonce])
+
+        def fake_filter(*args):
+            return MockQuery(store=[])
+
+        session.query.filter = fake_filter
+
+        store = SFOpenIDStore(session)
+        use_nonce = store.useNonce(server_url, timestamp, salt)
+        self.assertEqual(use_nonce, True)
 
 
 

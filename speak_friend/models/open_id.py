@@ -5,6 +5,8 @@ from sqlalchemy import Column, Integer, UnicodeText
 from sqlalchemy.dialects.postgresql import BYTEA
 from speak_friend.models import Base
 
+from openid.store.nonce import SKEW as NONCE_SKEW
+
 from zope.interface import implements
 
 from speak_friend.interfaces import IOpenIDStore
@@ -103,4 +105,11 @@ class SFOpenIDStore(object):
         return num_deleted > 0
 
     def useNonce(self, server_url, timestamp, salt):
-        pass
+        past = timestamp - NONCE_SKEW
+        future = timestamp + NONCE_SKEW
+        query_args = {'server_url': server_url, 'salt': salt}
+        query = self.session.query.filter_by(**query_args).\
+                filter(Nonce.timestamp > past, Nonce.timestamp < future)
+        nonces = query.all()
+
+        return not len(nonces) > 0
