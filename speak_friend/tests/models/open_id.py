@@ -127,7 +127,7 @@ class OpenIDStoreTest(TestCase):
         session.query = MockQuery(store=storage)
 
         store = SFOpenIDStore(session)
-        store.cleanExpiredAssociations()
+        store.cleanupAssociations()
         self.assertEqual(session.query._store, [])
 
     def test_remove_association_success(self):

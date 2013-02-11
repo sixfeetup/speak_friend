@@ -91,7 +91,7 @@ class SFOpenIDStore(object):
 
         return association
 
-    def cleanExpiredAssociations(self):
+    def cleanupAssociations(self):
         now = datetime.datetime.now()
         now_stamp = int(time.mktime(now.timetuple()))
 
