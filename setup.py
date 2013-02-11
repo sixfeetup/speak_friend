@@ -23,6 +23,8 @@ requires = [
     'zope.sqlalchemy',
     'zope.interface',
     'zope.component',
+    'pyramid_exclog',
+    'mailinglogger',
     ]
 
 tests_require = requires + [

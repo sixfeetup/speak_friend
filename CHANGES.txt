@@ -1,3 +1,10 @@
+0.4
+---
+
+- Added mailinglogger and pyramid_exclog to automatically send tracebacks
+  to a configured email.
+  [davidblewett]
+
 0.0
 ---
 
