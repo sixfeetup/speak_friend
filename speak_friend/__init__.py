@@ -4,7 +4,7 @@ from pyramid.events import BeforeRender
 from sqlalchemy import engine_from_config
 
 from speak_friend.models import DBSession, Base
-from speak_friend.views import accounts
+from speak_friend.views import profiles
 from speak_friend.subscribers import register_api
 
 
@@ -12,7 +12,7 @@ from speak_friend.subscribers import register_api
 def includeme(config):
     # Placeholder for now.
     config.add_route('create_profile', '/create_profile')
-    config.add_view(accounts.create_profile, route_name='create_profile',
+    config.add_view(profiles.create_profile, route_name='create_profile',
                     renderer='templates/create_profile.pt')
     config.add_subscriber(register_api, BeforeRender)
 
