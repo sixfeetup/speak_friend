@@ -12,7 +12,9 @@ from speak_friend.subscribers import register_api
 def includeme(config):
     # Placeholder for now.
     config.add_route('create_profile', '/create_profile')
-    config.add_view(profiles.create_profile, route_name='create_profile',
+    config.add_view(profiles.CreateProfile, attr="get", request_method='GET',
+                    renderer='templates/create_profile.pt')
+    config.add_view(profiles.CreateProfile, attr="post", request_method='POST',
                     renderer='templates/create_profile.pt')
     config.add_subscriber(register_api, BeforeRender)
 
