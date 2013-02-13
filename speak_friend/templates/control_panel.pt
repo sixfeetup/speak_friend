@@ -1,0 +1,4 @@
+<metal:main use-macro="load: base.pt">
+    <p metal:fill-slot="header">Welcome to the control panel for ${api.settings['site_name']}!</p>
+    <p metal:fill-slot="content"><span tal:replace="structure form"></span></p>
+</metal:main>
