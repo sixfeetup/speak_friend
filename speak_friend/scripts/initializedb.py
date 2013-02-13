@@ -29,7 +29,7 @@ def main(argv=sys.argv):
     resolver = DottedNameResolver()
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
-    extra_model_paths = aslist(settings['speak_friend.extra_models'])
+    extra_model_paths = aslist(settings.get('speak_friend.extra_models', []))
     extra_models = {}
     for emp in extra_model_paths:
         extra_models[emp] = resolver.resolve(emp)
