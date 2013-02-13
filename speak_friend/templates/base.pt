@@ -1,8 +1,5 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <link rel="stylesheet" tal:attributes="href python: request.static_url('deform:static/css/form.css')" type="text/css" />
-        <script tal:attributes="src python: request.static_url('deform:static/scripts/jquery-1.4.2.min.js')"></script>
-        <script tal:attributes="src python: request.static_url('deform:static/scripts/deform.js')"></script>
     </head>
     <body>
         <div id="header">
@@ -18,9 +15,16 @@
             <metal:content define-slot="footer" />
         </div>
 
+        <tal:resources repeat="css_path css_resources | []">
+          <link rel="stylesheet" media="screen" type="text/css"
+                tal:attributes="href python: request.static_url(css_path)" />
+        </tal:resources>
+
+        <tal:resources repeat="js_path js_resources | []">
+          <script type="text/javascript"
+                  tal:attributes="src python: request.static_url(js_path)"></script>
+        </tal:resources>
+
         <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
-        <script>
-            deform.load()
-        </script>
     </body>
 </html>
