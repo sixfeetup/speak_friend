@@ -36,6 +36,15 @@ To integrate with this system, you need to define the schema for the control pan
 Then in your application's initialization, add it via `config.add_controlpanel_section(email_notification_schema)`.
 The entire list of configured sections will be available at `/control_panel`.
 
+Extra Models
+------------
+
+If you have extra models that you would like the main `initialize_speak_friend_db` script to create,
+they need to inherit from `from speak_friend.models.Base`. Then add the following to your config:
+
+.. code-block:: ini
+    speak_friend.extra_models =
+        dotted.python.path.to.Model
 
 Exception Handling
 ------------------
