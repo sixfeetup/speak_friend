@@ -45,6 +45,7 @@ def includeme(config):
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.control_panel, route_name='control_panel',
                     renderer='templates/control_panel.pt')
+    config.add_static_view('speak_friend_static', 'speak_friend:static', cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
 
     # Control panel

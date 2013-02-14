@@ -1,30 +1,35 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-    </head>
-    <body>
-        <div id="header">
-            <metal:content define-slot="header" />
-        </div>
-        <div id="breadcrumbs">
-            <metal:content define-slot="breadcrumbs" />
-        </div>
-        <div id="content">
-            <metal:content define-slot="content" />
-        </div>
-        <div id="footer">
-            <metal:content define-slot="footer" />
-        </div>
-
         <tal:resources repeat="css_path css_resources | []">
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
         </tal:resources>
-
+        <link rel="stylesheet" href="${request.static_url('speak_friend:static/css/bootstrap.min.css')}" type="text/css" media="screen" />
+        <link rel="stylesheet" href="${request.static_url('speak_friend:static/css/speak_friend.css')}" type="text/css" media="screen" />
+        
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
+    </head>
+    <body>
+        <div id="body-wrapper">
+            <div id="header">
+                <metal:content define-slot="header" />
+            </div>
+            <div id="breadcrumbs">
+                <metal:content define-slot="breadcrumbs" />
+            </div>
+            <div id="content">
+                <metal:content define-slot="content" />
+            </div>
+            <div id="footer">
+                <metal:content define-slot="footer" />
+            </div>
+        </div>
+        
+        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
         <tal:resources repeat="js_path js_resources | []">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
         </tal:resources>
-
-        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
     </body>
 </html>
