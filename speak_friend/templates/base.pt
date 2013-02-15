@@ -30,7 +30,7 @@
             <div id="breadcrumbs">
                 <metal:content define-slot="breadcrumbs" />
             </div>
-            <div id="content">
+            <div id="content" class="row-fluid">
                 <metal:content define-slot="content" />
             </div>
             <div id="footer">
