@@ -5,6 +5,7 @@ from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.view import view_defaults
 
 from speak_friend.forms.profiles import profile_form
+from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
@@ -12,6 +13,7 @@ from speak_friend.models.profiles import UserProfile
 class CreateProfile(object):
     def __init__(self, request):
         self.request = request
+        self.session = DBSession()
 
     def post(self):
         if self.request.method != "POST":
@@ -26,7 +28,21 @@ class CreateProfile(object):
         except ValidationFailure, e:
             return {'form': e.render()}
 
-        # the form submission succeeded, we have the data
+        # XXX We can't just pass the password in here; we need to pull it from
+        # the appstruct and run it through the password hasher. XXX XXX
+
+        profile = UserProfile(appstruct['username'],
+                              appstruct['first_name'],
+                              appstruct['last_name'],
+                              appstruct['email'],
+                              appstruct['password'],
+                              appstruct['password'],
+                              0,
+                              False
+        )
+
+        self.session.add(profile)
+        # TODO This should really return a confirmation page.
         return {'form': None, 'appstruct': appstruct}
 
     def get(self):
