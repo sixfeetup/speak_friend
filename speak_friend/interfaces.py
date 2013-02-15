@@ -1,3 +1,4 @@
+from zope.interface import Attribute
 from zope.interface import Interface
 
 
@@ -193,4 +194,68 @@ class IOpenIDStore(Interface):
         their storage from filling up with expired data.
         """
         return self.cleanupNonces(), self.cleanupAssociations()
+
+
+class IUserActivity(Interface):
+    """ An event type that is emitted whenever a user completes
+    a given action. See the documentation attached
+    to :class:`pyramid.events.UserActivity` for more information."""
+    request = Attribute('The request object')
+    username = Attribute('The username of the target user')
+    activity = Attribute('The name of the activity')
+    actor_username = Attribute('The username of the user initiating the action')
+    activity_detail = Attribute('Any additional elements')
+
+
+class IAccountCreated(IUserActivity):
+    """ An event type that is emitted whenever a user's account
+    is created.
+    """
+
+
+class IAccountDisabled(IUserActivity):
+    """ An event type that is emitted whenever a user's account
+    is disabled by an admin.
+    """
+
+
+class IAccountEnabled(IUserActivity):
+    """ An event type that is emitted whenever a user's account
+    is enabled by an admin.
+    """
+
+
+class IAccountLocked(IUserActivity):
+    """ An event type that is emitted whenever a user's account
+    is locked.
+    """
+
+
+class IAccountUnlocked(IUserActivity):
+    """ An event type that is emitted whenever a user's account
+    is unlocked.
+    """
+
+
+class ILoggedIn(IUserActivity):
+    """ An event type that is emitted whenever a user successfully
+    logs in.
+    """
+
+
+class ILoginFailed(IUserActivity):
+    """ An event type that is emitted whenever a user fails to
+    log in.
+    """
+
+
+class ILoggedOut(IUserActivity):
+    """ An event type that is emitted whenever a user logs out.
+    """
+
+
+class IPasswordChanged(IUserActivity):
+    """ An event type that is emitted whenever a user's password
+    is changed.
+    """
 
