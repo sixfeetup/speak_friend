@@ -3,6 +3,7 @@ import datetime
 import colander
 
 from pyramid.config import Configurator
+from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
 from pyramid.events import BeforeRender
 from pyramid.renderers import JSON
@@ -63,17 +64,22 @@ def includeme(config):
     config.add_controlpanel_section(user_creation_email_notification_schema)
 
 
-def init_sa(settings):
+def init_sa(config):
+    settings = config.registry.settings
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
+    config.scan('speak_friend.models')
+    extra_model_paths = aslist(settings.get('speak_friend.extra_models', []))
+    for emp in extra_model_paths:
+        config.scan(emp)
+    return engine
 
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     config = Configurator(settings=settings)
-    init_sa(settings)
+    init_sa(config)
 
     # Includes for any packages that hook into configuration.
     config.include('pyramid_tm')
