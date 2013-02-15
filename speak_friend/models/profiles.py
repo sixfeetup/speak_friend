@@ -2,10 +2,9 @@ from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import SmallInteger
-from sqlalchemy import String
 from sqlalchemy import UnicodeText
 
-from speak_freind.models import Base
+from speak_friend.models import Base
 
 
 class Domain(Base):
@@ -14,7 +13,7 @@ class Domain(Base):
         {'schema': 'profiles'}
     )
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, length=128)
+    name = Column(UnicodeText, unique=True)
     password_valid = Column(Integer) # minutes
     max_attempts = Column(SmallInteger)
 
@@ -26,6 +25,11 @@ class Domain(Base):
 
     def __repr__(self):
         return u'<DomainProfile(%s)>' % self.name
+
+    def password_always_required(self):
+        """if password is valid for 0 minutes, it is always required
+        """
+        return not bool(self.password_valid)
 
 
 class UserProfile(Base):
