@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-version = '0.4'
+version = '0.6'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
@@ -21,6 +21,10 @@ requires = [
     'SQLAlchemy',
     'transaction',
     'zope.sqlalchemy',
+    'zope.interface',
+    'zope.component',
+    'pyramid_exclog',
+    'mailinglogger',
     ]
 
 tests_require = requires + [
