@@ -9,11 +9,13 @@ from pyramid.renderers import JSON
 
 from sqlalchemy import engine_from_config
 
+from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import controlpanel
 from speak_friend.subscribers import register_api
+from speak_friend.subscribers import log_activity
 
 
 def datetime_adapter(obj, request):
@@ -37,6 +39,7 @@ def includeme(config):
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
+    config.add_subscriber(log_activity, UserActivity)
 
     # Routes
     config.add_route('create_profile', '/create_profile')
