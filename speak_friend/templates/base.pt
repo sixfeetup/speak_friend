@@ -1,8 +1,8 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <link rel="stylesheet" href="/static/css/form.css" type="text/css" />
-        <script src="/static/scripts/jquery-1.4.2.min.js"></script>
-        <script src="/static/scripts/deform.js"></script>
+        <link rel="stylesheet" tal:attributes="href python: request.static_url('deform:static/css/form.css')" type="text/css" />
+        <script tal:attributes="src python: request.static_url('deform:static/scripts/jquery-1.4.2.min.js')"></script>
+        <script tal:attributes="src python: request.static_url('deform:static/scripts/deform.js')"></script>
     </head>
     <body>
         <div id="header">

@@ -18,7 +18,7 @@ def includeme(config):
                     renderer='templates/create_profile.pt')
     config.add_subscriber(register_api, BeforeRender)
 
-    config.add_static_view('static', 'deform:static')
+    config.add_static_view('deform_static', 'deform:static')
     config.include('pyramid_exclog')
 
 
