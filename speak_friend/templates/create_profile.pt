@@ -1,3 +1,6 @@
 <metal:main use-macro="load: base.pt">
     <p metal:fill-slot="header">Welcome to ${api.settings['site_name']}</p>
+    <div metal:fill-slot="content">
+        <div tal:condition="form" tal:content="structure: form"></div>
+    </div>
 </metal:main>

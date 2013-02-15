@@ -1,6 +1,7 @@
 # Views related to account management (creating, editing, deactivating)
 
 from deform import ValidationFailure
+from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.view import view_defaults
 
 from speak_friend.forms.profiles import profile_form
@@ -13,16 +14,20 @@ class CreateProfile(object):
         self.request = request
 
     def post(self):
-        if 'submit' in self.request.POST:
-            controls = self.request.POST.items()
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
 
-            try:
-                appstruct = profile_form.validate(controls)  # call validate
-            except ValidationFailure, e:
-                return {'form': e.render()}
+        controls = self.request.POST.items()
 
-            # the form submission succeeded, we have the data
-            return {'form': None, 'appstruct': appstruct}
+        try:
+            appstruct = profile_form.validate(controls)  # call validate
+        except ValidationFailure, e:
+            return {'form': e.render()}
+
+        # the form submission succeeded, we have the data
+        return {'form': None, 'appstruct': appstruct}
 
     def get(self):
         form = profile_form.render()
