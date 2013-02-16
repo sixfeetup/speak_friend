@@ -1,4 +1,4 @@
-from colander import Bool, Email, MappingSchema, SchemaNode, String
+from colander import Bool, Email, MappingSchema, SchemaNode, String, Integer
 from deform import Form
 from deform.widget import CheckedInputWidget, CheckedPasswordWidget
 
@@ -18,3 +18,12 @@ class Profile(MappingSchema):
 
 
 profile_form = Form(Profile(), buttons=('submit', 'cancel'))
+
+
+class Domain(MappingSchema):
+    name = SchemaNode(String())
+    password_valid = SchemaNode(Integer())
+    max_attempts = SchemaNode(Integer())
+
+
+domain_form = Form(Domain(), buttons=('submit', 'cancel'))
