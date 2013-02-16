@@ -10,6 +10,7 @@
         
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
+        <metal:javascripts define-slot="custom-js" />
     </head>
     <body>
         <div id="body-wrapper" class="container-fluid">
