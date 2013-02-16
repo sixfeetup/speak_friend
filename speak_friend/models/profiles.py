@@ -12,7 +12,7 @@ class Domain(Base):
     __table_args__ = (
         {'schema': 'profiles'}
     )
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(UnicodeText, unique=True)
     password_valid = Column(Integer) # minutes
     max_attempts = Column(SmallInteger)
