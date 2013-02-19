@@ -79,3 +79,33 @@ This package can integrate the pyramid_exclog and mailinglogger packages to auto
    format = %(asctime)s %(message)s
    
    # End logging configuration
+
+
+LDAP Configuration
+-------------------
+The following list of keys can be used to configure Speak Friend's LDAP connection.
+
+speak_friend.ldap_server
+   The URI for the LDAP server that Speak Friend should connect to. Required.
+
+speak_friend.ldap_user_cn
+    The user CN that Speak Friend should use when connecting. This user must be able create and edit accounts. Required.
+
+speak_friend.ldap_password
+   The password associated with the LDAP user specified above. Required.
+
+speak_friend.ldap_base_people_dn
+   The DN path where People objects are stored in LDAP. Required
+
+speak_friend.ldap_people_filter_tmpl
+   Filter used for searching LDAP People objects. Should contain the value `%(login)s`. Default: `'(uid=%(login)s)'`
+
+speak_friend.ldap_base_group_dn
+   The DN path where Group objects are stored in LDAP. Required.
+
+speak_friend.ldap_group_filter_tmpl
+   Filter used for searching LDAP groups. Should contain the value `%(userdn)s`. Default: `'(&(objectCategory=group)(member=%(userdn)s))'`
+
+speak_friend.ldap_cache_period
+   Number of seconds to cache search results. If 0, search results will not be cached. Default: 0
+
