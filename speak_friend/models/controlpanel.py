@@ -45,6 +45,8 @@ class JSON(types.TypeDecorator):
         return json
 
     def process_result_value(self, value, dialect):
+        if value is None:
+            return value
         return loads(value)
 
     def copy(self):
