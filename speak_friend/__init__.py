@@ -101,7 +101,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     includeme(config)
-    config.set_password_hash('passlib.hash.bcrypt')
+    config.set_password_hash('passlib.app.ldap_context')
     config.scan()
 
     return config.make_wsgi_app()
