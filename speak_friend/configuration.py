@@ -1,36 +1,66 @@
 from pyramid.exceptions import ConfigurationError
-from pyramid.path import DottedNameResolver
+
+from passlib.context import CryptContext
 
 
-def verify_password_hasher(hasher):
-    secret = 'secret'
-    try:
-        this_hash = hasher.encrypt(secret)
-        matches = hasher.verify(secret, this_hash)
-    except AttributeError:
-        return False
-    return matches
-
-
-def set_password_hash(config, pwhash):
+def set_password_context(config, context=None, ini_string='', ini_file=None, 
+                         context_dict={}):
     """
-    Set the password hash to be used.
+    Create a CryptContext used by the application for password management
     
-    :arg pwhash: 
-        * A class implementing the passlib API, 
-        * A dotted name which can be resolved to such a class
+    One of 'context', 'string', 'ini_file' or 'context_args' must be supplied.
+    
+    :arg context:
+        A passlib CryptContext object
+
+    :arg ini_string
+        A string of configuration data such as that created by 
+        CryptContext.to_string
+        (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_string)
+
+    :arg ini_file:
+        Identifies a .ini-style file which contains a [passlib] section 
+        suitable for constructing a passlib CryptContext
+        (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_string)
+
+    :arg context_dict: 
+        A dictionary of arguments suitable for constructing a CryptContext
+        (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_dict)
     
     :raises ConfigurationError
-        If a value is supplied which cannot be resolved to a python Class
+        If given insufficient or incorrect arguments
     """
-    resolver = DottedNameResolver(package=None)
-    def register_hash():
+    def register_context():
+        bad_config = ""
+        constructed_context = None
         try:
-            hash_class = resolver.maybe_resolve(pwhash)
-            if not verify_password_hasher(hash_class):
-                raise ConfigurationError('Does not implement passlib API')
-        except ImportError:
-            raise ConfigurationError('Unable to resolve name %s' % pwhash)
-        else:
-            config.registry.password_hash = resolver.maybe_resolve(pwhash)
-    config.action('password_hash', register_hash)
+            if context:
+                if isinstance(context, CryptContext):
+                    constructed_context = context
+                else:
+                    msg = "'context' must be an instance of passlib.CryptContext"
+                    bad_config = msg
+            elif ini_string:
+                constructed_context = CryptContext.from_string(ini_string)
+            elif ini_file:
+                constructed_context = CryptContext.from_path(ini_file)
+            elif context_dict:
+                constructed_context = CryptContext(**context_dict)
+            else:
+                # no required arguments have been passed, error
+                bad_config = 'requires a CryptContext or configuration data'
+        except IOError:
+            bad_config = "unable to open %s" % ini_file
+        except ValueError:
+            bad_config = "received invalid or incompatible configuration options"
+        except KeyError:
+            bad_config = "received unknown or forbidden configuration options"
+        except TypeError:
+            bad_config = "received configuration options of the wrong type"
+
+        if bad_config:
+            raise ConfigurationError("set_password_context %s" % bad_config)
+
+        config.registry.password_context = constructed_context
+
+    config.action('password_context', register_context)

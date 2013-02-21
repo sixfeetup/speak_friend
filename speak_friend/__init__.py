@@ -16,7 +16,7 @@ from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import controlpanel
 from speak_friend.subscribers import register_api
-from speak_friend.configuration import set_password_hash
+from speak_friend.configuration import set_password_context
 from speak_friend.subscribers import log_activity
 
 
@@ -48,8 +48,6 @@ def includeme(config):
     config.add_view(accounts.create_profile, route_name='create_profile',
                     renderer='templates/create_profile.pt')
 
-    config.add_directive('set_password_hash', set_password_hash)
-
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.control_panel, route_name='control_panel',
                     renderer='templates/control_panel.pt')
@@ -64,8 +62,12 @@ def includeme(config):
     json_renderer.add_adapter(colander.null.__class__, null_adapter)
     ## Add custom directives
     config.add_directive('add_controlpanel_section', add_controlpanel_section)
+    config.add_directive('set_password_context', set_password_context)
     ## And call with our notification form
     config.add_controlpanel_section(user_creation_email_notification_schema)
+    ## And set default password_context
+    from passlib.apps import ldap_context
+    config.set_password_context(context=ldap_context)
 
 
 def init_sa(config):
@@ -101,7 +103,6 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     includeme(config)
-    config.set_password_hash('passlib.app.ldap_context')
     config.scan()
 
     return config.make_wsgi_app()
