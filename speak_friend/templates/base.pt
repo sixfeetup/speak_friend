@@ -38,9 +38,9 @@
             <div id="content" class="row-fluid">
                 <metal:content define-slot="content" />
             </div>
-            <div id="footer">
-                <metal:content define-slot="footer" />
-            </div>
+        </div>
+        <div id="footer" class="row-fluid">
+            <metal:content define-slot="footer" />
         </div>
 
     </body>
