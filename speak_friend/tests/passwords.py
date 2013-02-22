@@ -1,12 +1,23 @@
-import re
+import os
+
+import ConfigParser
 from unittest import TestCase
+
 
 from speak_friend.passwords import check_password
 from speak_friend.passwords import make_disallowed_regex
 from speak_friend.passwords import get_chartype_counts
+from speak_friend.passwords import password_settings
 from speak_friend.passwords import DEFAULT_PASSWORD_SETTINGS
+from speak_friend.passwords import PASSWORD_SETTINGS_PREFIX
 from speak_friend.passwords import ERROR_MESSAGES
 from speak_friend.tests.common import SFBaseCase
+
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+INI_FILE_PATH = os.path.join(CURRENT_DIR, 'resources', 'test_password.ini')
+PASSWORD_CONFIG = ConfigParser.ConfigParser()
+PASSWORD_CONFIG.read(INI_FILE_PATH)
 
 
 class PasswordToolsTests(TestCase):
@@ -166,3 +177,65 @@ class PasswordToolsTests(TestCase):
                 for errkey in expected_error_keys:
                     errmsg = ERROR_MESSAGES[errkey] % self.settings
                     self.assertTrue(errmsg in result)
+
+
+class PasswordSettingsTests(SFBaseCase):
+    """verify that integratin with actual settings works correctly"""
+    def setUp(self):
+        super(PasswordSettingsTests, self).setUp()
+        self.prefix = PASSWORD_SETTINGS_PREFIX
+        self.use_settings = {
+            'min_length': (10, int),
+            'max_length': (10, int),
+            'min_lower': (10, int),
+            'min_upper': (10, int),
+            'min_numeric': (10, int),
+            'min_special': (10, int),
+            'disallowed': ("$#!%&{'[\"}])(", str)
+        }
+
+    def test_set_integer_vals(self):
+        for key in ['min_length', 'max_length', 'min_lower', 'min_upper',
+                    'min_numeric', 'min_special']:
+            regkey = '.'.join([self.prefix, key])
+            expected, expected_type = self.use_settings[key]
+            self.config.add_settings(
+                dict(PASSWORD_CONFIG.items(key)))
+            settings = password_settings()
+            actual = settings[key]
+            self.assertEqual(expected, actual)
+            self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_string_val(self):
+        key = 'disallowed'
+        expected, expected_type = self.use_settings[key]
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(key)))
+        settings = password_settings()
+        actual = settings[key]
+        self.assertEqual(expected, actual)
+        self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_all_vals(self):
+        confkey = 'multiple'
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(confkey)))
+        for key in DEFAULT_PASSWORD_SETTINGS.keys():
+            expected, expected_type = self.use_settings[key]
+            settings = password_settings()
+            actual = settings[key]
+            self.assertEqual(expected, actual)
+            self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_nonevals(self):
+        """what happens when the value in .ini is nothing
+        """
+        confkey = 'nonevals'
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(confkey)))
+        for key in DEFAULT_PASSWORD_SETTINGS.keys():
+            expected_type = self.use_settings[key][1]
+            expected = DEFAULT_PASSWORD_SETTINGS[key]
+            settings = password_settings()
+            actual = settings[key]
+            self.assertEqual(expected, actual, 'bad value for %s' % key)

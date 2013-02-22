@@ -2,13 +2,14 @@
 """
 import re
 
-# from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_registry
 
 
 UPPERS = re.compile(r'[A-Z]{1}')
 LOWERS = re.compile(r'[a-z]{1}')
 NUMBERS = re.compile(r'[0-9]{1}')
 SPECIALS = re.compile(r'[\W|_]')
+PASSWORD_SETTINGS_PREFIX = 'speak_friend.password'
 DEFAULT_PASSWORD_SETTINGS = {
     'min_length': None,
     'max_length': None,
@@ -17,6 +18,15 @@ DEFAULT_PASSWORD_SETTINGS = {
     'min_numeric': 0,
     'min_special': 0,
     'disallowed': None, 
+}
+PASSWORD_VALUE_TYPES = {
+    'min_length': (int, None),
+    'max_length': (int, None),
+    'min_lower': (int, 0),
+    'min_upper': (int, 0),
+    'min_numeric': (int, 0),
+    'min_special': (int, 0),
+    'disallowed': (None, None),
 }
 ERROR_MESSAGES = {
     'min_length': 'Password must be longer than %(min_length)d characters.',
@@ -29,13 +39,25 @@ ERROR_MESSAGES = {
 }
 
 
-# def password_settings():
-#     settings = DEFAULT_PASSWORD_SETTINGS.copy
-#     reg = get_current_registry()
-#     for key in settings.keys():
-#         if key in reg.settings:
-#             settings[key] = reg.settings[key]
-#     return settings
+def password_settings():
+    settings = DEFAULT_PASSWORD_SETTINGS.copy()
+    reg = get_current_registry()
+    for key in settings.keys():
+        regkey = '.'.join([PASSWORD_SETTINGS_PREFIX, key])
+        if regkey in reg.settings:
+            converter, fallback = PASSWORD_VALUE_TYPES[key]
+            value = reg.settings[regkey]
+            if converter is not None:
+                try:
+                    value = converter(value)
+                except ValueError:
+                    value = fallback
+            else:
+                if not value:
+                    value = fallback
+            settings[key] = value
+
+    return settings
 
 
 def get_chartype_counts(password):
