@@ -6,7 +6,10 @@
         </tal:resources>
         <link rel="stylesheet" href="${request.static_url('speak_friend:static/css/bootstrap.min.css')}" type="text/css" media="screen" />
         <link rel="stylesheet" href="${request.static_url('speak_friend:static/css/speak_friend.css')}" type="text/css" media="screen" />
-        <metal:css define-slot="custom-css" />
+        <!--! CSS includes that don't absolutely have to be in the head, for page speed -->
+        <tal:styles repeat="css_path css_resources | []">
+          <link rel="stylesheet" tal:attributes="href python: request.static_url(css_path)" type="text/css" media="screen" />
+        </tal:styles>
         
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>

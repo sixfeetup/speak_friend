@@ -1,11 +1,4 @@
 <metal:main use-macro="load: base.pt">
-    <metal:css metal:fill-slot="custom-css">
-      <link rel="stylesheet" href="/deform_static/css/form.css" type="text/css"/>
-    </metal:css>
-    <metal:js metal:fill-slot="custom-js">
-      <script type="text/javascript" src="/deform_static/scripts/deform.js"></script>
-    </metal:js>
-
     <p metal:fill-slot="header">Add a domain for ${api.settings['site_name']}</p>
     
     <metal:content metal:fill-slot="content">
