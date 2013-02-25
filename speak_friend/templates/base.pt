@@ -10,7 +10,11 @@
         
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
-        <metal:javascripts define-slot="custom-js" />
+        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
+        <tal:resources repeat="js_path js_resources | []">
+          <script type="text/javascript"
+                  tal:attributes="src python: request.static_url(js_path)"></script>
+        </tal:resources>
     </head>
     <body>
         <div id="body-wrapper" class="container-fluid">
@@ -34,15 +38,10 @@
             <div id="content" class="row-fluid">
                 <metal:content define-slot="content" />
             </div>
-            <div id="footer">
-                <metal:content define-slot="footer" />
-            </div>
         </div>
-        
-        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
-        <tal:resources repeat="js_path js_resources | []">
-          <script type="text/javascript"
-                  tal:attributes="src python: request.static_url(js_path)"></script>
-        </tal:resources>
+        <div id="footer" class="row-fluid">
+            <metal:content define-slot="footer" />
+        </div>
+
     </body>
 </html>
