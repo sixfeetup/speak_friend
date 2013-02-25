@@ -1,6 +1,4 @@
 # Views related to account management (creating, editing, deactivating)
-
-
 from speak_friend.forms.profiles import profile_form
 
 
