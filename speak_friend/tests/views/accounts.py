@@ -8,9 +8,9 @@ class ViewTests(SFBaseCase):
     def test_create_profile_view(self):
         request = testing.DummyRequest()
         info = create_profile(request)
-        self.assertTrue('form' in info)
+        self.assertTrue('rendered_form' in info)
 
     def test_edit_profile_view(self):
         request = testing.DummyRequest()
         info = edit_profile(request)
-        self.assertTrue('form' in info)
+        self.assertTrue('rendered_form' in info)
