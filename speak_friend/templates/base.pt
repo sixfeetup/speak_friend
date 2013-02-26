@@ -1,6 +1,6 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <tal:resources repeat="css_path css_resources | []">
+        <tal:resources repeat="css_path api.css_resources">
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
         </tal:resources>
@@ -8,12 +8,9 @@
         <link rel="stylesheet" href="${request.static_url('speak_friend:static/css/speak_friend.css')}" type="text/css" media="screen" />
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
-        <metal:css define-slot="custom-css" />
-        
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
-        <!--! Javascript includes that don't absolutely have to be in the head, for page speed -->
-        <tal:resources repeat="js_path js_resources | []">
+        <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
         </tal:resources>

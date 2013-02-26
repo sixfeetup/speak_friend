@@ -10,7 +10,7 @@ def register_api(event):
     event so that it will be injected into the environment, without
     having to explicily add it in each view function.
     """
-    event['api'] = TemplateAPI()
+    event['api'] = TemplateAPI(event['request'], event.rendering_val)
 
 
 def log_activity(event):
