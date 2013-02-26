@@ -18,6 +18,7 @@ from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.subscribers import register_api
 from speak_friend.configuration import set_password_context
+from speak_friend.configuration import set_password_validator
 from speak_friend.subscribers import log_activity
 
 
@@ -34,6 +35,9 @@ def add_controlpanel_section(config, schema, override=False):
         raise ConfigurationError(msg % (schema.name,
                                         schema.path))
     controlpanel[schema.name] = schema
+
+
+BARFLY = object()
 
 
 def includeme(config):
@@ -66,11 +70,14 @@ def includeme(config):
     ## Add custom directives
     config.add_directive('add_controlpanel_section', add_controlpanel_section)
     config.add_directive('set_password_context', set_password_context)
+    config.add_directive('set_password_validator', set_password_validator)
     ## And call with our notification form
     config.add_controlpanel_section(user_creation_email_notification_schema)
     ## And set default password_context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
+    ## Default password validator
+    config.set_password_validator()
 
 
 def init_sa(config):
