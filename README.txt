@@ -79,3 +79,15 @@ This package can integrate the pyramid_exclog and mailinglogger packages to auto
    format = %(asctime)s %(message)s
    
    # End logging configuration
+
+
+Overriding Assets
+-----------------
+
+There is a blank `speak_friend:static/css/custom.css` file that can be overridden by packages extending `speak_friend`.
+This file is included in `base.pt`, so will be included on every page.
+The following is a list of macros that can be overridden:
+* `speak_friend:templates/macros/footer.pt`
+* `speak_friend:templates/macros/quick_links.pt`
+
+See http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/assets.html#overriding-assets-section .
