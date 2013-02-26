@@ -11,8 +11,6 @@ from speak_friend.models.controlpanel import ControlPanel
 def control_panel(request):
     sections = request.registry.get('controlpanel', {})
     section_forms = {}
-    css_resources = []
-    js_resources = []
     session = DBSession()
     query = session.query(ControlPanel)
     qry_filter = ControlPanel.section.in_(sections.keys())
@@ -21,6 +19,7 @@ def control_panel(request):
         (cp_section.section, cp_section)
         for cp_section in saved_sections.all()
     ])
+    forms = []
     for section_name, section_schema in sections.items():
         section_form = Form(
             section_schema,
@@ -28,15 +27,7 @@ def control_panel(request):
             formid=section_name,
         )
         section_forms[section_name] = section_form
-        resources = section_form.get_widget_resources()
-        css_resources.extend([
-            'deform:static/%s' % css_path
-            for css_path in resources['css']
-        ])
-        js_resources.extend([
-            'deform:static/%s' % js_path
-            for js_path in resources['js']
-        ])
+        forms.append(section_form)
 
     html = []
     if 'submit' in request.POST:
@@ -71,9 +62,8 @@ def control_panel(request):
             html.append(form.render(appstruct.get('panel_values', {})))
 
     return {
-        'css_resources': css_resources,
-        'js_resources': js_resources,
-        'form': ''.join(html),
+        'rendered_form': ''.join(html),
+        'forms': forms,
     }
 
 
