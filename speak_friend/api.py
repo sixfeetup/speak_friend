@@ -2,16 +2,15 @@
 
 
 from pyramid.renderers import get_renderer
-from pyramid.threadlocal import get_current_registry
 
 
 class TemplateAPI(object):
-    def __init__(self):
-        pass
+    def __init__(self, request):
+        self.request = request
 
     @property
     def settings(self):
-        return get_current_registry().settings
+        return self.request.registry.settings
 
     @property
     def macros(self):
