@@ -10,6 +10,8 @@
         <tal:styles repeat="css_path css_resources | []">
           <link rel="stylesheet" tal:attributes="href python: request.static_url(css_path)" type="text/css" media="screen" />
         </tal:styles>
+        <link rel="stylesheet" type="text/css" media="screen"
+              href="${request.static_url('speak_friend:static/css/custom.css')}" />
         
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
@@ -39,12 +41,10 @@
                 <metal:content define-slot="breadcrumbs" />
             </div>
             <div id="content" class="row-fluid">
+                <span metal:use-macro="api.macros['quick_links']"></span>
                 <metal:content define-slot="content" />
             </div>
         </div>
-        <div id="footer" class="row-fluid">
-            <metal:content define-slot="footer" />
-        </div>
-
+        <span metal:use-macro="api.macros['footer']"></span>
     </body>
 </html>
