@@ -40,6 +40,7 @@ def add_controlpanel_section(config, schema, override=False):
 
 def includeme(config):
     # Dependencies
+    config.include('deform_bootstrap')
     config.include('pyramid_exclog')
 
     # Events
