@@ -4,6 +4,9 @@
    <span metal:define-macro="footer">
         <div id="footer" class="row-fluid">
             <metal:content define-slot="footer" />
+            <div class="span6 footerLinks">
+                <a href="/contact_us">Contact Us</a>
+            </div>
         </div>
    </span>
  </html>
