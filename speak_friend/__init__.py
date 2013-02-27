@@ -6,7 +6,9 @@ from pyramid.config import Configurator
 from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
 from pyramid.events import BeforeRender
+from pyramid.path import DottedNameResolver
 from pyramid.renderers import JSON
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
 
@@ -71,6 +73,17 @@ def includeme(config):
     ## And set default password_context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
+
+    # Session
+    settings = config.registry.settings
+    session_secret = settings.setdefault('speak_friend.session_secret',
+                                         'itsaseekrit')
+    session_resolver = DottedNameResolver()
+    factory_name = settings.setdefault('speak_friend.session_factory',
+                                       'pyramid.session.UnencryptedCookieSessionFactoryConfig')
+    factory_class = session_resolver.resolve(factory_name)
+    session_factory = factory_class(session_secret)
+    config.set_session_factory(session_factory)
 
 
 def init_sa(config):

@@ -151,3 +151,11 @@ The following is a list of macros that can be overridden:
 * `speak_friend:templates/macros/quick_links.pt`
 
 See http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/assets.html#overriding-assets-section .
+
+Sessions
+--------
+
+By default, `speak_friend` uses the stock `UnencryptedCookieSessionFactoryConfig` session factory.
+The secret should be defined in your INI file using the `speak_friend.session_secret` variable.
+If you would like to use a completely different session factory, specify the dotted-path to the class in the `speak_friend.session_factory` variable.
+This class needs to accept the secret specified above as its first argument.
