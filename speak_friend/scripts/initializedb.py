@@ -2,12 +2,11 @@ import os
 import sys
 import transaction
 
-from sqlalchemy import engine_from_config
-
-
+from pyramid.config import Configurator
 from pyramid.paster import get_appsettings, setup_logging
 
-from speak_friend.models import DBSession, Base
+from speak_friend import init_sa
+from speak_friend.models import Base
 
 
 def usage(argv):
@@ -22,8 +21,9 @@ def main(argv=sys.argv):
     config_uri = argv[1]
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
+    config = Configurator(settings=settings)
+    engine = init_sa(config)
+
     Base.metadata.create_all(engine)
 #    with transaction.manager:
 #        model = MyModel(name='one', value=1)

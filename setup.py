@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-version = '0.4'
+version = '0.8'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
@@ -16,11 +16,17 @@ requires = [
     'py-bcrypt',
     'colander',
     'deform',
+    'deform_bootstrap',
     'python-openid',
     'psycopg2',
     'SQLAlchemy',
     'transaction',
     'zope.sqlalchemy',
+    'zope.interface',
+    'zope.component',
+    'pyramid_exclog',
+    'mailinglogger',
+    'pyramid_mailer',
     ]
 
 tests_require = requires + [
