@@ -53,8 +53,8 @@ class JSON(types.TypeDecorator):
         return JSON(self.impl.length)
 
 
-class ControlPanel(Base):
-    __tablename__ = 'control_panel'
+class ControlPanelSection(Base):
+    __tablename__ = 'control_panel_sections'
     __table_args__ = {'schema': 'settings'}
     section = Column(UnicodeText, primary_key=True)
     panel_path = Column(DottedPath)

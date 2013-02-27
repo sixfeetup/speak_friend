@@ -56,9 +56,13 @@ def includeme(config):
     config.add_view(admin.create_domain, route_name='create_domain',
                     renderer='templates/create_domain.pt')
     config.add_route('control_panel', '/control_panel')
-    config.add_view(controlpanel.control_panel, route_name='control_panel',
+    config.add_view(controlpanel.ControlPanel,
+                    attr="get", request_method='GET',
                     renderer='templates/control_panel.pt')
     config.add_static_view('speak_friend_static', 'speak_friend:static', cache_max_age=3600)
+    config.add_view(controlpanel.ControlPanel,
+                    attr="post", request_method='POST',
+                    renderer='templates/control_panel.pt')
     config.add_static_view('deform_static', 'deform:static')
 
     # Control panel
