@@ -21,6 +21,7 @@ from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.subscribers import register_api
+from speak_friend.configuration import add_controlpanel_section
 from speak_friend.configuration import set_password_context
 from speak_friend.subscribers import log_activity
 
@@ -30,15 +31,6 @@ def datetime_adapter(obj, request):
 
 def null_adapter(obj, request):
     return None
-
-def add_controlpanel_section(config, schema, override=False):
-    controlpanel = config.registry.setdefault('controlpanel', {})
-    if schema.name in controlpanel and not override:
-        msg = '%s section already implemented by: %s'
-        raise ConfigurationError(msg % (schema.name,
-                                        schema.path))
-    controlpanel[schema.name] = schema
-
 
 def includeme(config):
     # Dependencies

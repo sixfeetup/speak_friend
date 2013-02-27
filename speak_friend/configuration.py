@@ -3,30 +3,39 @@ from pyramid.exceptions import ConfigurationError
 from passlib.context import CryptContext
 
 
-def set_password_context(config, context=None, ini_string='', ini_file=None, 
+def add_controlpanel_section(config, schema, override=False):
+    controlpanel = config.registry.setdefault('controlpanel', {})
+    if schema.name in controlpanel and not override:
+        msg = '%s section already implemented by: %s'
+        raise ConfigurationError(msg % (schema.name,
+                                        schema.path))
+    controlpanel[schema.name] = schema
+
+
+def set_password_context(config, context=None, ini_string='', ini_file=None,
                          context_dict={}):
     """
     Create a CryptContext used by the application for password management
-    
+
     One of 'context', 'string', 'ini_file' or 'context_args' must be supplied.
-    
+
     :arg context:
         A passlib CryptContext object
 
     :arg ini_string
-        A string of configuration data such as that created by 
+        A string of configuration data such as that created by
         CryptContext.to_string
         (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_string)
 
     :arg ini_file:
-        Identifies a .ini-style file which contains a [passlib] section 
+        Identifies a .ini-style file which contains a [passlib] section
         suitable for constructing a passlib CryptContext
         (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_string)
 
-    :arg context_dict: 
+    :arg context_dict:
         A dictionary of arguments suitable for constructing a CryptContext
         (see http://pythonhosted.org/passlib/lib/passlib.context.html#passlib.context.CryptContext.to_dict)
-    
+
     :raises ConfigurationError
         If given insufficient or incorrect arguments
     """
