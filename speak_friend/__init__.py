@@ -73,10 +73,6 @@ def includeme(config):
         'deform_bootstrap_static', 'deform_bootstrap:static',
         cache_max_age=3600
     )
-    config.add_static_view(
-        'deform_bootstrap_extra_static', 'deform_bootstrap_extra:static',
-        cache_max_age=3600
-    )
 
     # Add custom directives
     config.add_directive('add_controlpanel_section', add_controlpanel_section)
