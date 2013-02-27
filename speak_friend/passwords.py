@@ -112,27 +112,3 @@ class PasswordValidator(object):
 
     def _get_error_message(self, key):
         return self.error_messages[key] % self.settings
-
-
-
-# def password_settings():
-#     settings = DEFAULT_PASSWORD_SETTINGS.copy()
-#     reg = get_current_registry()
-#     for key in settings.keys():
-#         regkey = '.'.join([PASSWORD_SETTINGS_PREFIX, key])
-#         if regkey in reg.settings:
-#             converter, fallback = PASSWORD_VALUE_TYPES[key]
-#             value = reg.settings[regkey]
-#             if converter is not None:
-#                 try:
-#                     value = converter(value)
-#                 except ValueError:
-#                     value = fallback
-#             else:
-#                 if not value:
-#                     value = fallback
-#             settings[key] = value
-# 
-#     return settings
-
-
