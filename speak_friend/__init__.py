@@ -42,6 +42,7 @@ def includeme(config):
     # Dependencies
     config.include('deform_bootstrap')
     config.include('pyramid_exclog')
+    config.include('pyramid_mailer')
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
