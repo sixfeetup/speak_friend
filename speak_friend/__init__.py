@@ -13,11 +13,13 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 
 from speak_friend.events import UserActivity
+from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
+from speak_friend.views import contactus
 from speak_friend.subscribers import register_api
 from speak_friend.configuration import set_password_context
 from speak_friend.subscribers import log_activity
@@ -59,11 +61,31 @@ def includeme(config):
     config.add_view(controlpanel.ControlPanel,
                     attr="get", request_method='GET',
                     renderer='templates/control_panel.pt')
-    config.add_static_view('speak_friend_static', 'speak_friend:static', cache_max_age=3600)
     config.add_view(controlpanel.ControlPanel,
                     attr="post", request_method='POST',
                     renderer='templates/control_panel.pt')
+    config.add_route('contact_us', '/contact_us')
+    config.add_view(contactus.ContactUs,
+                    attr="get", request_method='GET',
+                    renderer='templates/contact_us.pt')
+    config.add_view(contactus.ContactUs,
+                    attr="post", request_method='POST',
+                    renderer='templates/contact_us.pt')
+    config.add_static_view('speak_friend_static', 'speak_friend:static',
+                           cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
+    config.add_static_view(
+        'deform_bootstrap_static', 'deform_bootstrap:static',
+        cache_max_age=3600
+    )
+    config.add_static_view(
+        'deform_bootstrap_extra_static', 'deform_bootstrap_extra:static',
+        cache_max_age=3600
+    )
+
+    # Add custom directives
+    config.add_directive('add_controlpanel_section', add_controlpanel_section)
+    config.add_directive('set_password_context', set_password_context)
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
@@ -71,12 +93,12 @@ def includeme(config):
     config.add_renderer('json', json_renderer)
     json_renderer.add_adapter(datetime.datetime, datetime_adapter)
     json_renderer.add_adapter(colander.null.__class__, null_adapter)
-    ## Add custom directives
-    config.add_directive('add_controlpanel_section', add_controlpanel_section)
-    config.add_directive('set_password_context', set_password_context)
-    ## And call with our notification form
+
+    # Call custom directive
+    ## Core control panel sections
     config.add_controlpanel_section(user_creation_email_notification_schema)
-    ## And set default password_context
+    config.add_controlpanel_section(contact_us_email_notification_schema)
+    ## Password context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
 
