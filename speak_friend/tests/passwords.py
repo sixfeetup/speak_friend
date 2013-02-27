@@ -55,7 +55,7 @@ class PasswordToolsTests(TestCase):
             password, expected = val
             actual = self.decompose_charcounts(password)
             err_msg = "char count for %s incorrect: expected %s but got %s"
-            self.assertEqual(expected, actual, 
+            self.assertEqual(expected, actual,
                              err_msg % (key, expected, actual))
 
     def test_disallowed_reg(self):
@@ -195,65 +195,85 @@ class PasswordToolsTests(TestCase):
                 for errkey in expected_error_keys:
                     errmsg = validator._get_error_message(errkey)
                     self.assertTrue(errmsg in result, 'missing "%s"' % errmsg)
-# 
-# 
-# class PasswordSettingsTests(SFBaseCase):
-#     """verify that integrating with actual settings works correctly"""
-#     def setUp(self):
-#         super(PasswordSettingsTests, self).setUp()
-#         self.prefix = PASSWORD_SETTINGS_PREFIX
-#         self.use_settings = {
-#             'min_length': (10, int),
-#             'max_length': (10, int),
-#             'min_lower': (10, int),
-#             'min_upper': (10, int),
-#             'min_numeric': (10, int),
-#             'min_special': (10, int),
-#             'disallowed': ("$#!%&{'[\"}])(", str)
-#         }
-# 
-#     def test_set_integer_vals(self):
-#         for key in ['min_length', 'max_length', 'min_lower', 'min_upper',
-#                     'min_numeric', 'min_special']:
-#             regkey = '.'.join([self.prefix, key])
-#             expected, expected_type = self.use_settings[key]
-#             self.config.add_settings(
-#                 dict(PASSWORD_CONFIG.items(key)))
-#             settings = password_settings()
-#             actual = settings[key]
-#             self.assertEqual(expected, actual)
-#             self.assertTrue(isinstance(actual, expected_type))
-# 
-#     def test_set_string_val(self):
-#         key = 'disallowed'
-#         expected, expected_type = self.use_settings[key]
-#         self.config.add_settings(
-#             dict(PASSWORD_CONFIG.items(key)))
-#         settings = password_settings()
-#         actual = settings[key]
-#         self.assertEqual(expected, actual)
-#         self.assertTrue(isinstance(actual, expected_type))
-# 
-#     def test_set_all_vals(self):
-#         confkey = 'multiple'
-#         self.config.add_settings(
-#             dict(PASSWORD_CONFIG.items(confkey)))
-#         for key in DEFAULT_PASSWORD_SETTINGS.keys():
-#             expected, expected_type = self.use_settings[key]
-#             settings = password_settings()
-#             actual = settings[key]
-#             self.assertEqual(expected, actual)
-#             self.assertTrue(isinstance(actual, expected_type))
-# 
-#     def test_set_nonevals(self):
-#         """what happens when the value in .ini is nothing
-#         """
-#         confkey = 'nonevals'
-#         self.config.add_settings(
-#             dict(PASSWORD_CONFIG.items(confkey)))
-#         for key in DEFAULT_PASSWORD_SETTINGS.keys():
-#             expected_type = self.use_settings[key][1]
-#             expected = DEFAULT_PASSWORD_SETTINGS[key]
-#             settings = password_settings()
-#             actual = settings[key]
-#             self.assertEqual(expected, actual, 'bad value for %s' % key)
+
+
+class PasswordSettingsTests(SFBaseCase):
+    """verify that integrating with actual settings works correctly"""
+    def setUp(self):
+        super(PasswordSettingsTests, self).setUp()
+        self.prefix = PASSWORD_SETTINGS_PREFIX
+        self.use_settings = {
+            'min_length': (10, int),
+            'max_length': (10, int),
+            'min_lower': (10, int),
+            'min_upper': (10, int),
+            'min_numeric': (10, int),
+            'min_special': (10, int),
+            'disallowed': ("$#!%&{'[\"}])(", str)
+        }
+
+    def test_set_integer_vals(self):
+        for key in ['min_length', 'max_length', 'min_lower', 'min_upper',
+                    'min_numeric', 'min_special']:
+            expected, expected_type = self.use_settings[key]
+            self.config.add_settings(
+                dict(PASSWORD_CONFIG.items(key)))
+            validator = PasswordValidator(self.config.registry.settings)
+            actual = validator.settings[key]
+            self.assertEqual(expected, actual)
+            self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_string_val(self):
+        key = 'disallowed'
+        expected, expected_type = self.use_settings[key]
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(key)))
+        validator = PasswordValidator(self.config.registry.settings)
+        actual = validator.settings[key]
+        self.assertEqual(expected, actual)
+        self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_all_vals(self):
+        confkey = 'multiple'
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(confkey)))
+        for key in PasswordValidator.default_settings.keys():
+            expected, expected_type = self.use_settings[key]
+            validator = PasswordValidator(self.config.registry.settings)
+            actual = validator.settings[key]
+            self.assertEqual(expected, actual)
+            self.assertTrue(isinstance(actual, expected_type))
+
+    def test_set_nonevals(self):
+        """what happens when the value in .ini is nothing
+        """
+        confkey = 'nonevals'
+        self.config.add_settings(
+            dict(PASSWORD_CONFIG.items(confkey)))
+        defaults = PasswordValidator.default_settings
+        for key in defaults.keys():
+            expected = defaults[key]
+            validator = PasswordValidator(self.config.registry.settings)
+            actual = validator.settings[key]
+            self.assertEqual(expected, actual, 'bad value for %s' % key)
+
+
+class DefaultPasswordValidationTests(SFBaseCase):
+    """verify that the default config for speak_friend creates a password
+    validator with default settings
+    """
+    def setUp(self):
+        super(DefaultPasswordValidationTests, self).setUp()
+        self.config.include('speak_friend')
+
+    def test_default_validator_exists(self):
+        try:
+            validator = self.config.registry.password_validator
+        except AttributeError:
+            self.assertTrue(False, "default validator does not exist")
+        self.assertTrue(isinstance(validator, PasswordValidator))
+
+    def test_default_validator_defaults(self):
+        expected = PasswordValidator.default_settings
+        actual = self.config.registry.password_validator.settings
+        self.assertEquals(expected, actual)
