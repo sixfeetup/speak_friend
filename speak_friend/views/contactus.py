@@ -25,7 +25,7 @@ class ContactUs(object):
         cp = ControlPanel(request)
 
         current = cp.saved_sections.get(contact_us_email_notification_schema.name)
-        if current.panel_values:
+        if current and current.panel_values:
             self.recipients = current.panel_values['email_addresses']
         else:
             self.recipients = []
