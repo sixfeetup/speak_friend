@@ -14,6 +14,7 @@ from sqlalchemy import engine_from_config
 
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
+from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
@@ -109,8 +110,9 @@ def includeme(config):
 
     # Call custom directives
     ## Core control panel sections
-    config.add_controlpanel_section(user_creation_email_notification_schema)
     config.add_controlpanel_section(contact_us_email_notification_schema)
+    config.add_controlpanel_section(password_reset_schema)
+    config.add_controlpanel_section(user_creation_email_notification_schema)
     ## Password context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
