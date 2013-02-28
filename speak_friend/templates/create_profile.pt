@@ -1,3 +1,5 @@
 <metal:main use-macro="load: base.pt">
-    <p metal:fill-slot="header">Welcome to ${api.settings['site_name']}</p>
+    <metal:content fill-slot="content">
+        <h1>Create Profile</h1>
+    </metal:content>
 </metal:main>
