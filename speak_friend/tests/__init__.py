@@ -4,4 +4,3 @@ from .subscribers import *
 from .views import *
 from .forms import *
 from .passwords import *
-from .password_management import *
