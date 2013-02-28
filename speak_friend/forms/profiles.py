@@ -2,7 +2,7 @@ import re
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
 from colander import Email, Regex
-from deform import Form
+from deform import Button, Form
 from deform.widget import CheckedInputWidget, CheckedPasswordWidget
 
 from speak_friend.models import DBSession
@@ -33,7 +33,7 @@ fqdn_re = re.compile(
 class FQDN(Regex):
     """Validator for a Fully Qualified Domain Name
 
-    If ``msg`` is supplied, it will be the error message to be used when 
+    If ``msg`` is supplied, it will be the error message to be used when
     raising `colander.Invalid`; otherwise, defaults to 'Invalid domain name'
     """
     def __init__(self, msg=None):
@@ -81,3 +81,20 @@ class Domain(MappingSchema):
         description="Indicate the number of times a user may fail a login "
                     "attempt before being disabled (a negative value will "
                     "use the system default)")
+
+
+class PasswordResetRequest(MappingSchema):
+      email = SchemaNode(
+          String(),
+          title=u'Email Address',
+          validator=UserEmail(),
+      )
+
+
+password_reset_request_form = Form(
+    PasswordResetRequest(),
+    buttons=(
+        Button('submit', title='Request Password'),
+        'cancel'
+    ),
+)

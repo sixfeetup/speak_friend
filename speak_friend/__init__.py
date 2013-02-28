@@ -52,6 +52,20 @@ def includeme(config):
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
                     renderer='templates/token_expired.pt')
+    config.add_route('request_password', '/request_password')
+    config.add_view(accounts.RequestPassword,
+                    attr="get", request_method='GET',
+                    renderer='templates/request_password.pt')
+    config.add_view(accounts.RequestPassword,
+                    attr="post", request_method='POST',
+                    renderer='templates/request_password.pt')
+    config.add_route('reset_password', '/reset_password/{token}')
+    config.add_view(accounts.ResetPassword,
+                    attr="get", request_method='GET',
+                    renderer='templates/reset_password.pt')
+    config.add_view(accounts.ResetPassword,
+                    attr="post", request_method='POST',
+                    renderer='templates/reset_password.pt')
     config.add_route('create_domain', '/create_domain')
     config.add_view(admin.create_domain, route_name='create_domain',
                     renderer='templates/create_domain.pt')
