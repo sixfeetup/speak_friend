@@ -1,9 +1,12 @@
 import re
 
-from colander import Bool, MappingSchema, SchemaNode, String, Integer
+from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
 from colander import Email, Regex
 from deform import Form
 from deform.widget import CheckedInputWidget, CheckedPasswordWidget
+
+from speak_friend.models import DBSession
+from speak_friend.models.profiles import UserProfile
 
 
 class Profile(MappingSchema):
@@ -37,6 +40,27 @@ class FQDN(Regex):
         if msg is None:
             msg = "Invalid domain name"
         super(FQDN, self).__init__(fqdn_re, msg=msg)
+
+
+class UserEmail(Email):
+    """Validator to ensure an email exists in UserProfiles
+
+    If ``msg`` is supplied, it will be the error message to be used when
+    raising `colander.Invalid`; otherwise, defaults to 'No user with that email address'
+    """
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = "No user with that email address"
+        super(UserEmail, self).__init__(msg=msg)
+
+    def __call__(self, node, value):
+        super(UserEmail, self).__call__(node, value)
+        session = DBSession()
+        query = session.query(UserProfile)
+        query = query.filter(UserProfile.email==value)
+        results = query.count()
+        if results == 0:
+            raise Invalid(node, self.msg)
 
 
 class Domain(MappingSchema):
