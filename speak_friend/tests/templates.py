@@ -18,3 +18,6 @@ class TemplateAPITests(SFBaseCase):
     def test_resources(self):
         self.assertTrue(hasattr(self.api, 'css_resources'))
         self.assertTrue(hasattr(self.api, 'js_resources'))
+
+    def test_current_year(self):
+        self.assertTrue(hasattr(self.api, 'utc_now'))

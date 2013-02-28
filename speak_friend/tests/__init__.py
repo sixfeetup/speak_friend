@@ -3,4 +3,4 @@ from .templates import *
 from .subscribers import *
 from .views import *
 from .forms import *
-from .password_management import *
+from .passwords import *

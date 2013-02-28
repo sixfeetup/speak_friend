@@ -96,6 +96,125 @@ scheme to another automatically (example is from the passlib documentation):
     else:
         reject_user_login()
 
+Password Validation
+-------------------
+
+This package provides a pluggable system for validating the format of user
+passwords. The package provides a default password validator with configurable
+settings. This default validator can be replaced as well, allowing for maximal
+flexibility. The validator may be found as an attribute of the current
+registry: `config.registry.password_validator`. It is a callable, and calling
+it will result either in `None` (if a password is valid) or a string
+containing readable error messages indicating which validation rule has been
+viiolated. Assuming that minimum length is set to 6, the following would
+result:
+
+.. code-block:: python
+
+    validator = config.registry.password_validator
+    password = 'secret'
+    result = validator(password)
+    result is None
+    # True
+    bad_password = 'short'
+    result = validator(bad_password)
+    print result
+    # 'Password must be longer than 6 characters.'
+
+Default Validator
++++++++++++++++++
+
+The default validation is provided by the
+`speak_friend.passwords.PasswordValidator` class. This class has configuration
+settings that can be set via the `.ini` file. The following settings are
+supported:
+
+**speak_friend.password.min_length**
+  Require a minimum length for passwords. *Default*: None
+
+**speak_friend.password.max_length**
+  Require a maximum length for passwords. *Default*: None
+
+**speak_friend.password.min_lower**
+  Require a minimum number of lower-case alphabetic characters. *Default*: 0
+
+**speak_friend.password.min_upper**
+  Require a minimum number of upper-case alphabetic characters. *Default*: 0
+
+**speak_friend.password.min_numeric**
+  Require a minimum number of numbers. *Default*: 0
+
+**speak_friend.password.min_special**
+  Require a minimum number of *special* characters. *Special* characters are
+  defined by the Python regular expression `[\W|_]`. *Default*: 0
+
+**speak_friend.password.disallowed**
+  If any characters should be forbidden from use in passwords, they may be set
+  with this setting. The forbidden characters should be written in a single 
+  string all run together with no spaces (unless the space character itself
+  is forbidden). For example, a value for this settings of `)($%'"` would 
+  result in the characters `)`, `(`, `$`, `%`, `'` and `"` being disallowed in
+  passwords.
+
+Overriding the Default Validator
+++++++++++++++++++++++++++++++++
+
+The password validator is initialized by a call to the configuration directive
+`set_password_validator`. By default, this directive is called without an
+argument and sets the default password validator.
+
+Should a specific implementation project require validation not provided by
+the default validator, the directive may be called with a single positional
+argument. 
+
+This argument must be a callable class. The `__call__` method must accept a
+password as the sole argument and return `None` if the password passes
+validation. If the password fails validation, the method must return a string
+describing the reason for failure. This string will be used as a message to
+the end-user and should be formatted appropriately.
+
+The `__init__` method of the class will be passed `config.registry.settings`
+as it's only positional argument. The validator need not use these settings,
+but the `__init__` method must accept them.
+
+For example, if the following class exists in `my_project.password`:
+
+.. code-block:: python
+
+    class NoBValidator(object):
+        def __init__(self, settings):
+            pass
+        
+        def __call__(self, password):
+            if 'B' not in password:
+                return None
+            else:
+                return 'Password may not contain the letter "B"'
+
+This validator could be used in `my_project.__init__.py` like so:
+
+.. code-block:: python
+
+    from pyramid.config import Configurator
+    
+    from my_project.password import NoBValidator
+    
+    def main(global_config, **settings):
+        config = Configurator(settings=settings)
+        
+        # registers the 'set_password_validator' directive
+        # and sets the default validator
+        config.include('speak_friend')
+        
+        # prevent config conflicts as we replace the default validator
+        config.commit()
+        
+        # replace the default with our own validator
+        config.set_password_validator(NoBValidator)
+
+After this, the validator will no longer accept any password containing the
+uppercase letter 'B'.
+
 Extra Models
 ------------
 

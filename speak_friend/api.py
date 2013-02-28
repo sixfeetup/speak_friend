@@ -1,7 +1,9 @@
 # The API that should be available to templates.
-
+import datetime
 
 from pyramid.renderers import get_renderer
+
+
 
 
 class TemplateAPI(object):
@@ -13,6 +15,11 @@ class TemplateAPI(object):
     @property
     def settings(self):
         return self.request.registry.settings
+
+    @property
+    def utc_now(self):
+        # totally naive as to timezone.
+        return datetime.datetime.utcnow()
 
     def init_macros(self):
         macro_names = ['footer', 'quick_links']
