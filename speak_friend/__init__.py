@@ -23,14 +23,17 @@ from speak_friend.views import contactus
 from speak_friend.subscribers import register_api
 from speak_friend.configuration import add_controlpanel_section
 from speak_friend.configuration import set_password_context
+from speak_friend.configuration import set_password_validator
 from speak_friend.subscribers import log_activity
 
 
 def datetime_adapter(obj, request):
     return obj.isoformat()
 
+
 def null_adapter(obj, request):
     return None
+
 
 def includeme(config):
     # Dependencies
@@ -82,6 +85,11 @@ def includeme(config):
     json_renderer.add_adapter(datetime.datetime, datetime_adapter)
     json_renderer.add_adapter(colander.null.__class__, null_adapter)
 
+    ## Add custom directives
+    config.add_directive('add_controlpanel_section', add_controlpanel_section)
+    config.add_directive('set_password_context', set_password_context)
+    config.add_directive('set_password_validator', set_password_validator)
+
     # Call custom directive
     ## Core control panel sections
     config.add_controlpanel_section(user_creation_email_notification_schema)
@@ -89,6 +97,8 @@ def includeme(config):
     ## Password context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
+    ## Default password validator
+    config.set_password_validator()
 
     # Session
     settings = config.registry.settings

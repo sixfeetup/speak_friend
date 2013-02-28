@@ -2,6 +2,8 @@ from pyramid.exceptions import ConfigurationError
 
 from passlib.context import CryptContext
 
+from speak_friend.passwords import PasswordValidator
+
 
 def add_controlpanel_section(config, schema, override=False):
     controlpanel = config.registry.setdefault('controlpanel', {})
@@ -73,3 +75,12 @@ def set_password_context(config, context=None, ini_string='', ini_file=None,
         config.registry.password_context = constructed_context
 
     config.action('password_context', register_context)
+
+
+def set_password_validator(config, validator_class=PasswordValidator):
+    def initialize_validator():
+        settings = config.registry.settings
+        validator = validator_class(settings)
+        config.registry.password_validator = validator
+
+    config.action('password_validator', initialize_validator)
