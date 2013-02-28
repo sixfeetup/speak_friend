@@ -93,7 +93,7 @@ def includeme(config):
     config.add_directive('set_password_context', set_password_context)
     config.add_directive('set_password_validator', set_password_validator)
 
-    # Call custom directive
+    # Call custom directives
     ## Core control panel sections
     config.add_controlpanel_section(user_creation_email_notification_schema)
     config.add_controlpanel_section(contact_us_email_notification_schema)
