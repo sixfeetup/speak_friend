@@ -34,9 +34,20 @@ def edit_profile(request):
     }
 
 
-def token_expired(request):
+def token_expired(request):    
+    cp = ControlPanel(request)
+    token_duration = None
+    current = cp.saved_sections.get(password_reset_schema.name)
+    if current and current.panel_values:
+        token_duration = current.panel_values['token_duration']
+    else:
+        for child in password_reset_schema.children:
+            if child.name == 'token_duration':
+                token_duration = child.default
+
     request.response.status = "400 Bad Request"
-    return {'message': u'That token has expired'}
+    reset_url = request.route_url('request_password')
+    return {'reset_url': reset_url, 'token_duration': token_duration}
 
 
 # FIXME: attach appropriate permissions
