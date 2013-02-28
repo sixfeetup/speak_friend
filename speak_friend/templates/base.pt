@@ -67,8 +67,12 @@
                 <metal:content define-slot="breadcrumbs" />
             </div>
             <div id="content" class="row-fluid">
-                <span metal:use-macro="api.macros['quick_links']"></span>
-                <metal:content define-slot="content" />
+                <div class="span3">
+                    <div metal:use-macro="api.macros['quick_links']"></div>
+                </div>
+                <div class="span9">
+                    <metal:content define-slot="content" />
+                </div>
             </div>
         </div>
         <span metal:use-macro="api.macros['footer']"></span>
