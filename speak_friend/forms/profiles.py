@@ -1,9 +1,12 @@
 import re
 
-from colander import Bool, MappingSchema, SchemaNode, String, Integer
+from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
 from colander import Email, Regex
-from deform import Form
+from deform import Button, Form
 from deform.widget import CheckedInputWidget, CheckedPasswordWidget
+
+from speak_friend.models import DBSession
+from speak_friend.models.profiles import UserProfile
 
 
 class Profile(MappingSchema):
@@ -30,13 +33,34 @@ fqdn_re = re.compile(
 class FQDN(Regex):
     """Validator for a Fully Qualified Domain Name
 
-    If ``msg`` is supplied, it will be the error message to be used when 
+    If ``msg`` is supplied, it will be the error message to be used when
     raising `colander.Invalid`; otherwise, defaults to 'Invalid domain name'
     """
     def __init__(self, msg=None):
         if msg is None:
             msg = "Invalid domain name"
         super(FQDN, self).__init__(fqdn_re, msg=msg)
+
+
+class UserEmail(Email):
+    """Validator to ensure an email exists in UserProfiles
+
+    If ``msg`` is supplied, it will be the error message to be used when
+    raising `colander.Invalid`; otherwise, defaults to 'No user with that email address'
+    """
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = "No user with that email address"
+        super(UserEmail, self).__init__(msg=msg)
+
+    def __call__(self, node, value):
+        super(UserEmail, self).__call__(node, value)
+        session = DBSession()
+        query = session.query(UserProfile)
+        query = query.filter(UserProfile.email==value)
+        results = query.count()
+        if results == 0:
+            raise Invalid(node, self.msg)
 
 
 class Domain(MappingSchema):
@@ -57,3 +81,20 @@ class Domain(MappingSchema):
         description="Indicate the number of times a user may fail a login "
                     "attempt before being disabled (a negative value will "
                     "use the system default)")
+
+
+class PasswordResetRequest(MappingSchema):
+      email = SchemaNode(
+          String(),
+          title=u'Email Address',
+          validator=UserEmail(),
+      )
+
+
+password_reset_request_form = Form(
+    PasswordResetRequest(),
+    buttons=(
+        Button('submit', title='Request Password'),
+        'cancel'
+    ),
+)
