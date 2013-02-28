@@ -6,7 +6,7 @@ class EmailAddresses(SequenceSchema):
       email = SchemaNode(
           String(),
           title=u'Email Address',
-          description=u'Add an email address to be notified of new user creation.',
+          description=u'Add an email address to be notified.',
           validator=Email(),
       )
 
