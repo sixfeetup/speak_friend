@@ -1,0 +1,15 @@
+ <html xmlns="http://www.w3.org/1999/xhtml"
+       xmlns:tal="http://xml.zope.org/namespaces/tal"
+       xmlns:metal="http://xml.zope.org/namespaces/metal">
+   <metal:links define-macro="quick_links">
+     <div id="quick-links">
+         <h4>Quick Links</h4>
+          <ul>
+            <li><a href="http://openid.net/">OpenID</a></li>
+            <li><a href="http://docs.pylonsproject.org/en/latest/docs/pyramid.html">Pyramid</a></li>
+            <li><a href="http://docs.sqlalchemy.org">SQLAlchemy</a></li>
+            <li><a href="http://pythonhosted.org/mailinglogger">MailingLogger</a></li>
+          </ul>
+     </div>
+   </metal:links>
+ </html>

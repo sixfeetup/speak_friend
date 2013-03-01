@@ -2,16 +2,11 @@ import os
 import sys
 import transaction
 
-from sqlalchemy import engine_from_config
-
-from pyramid.config import aslist
+from pyramid.config import Configurator
 from pyramid.paster import get_appsettings, setup_logging
-from pyramid.path import DottedNameResolver
 
-from speak_friend.models import DBSession, Base
-from speak_friend.models.open_id import Association, Nonce
-from speak_friend.models.profiles import UserProfile
-from speak_friend.models.controlpanel import ControlPanel
+from speak_friend import init_sa
+from speak_friend.models import Base
 
 
 def usage(argv):
@@ -26,13 +21,8 @@ def main(argv=sys.argv):
     config_uri = argv[1]
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
-    resolver = DottedNameResolver()
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    extra_model_paths = aslist(settings.get('speak_friend.extra_models', []))
-    extra_models = {}
-    for emp in extra_model_paths:
-        extra_models[emp] = resolver.resolve(emp)
+    config = Configurator(settings=settings)
+    engine = init_sa(config)
 
     Base.metadata.create_all(engine)
 #    with transaction.manager:

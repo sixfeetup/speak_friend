@@ -2,79 +2,88 @@
 
 from colander import MappingSchema
 from deform import Form, ValidationFailure
+from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.view import view_defaults
 
 from speak_friend.models import DBSession
-from speak_friend.models.controlpanel import ControlPanel
+from speak_friend.models.controlpanel import ControlPanelSection
 
 
 # FIXME: attach appropriate permissions
-def control_panel(request):
-    sections = request.registry.get('controlpanel', {})
-    section_forms = {}
-    css_resources = []
-    js_resources = []
-    session = DBSession()
-    query = session.query(ControlPanel)
-    qry_filter = ControlPanel.section.in_(sections.keys())
-    saved_sections = query.filter(qry_filter)
-    saved_sections = dict([
-        (cp_section.section, cp_section)
-        for cp_section in saved_sections.all()
-    ])
-    for section_name, section_schema in sections.items():
-        section_form = Form(
-            section_schema,
-            buttons=('submit', 'cancel'),
-            formid=section_name,
-        )
-        section_forms[section_name] = section_form
-        resources = section_form.get_widget_resources()
-        css_resources.extend([
-            'deform:static/%s' % css_path
-            for css_path in resources['css']
-        ])
-        js_resources.extend([
-            'deform:static/%s' % js_path
-            for js_path in resources['js']
+@view_defaults(route_name='control_panel')
+class ControlPanel(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.sections = self.request.registry.get('controlpanel', {})
+        query = self.session.query(ControlPanelSection)
+        qry_filter = ControlPanelSection.section.in_(self.sections.keys())
+        self.saved_sections = dict([
+            (cp_section.section, cp_section)
+            for cp_section in query.filter(qry_filter).all()
         ])
 
-    html = []
-    if 'submit' in request.POST:
-        posted_formid = request.POST['__formid__']
-        for (formid, form) in section_forms.items():
+        self.section_forms = {}
+        for section_name, section_schema in self.sections.items():
+            section_form = Form(
+                section_schema,
+                buttons=('submit', 'cancel'),
+                formid=section_name,
+            )
+            self.section_forms[section_name] = section_form
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+        html = []
+        posted_formid = self.request.POST['__formid__']
+        for (formid, form) in self.section_forms.items():
             if formid == posted_formid:
                 try:
-                    controls = request.POST.items()
+                    controls = self.request.POST.items()
                     captured = form.validate(controls)
                     html.append(form.render(captured))
-                    cp_section = saved_sections.get(formid, None)
-                    if cp_section is None:
-                        cp_section = ControlPanel(
-                            section=formid,
-                            panel_path=sections[formid].path,
-                            panel_values=captured
-                        )
-                    else:
-                        cp_section.panel_values = captured
-                    session.merge(cp_section)
+                    self.save_section(formid, captured)
                 except ValidationFailure as e:
                     # the submitted values could not be validated
                     html.append(e.render())
             else:
-                appstruct = record_to_appstruct(saved_sections.get(formid,
-                                                                   None))
-                html.append(form.render(appstruct.get('panel_values', {})))
-    else:
-        for form in section_forms.values():
-            appstruct = record_to_appstruct(saved_sections.get(form.formid,
-                                                               None))
-            html.append(form.render(appstruct.get('panel_values', {})))
+                html.append(self.get_rendered_form(form))
 
-    return {
-        'css_resources': css_resources,
-        'js_resources': js_resources,
-        'form': ''.join(html),
-    }
+        return {
+            'forms': self.section_forms.values(),
+            'rendered_form': ''.join(html),
+        }
+
+    def get(self):
+        html = [
+            self.get_rendered_form(form)
+            for form in self.section_forms.values()
+        ]
+
+        return {
+            'forms': self.section_forms.values(),
+            'rendered_form': ''.join(html),
+        }
+
+    def get_rendered_form(self, form):
+        record = self.saved_sections.get(form.formid, None)
+        appstruct = record_to_appstruct(record)
+        return form.render(appstruct.get('panel_values', {}))
+
+    def save_section(self, formid, captured):
+        cp_section = self.saved_sections.get(formid, None)
+        if cp_section is None:
+            cp_section = ControlPanelSection(
+                section=formid,
+                panel_path=self.sections[formid].path,
+                panel_values=captured
+            )
+        else:
+            cp_section.panel_values = captured
+        self.session.merge(cp_section)
 
 
 def record_to_appstruct(self):

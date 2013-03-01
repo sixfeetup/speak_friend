@@ -1,5 +1,5 @@
 <metal:main use-macro="load: base.pt">
-    <metal:title fill-slot="page-title">${api.settings['site_name']} Control Panel</metal:title>
+    <metal:title fill-slot="page-title">Contact Us</metal:title>
     <metal:content fill-slot="content">
         <span tal:replace="structure rendered_form"></span>
     </metal:content>

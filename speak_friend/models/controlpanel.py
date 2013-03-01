@@ -39,20 +39,22 @@ class JSON(types.TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if isinstance(value, SchemaNode):
-            json = render_to_response('json', value.serialize()).body
+            json = render_to_response('json', value.serialize()).unicode_body
         else:
-            json = render_to_response('json', value).body
+            json = render_to_response('json', value).unicode_body
         return json
 
     def process_result_value(self, value, dialect):
+        if value is None:
+            return value
         return loads(value)
 
     def copy(self):
         return JSON(self.impl.length)
 
 
-class ControlPanel(Base):
-    __tablename__ = 'control_panel'
+class ControlPanelSection(Base):
+    __tablename__ = 'control_panel_sections'
     __table_args__ = {'schema': 'settings'}
     section = Column(UnicodeText, primary_key=True)
     panel_path = Column(DottedPath)

@@ -13,3 +13,30 @@ body {
 .nav {
     width: 100%;
 }
+#footer {
+    max-width: 1020px;
+    margin: 0 auto;
+}
+
+/* forms */
+.form-horizontal .control-label {
+    padding-top: 4px;
+}
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"],
+.uneditable-input  {
+    height: 30px;
+    margin-bottom: 5px;
+}
