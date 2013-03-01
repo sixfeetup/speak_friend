@@ -3,10 +3,12 @@ import uuid
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
+from sqlalchemy import FetchedValue
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import SmallInteger
 from sqlalchemy import UnicodeText
+from sqlalchemy import event
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -92,6 +94,7 @@ class ResetToken(Base):
         DateTime(timezone=True),
         nullable=False,
         server_default=func.current_timestamp(),
+        server_onupdate=FetchedValue(),
         index=True,
     )
 
@@ -105,3 +108,26 @@ class ResetToken(Base):
 
     def __repr__(self):
         return u"<ResetToken(%s)>" % self.token
+
+
+UPDATE_GENERATION_TS_SQL = """
+CREATE OR REPLACE FUNCTION update_generation_ts()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.generation_ts = now();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+"""
+
+
+def after_tokens_create(target, connection, **kw):
+    connection.execute(UPDATE_GENERATION_TS_SQL)
+    trigger_sql = """
+        CREATE TRIGGER update_token_generation_ts BEFORE UPDATE
+        ON %s.%s FOR EACH ROW EXECUTE PROCEDURE
+        update_generation_ts();
+    """
+    connection.execute(trigger_sql % (target.schema, target.name))
+
+event.listen(ResetToken.__table__, "after_create", after_tokens_create)
