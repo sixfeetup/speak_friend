@@ -9,21 +9,6 @@ from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
-class Profile(MappingSchema):
-    username = SchemaNode(String())
-    first_name = SchemaNode(String())
-    last_name = SchemaNode(String())
-    email = SchemaNode(String(),
-                       validator=Email(),
-                       widget=CheckedInputWidget())
-    password = SchemaNode(String(),
-                          widget=CheckedPasswordWidget())
-    agree_to_policy = SchemaNode(Bool(),
-                                 title='I agree to the usage policy.')
-    captcha = SchemaNode(String())
-
-
-profile_form = Form(Profile(), buttons=('submit', 'cancel'))
 
 
 fqdn_re = re.compile(
@@ -90,6 +75,24 @@ class Username(String):
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
+
+
+class Profile(MappingSchema):
+    username = SchemaNode(String(), validator=Username(should_exist=False))
+    first_name = SchemaNode(String())
+    last_name = SchemaNode(String())
+    email = SchemaNode(String(),
+                       title=u'Email Address',
+                       validator=UserEmail(should_exist=False,
+                                        msg="Email address already in use."),
+                       widget=CheckedInputWidget())
+    password = SchemaNode(String(),
+                          widget=CheckedPasswordWidget())
+    agree_to_policy = SchemaNode(Bool(),
+                                 title='I agree to the usage policy.')
+    captcha = SchemaNode(String())
+
+profile_form = Form(Profile(), buttons=('submit', 'cancel'))
 
 
 class Domain(MappingSchema):
