@@ -45,7 +45,7 @@ class UserProfile(Base):
     username = Column(UnicodeText, primary_key=True)
     first_name = Column(UnicodeText)
     last_name = Column(UnicodeText)
-    email = Column(UnicodeText, nullable=False)
+    email = Column(UnicodeText, nullable=False, unique=True)
     password_hash = Column(UnicodeText)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
