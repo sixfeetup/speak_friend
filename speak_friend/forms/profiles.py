@@ -65,10 +65,10 @@ class Username(String):
         if msg is None:
             msg = "Username already in use"
         self.should_exist = should_exist
-        super(UserEmail, self).__init__(msg=msg)
+        super(Username, self).__init__()
 
     def __call__(self, node, value):
-        super(UserEmail, self).__call__(node, value)
+        super(Username, self).__call__(node, value)
         session = DBSession()
         query = session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
