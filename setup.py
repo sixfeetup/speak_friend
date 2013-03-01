@@ -25,7 +25,6 @@ requires = [
     'zope.component',
     'pyramid_exclog',
     'mailinglogger',
-    'pyramid_ldap',
     ]
 
 tests_require = requires + [

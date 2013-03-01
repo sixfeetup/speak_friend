@@ -2,16 +2,12 @@ import datetime
 
 import colander
 
-import ldap
-
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.events import BeforeRender
 from pyramid.renderers import JSON
-
-from pyramid_ldap import groupfinder
 
 from sqlalchemy import engine_from_config
 
@@ -42,7 +38,6 @@ def add_controlpanel_section(config, schema, override=False):
 def includeme(config):
     # Dependencies
     config.include('pyramid_exclog')
-    config.include('pyramid_ldap')
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
@@ -67,29 +62,6 @@ def includeme(config):
     )
     config.set_authorization_policy(
         ACLAuthorizationPolicy()
-    )
-
-    ldap_cache = config.registry.settings.get('speak_friend.ldap_cache_period', 0)
-    config.ldap_setup(
-        config.registry.settings['speak_friend.ldap_server'],
-        bind=config.registry.settings['speak_friend.ldap_user_cn'],
-        passwd=config.registry.setting['speak_friend.ldap_password']
-    )
-
-    config.ldap_set_login_query(
-        base_dn=config.registry.settings['speak_friend.ldap_base_people_dn'],
-        filter_tmpl=config.registry.settings.get('speak_friend.ldap_people_filter_tmpl',
-                                                 '(uid=%(login)s)'),
-        scope = ldap.SCOPE_ONELEVEL,
-        cache_period=ldap_cache,
-    )
-
-    config.ldap_set_groups_query(
-        base_dn=config.registry.settings['speak_friend.ldap_base_group_dn'],
-        filter_tmpl=config.registry.settings('speak_friend.ldap_group_filter_tmpl',
-                                            '(&(objectCategory=group)(member=%(userdn)s))'),
-        scope=ldap.SCOPE_SUBTREE,
-        cache_period=ldap_cache,
     )
 
     # Control panel
