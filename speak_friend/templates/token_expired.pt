@@ -1,0 +1,12 @@
+<metal:main use-macro="load: base.pt">
+  <metal:pagetitle metal:fill-slot="page-title">Apologies</metal:pagetitle>
+  <metal:content metal:fill-slot="content">
+    <p>Your password reset request has expired. 
+       <tal:resetlimit tal:condition="token_duration">After requesting a 
+       password reset, you must click the link in the email you receive 
+       within ${token_duration} minutes.</tal:resetlimit></p>
+    <p>If you'd like to try again to reset your password, you can return to
+       the <a href="" tal:attributes="href reset_url">password request 
+       form</a>.
+  </metal:content>
+</metal:main>
