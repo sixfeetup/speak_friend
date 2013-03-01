@@ -7,6 +7,7 @@ from pyramid.view import view_defaults
 from speak_friend.forms.profiles import profile_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
+from speak_friend.utils.ldap import get_connection_manager, get_connector
 
 
 @view_defaults(route_name='create_profile')
