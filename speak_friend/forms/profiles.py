@@ -43,14 +43,18 @@ class FQDN(Regex):
 
 
 class UserEmail(Email):
-    """Validator to ensure an email exists in UserProfiles
+    """Validator to check email existence in UserProfiles
 
     If ``msg`` is supplied, it will be the error message to be used when
     raising `colander.Invalid`; otherwise, defaults to 'No user with that email address'
+
+    The ``should_exist`` keyword argument specifies whether the validator checks for the
+    email existing or not in the table. It defaults to `True`
     """
-    def __init__(self, msg=None):
+    def __init__(self, msg=None, should_exist=True):
         if msg is None:
             msg = "No user with that email address"
+        self.should_exist = should_exist
         super(UserEmail, self).__init__(msg=msg)
 
     def __call__(self, node, value):
@@ -58,8 +62,33 @@ class UserEmail(Email):
         session = DBSession()
         query = session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
-        results = query.count()
-        if results == 0:
+        exists = bool(query.count())
+        if exists != self.should_exist:
+            raise Invalid(node, self.msg)
+
+
+class Username(String):
+    """Validator to check existence of a username in UserProfiles
+
+    If ``msg`` is supplied, it will be the error message to be used when
+    raising `colander.Invalid`; otherwise, defaults to 'User already in use'
+
+    The ``should_exist`` keyword argument specifies whether the validator checks for the
+    user existing or not in the table. It defaults to `True`
+    """
+    def __init__(self, msg=None, should_exist=True):
+        if msg is None:
+            msg = "Username already in use"
+        self.should_exist = should_exist
+        super(UserEmail, self).__init__(msg=msg)
+
+    def __call__(self, node, value):
+        super(UserEmail, self).__call__(node, value)
+        session = DBSession()
+        query = session.query(UserProfile)
+        query = query.filter(UserProfile.email==value)
+        exists = bool(query.count())
+        if exists != self.should_exist:
             raise Invalid(node, self.msg)
 
 
@@ -87,7 +116,7 @@ class PasswordResetRequest(MappingSchema):
       email = SchemaNode(
           String(),
           title=u'Email Address',
-          validator=UserEmail(),
+          validator=UserEmail(should_exist=True),
       )
 
 
