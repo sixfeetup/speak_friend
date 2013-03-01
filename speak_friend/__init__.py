@@ -14,6 +14,7 @@ from sqlalchemy import engine_from_config
 
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
+from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
@@ -49,6 +50,23 @@ def includeme(config):
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.create_profile, route_name='create_profile',
                     renderer='templates/create_profile.pt')
+    config.add_route('token_expired', '/token_expired')
+    config.add_view(accounts.token_expired, route_name='token_expired',
+                    renderer='templates/token_expired.pt')
+    config.add_route('request_password', '/request_password')
+    config.add_view(accounts.RequestPassword,
+                    attr="get", request_method='GET',
+                    renderer='templates/request_password.pt')
+    config.add_view(accounts.RequestPassword,
+                    attr="post", request_method='POST',
+                    renderer='templates/request_password.pt')
+    config.add_route('reset_password', '/reset_password/{token}')
+    config.add_view(accounts.ResetPassword,
+                    attr="get", request_method='GET',
+                    renderer='templates/reset_password.pt')
+    config.add_view(accounts.ResetPassword,
+                    attr="post", request_method='POST',
+                    renderer='templates/reset_password.pt')
     config.add_route('create_domain', '/create_domain')
     config.add_view(admin.create_domain, route_name='create_domain',
                     renderer='templates/create_domain.pt')
@@ -90,10 +108,11 @@ def includeme(config):
     config.add_directive('set_password_context', set_password_context)
     config.add_directive('set_password_validator', set_password_validator)
 
-    # Call custom directive
+    # Call custom directives
     ## Core control panel sections
-    config.add_controlpanel_section(user_creation_email_notification_schema)
     config.add_controlpanel_section(contact_us_email_notification_schema)
+    config.add_controlpanel_section(password_reset_schema)
+    config.add_controlpanel_section(user_creation_email_notification_schema)
     ## Password context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)

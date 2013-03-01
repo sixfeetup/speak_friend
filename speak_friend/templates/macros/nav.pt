@@ -1,0 +1,17 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  <metal:nav define-macro="nav">
+       <div class="navbar">
+           <div class="navbar-inner">
+               <ul id="site-nav" class="nav">
+                   <li><a href="#">Sign In</a></li>
+                   <li><a href="#">Create Account</a></li>
+                   <li><a href="/">Home</a></li>
+                   <li><a href="/control_panel">Settings</a></li>
+                   <li><a href="#">Admin</a></li>
+               </ul>
+           </div>
+       </div>
+  </metal:nav>
+</html>

@@ -22,7 +22,6 @@
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
     </head>
     <body>
-    <div class="container">
         <div id="flash-messages">
           <!--! Flash messages -->
           <!--! one flash message that can be used by js -->
@@ -48,29 +47,25 @@
             </tal:message>
           </tal:newsflash>
         </div>
+        
         <div id="body-wrapper" class="container-fluid">
-            <div id="header">
-                <div class="navbar">
-                    <div class="navbar-inner">
-                        <ul id="site-nav" class="nav">
-                            <li><a href="#">Sign In</a></li>
-                            <li><a href="#">Create Account</a></li>
-                            <li><a href="/">Home</a></li>
-                            <li><a href="/control_panel">Settings</a></li>
-                            <li><a href="#">Admin</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <metal:content define-slot="header" />
+            <div id="header" class="row-fluid">
+                <metal:nav use-macro="api.macros['logo']" />
+                <metal:nav use-macro="api.macros['nav']" />
             </div>
-            <div id="breadcrumbs">
+            <div id="breadcrumbs" class="row-fluid">
                 <metal:content define-slot="breadcrumbs" />
             </div>
             <div id="content" class="row-fluid">
-                <span metal:use-macro="api.macros['quick_links']"></span>
-                <metal:content define-slot="content" />
+                <div class="span3">
+                    <metal:links use-macro="api.macros['quick_links']" />
+                </div>
+                <div class="span9">
+                    <h1><metal:content define-slot="page-title" /></h1>
+                    <metal:content define-slot="content" />
+                </div>
             </div>
         </div>
-        <span metal:use-macro="api.macros['footer']"></span>
+        <metal:footer use-macro="api.macros['footer']" />
     </body>
 </html>

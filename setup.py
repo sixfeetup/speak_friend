@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-version = '0.9'
+version = '0.10'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
@@ -36,7 +36,7 @@ tests_require = requires + [
 setup(
       name='speak_friend',
       version=version,
-      description="An OpenID server, using LDAP as a datastore.",
+      description="An extensible OpenID server.",
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",

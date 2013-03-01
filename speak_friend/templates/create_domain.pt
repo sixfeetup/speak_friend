@@ -1,8 +1,6 @@
 <metal:main use-macro="load: base.pt">
-    <p metal:fill-slot="header">Add a domain for ${api.settings['site_name']}</p>
-    
+    <metal:title fill-slot="page-title">Create Domain</metal:title>
     <metal:content metal:fill-slot="content">
-    <h1>Create Domain</h1>
-    <div tal:content="structure rendered_form">form</div>
+        <div tal:content="structure rendered_form">form</div>
     </metal:content>
 </metal:main>
