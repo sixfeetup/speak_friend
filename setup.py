@@ -36,7 +36,7 @@ tests_require = requires + [
 setup(
       name='speak_friend',
       version=version,
-      description="An OpenID server, using LDAP as a datastore.",
+      description="An extensible OpenID server.",
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
