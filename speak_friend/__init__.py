@@ -60,8 +60,10 @@ def includeme(config):
     config.add_static_view('speak_friend_static', 'speak_friend:static', cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
 
+    settings = config.registry.settings
+
     config.set_authentication_policy(
-        AuthTktAuthenticationPolicy(config.registry.settings['auth_secret'],
+        AuthTktAuthenticationPolicy(settings['auth_secret'],
                                    callback=groupfinder,
                                    hashalg='sha512')
     )
@@ -69,24 +71,26 @@ def includeme(config):
         ACLAuthorizationPolicy()
     )
 
-    ldap_cache = config.registry.settings.get('speak_friend.ldap_cache_period', 0)
+    ldap_cache = int(settings.get('speak_friend.ldap_cache_period', 0))
+
     config.ldap_setup(
-        config.registry.settings['speak_friend.ldap_server'],
-        bind=config.registry.settings['speak_friend.ldap_user_cn'],
-        passwd=config.registry.setting['speak_friend.ldap_password']
+        config,
+        settings['speak_friend.ldap_server'],
+        # bind=settings['speak_friend.ldap_user_cn'],
+        passwd=settings['speak_friend.ldap_password']
     )
 
     config.ldap_set_login_query(
-        base_dn=config.registry.settings['speak_friend.ldap_base_people_dn'],
-        filter_tmpl=config.registry.settings.get('speak_friend.ldap_people_filter_tmpl',
+        base_dn=settings['speak_friend.ldap_base_people_dn'],
+        filter_tmpl=settings.get('speak_friend.ldap_people_filter_tmpl',
                                                  '(uid=%(login)s)'),
         scope = ldap.SCOPE_ONELEVEL,
         cache_period=ldap_cache,
     )
 
     config.ldap_set_groups_query(
-        base_dn=config.registry.settings['speak_friend.ldap_base_group_dn'],
-        filter_tmpl=config.registry.settings('speak_friend.ldap_group_filter_tmpl',
+        base_dn=settings['speak_friend.ldap_base_group_dn'],
+        filter_tmpl=settings.get('speak_friend.ldap_group_filter_tmpl',
                                             '(&(objectCategory=group)(member=%(userdn)s))'),
         scope=ldap.SCOPE_SUBTREE,
         cache_period=ldap_cache,
