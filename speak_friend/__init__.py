@@ -51,9 +51,9 @@ def includeme(config):
 
     # Routes
     config.add_route('create_profile', '/create_profile')
-    config.add_view(profiles.CreateProfile, attr="get", request_method='GET',
+    config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
                     renderer='templates/create_profile.pt')
-    config.add_view(profiles.CreateProfile, attr="post", request_method='POST',
+    config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     renderer='templates/create_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
@@ -100,15 +100,6 @@ def includeme(config):
     # Add custom directives
     config.add_directive('add_controlpanel_section', add_controlpanel_section)
     config.add_directive('set_password_context', set_password_context)
-
-    config.set_authentication_policy(
-        AuthTktAuthenticationPolicy(config.registry.settings['auth_secret'],
-                                   callback=groupfinder,
-                                   hashalg='sha512')
-    )
-    config.set_authorization_policy(
-        ACLAuthorizationPolicy()
-    )
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
