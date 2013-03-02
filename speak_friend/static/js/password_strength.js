@@ -19,11 +19,11 @@
 */
 
 zxcvbn_load_hook = function() {
-  colorize = function (score) {
+  colorize = function (score, target) {
     var colors, color, bar;
     colors = ['e1', 'c2','c4','c6','c8','ca','ac','8c','6c','4c','2c'];
     color = colors[score];
-    bar = $("input[type='password']").next('div.password-strength')
+    bar = $(target).next('div.password-strength')
                                      .find('span.bar');
     if (score > 0) {
       bar.css({'width': score + '0%',
@@ -37,10 +37,10 @@ zxcvbn_load_hook = function() {
     var current, last_q, r;
     current = $(target).val();
     if (!current) {
-      colorize(0);
+      colorize(0, target);
     } else {
       r = zxcvbn(current);
-      colorize(r.score);
+      colorize(r.score, target);
     }
   };
   $('input[type="password"]').keyup(function (evt) {
