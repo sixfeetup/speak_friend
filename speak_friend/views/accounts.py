@@ -70,10 +70,10 @@ class CreateProfile(object):
 
 
 def edit_profile(request):
-    form = profile_form.render()
+    form = profile_form
     return {
         'forms': [form],
-        'rendered_form': form,
+        'rendered_form': form.render(),
     }
 
 
