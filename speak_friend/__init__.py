@@ -96,6 +96,11 @@ def includeme(config):
         'deform_bootstrap_static', 'deform_bootstrap:static',
         cache_max_age=3600
     )
+    # by providing this override, we create a search path for static assets
+    # that first looks in the speak_friend static directory, and then moves
+    # to the deform static directory if an asset is not found.
+    config.override_asset(to_override='deform:static/',
+                          override_with='speak_friend:static/')
 
     # Add custom directives
     config.add_directive('add_controlpanel_section', add_controlpanel_section)
