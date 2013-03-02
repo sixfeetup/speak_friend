@@ -9,11 +9,13 @@ class FormTests(TestCase):
                          'I agree to the usage policy.')
 
     def test_profile_form_email_fields(self):
-        self.assertEqual(profiles.profile_form['password'].widget.__class__.__name__,
-                         'CheckedPasswordWidget')
+        self.assertEqual(
+            profiles.profile_form['email'].widget.__class__.__name__,
+            'CheckedInputWidget')
 
     def test_profile_form_password_fields(self):
-        self.assertEqual(profiles.profile_form['email'].widget.__class__.__name__,
-                         'CheckedInputWidget')
+        self.assertEqual(
+            profiles.profile_form['password'].widget.__class__.__name__,
+            'StrengthValidatingPasswordWidget')
 
 
