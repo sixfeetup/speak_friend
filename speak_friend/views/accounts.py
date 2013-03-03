@@ -18,12 +18,49 @@ from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
 
 
-def create_profile(request):
-    form = profile_form.render()
-    return {
-        'forms': [form],
-        'rendered_form': form,
-    }
+@view_defaults(route_name='create_profile')
+class CreateProfile(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.pass_ctx = request.registry.password_context
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+
+        try:
+            appstruct = profile_form.validate(controls)  # call validate
+        except ValidationFailure, e:
+            return {'rendered_form': e.render()}
+
+        hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
+
+        profile = UserProfile(appstruct['username'],
+                              appstruct['first_name'],
+                              appstruct['last_name'],
+                              appstruct['email'],
+                              hashed_pw,
+                              hashed_pw,
+                              0,
+                              False
+        )
+        self.session.add(profile)
+        self.request.session.flash('Account successfully created!',
+                                   queue='success')
+        return self.get(success=True)
+
+    def get(self, success=False):
+        if success:
+            return {'forms': [], 'rendered_form': '', 'success': True}
+        return {
+            'forms': [profile_form],
+            'rendered_form': profile_form.render(),
+        }
 
 
 def edit_profile(request):
@@ -34,7 +71,7 @@ def edit_profile(request):
     }
 
 
-def token_expired(request):    
+def token_expired(request):
     cp = ControlPanel(request)
     token_duration = None
     current = cp.saved_sections.get(password_reset_schema.name)
@@ -117,6 +154,7 @@ class RequestPassword(object):
         mailer.send(message)
         self.request.session.flash('A link to reset your password has been sent to your email. Please check.',
                                    queue='success')
+
 
 @view_defaults(route_name='reset_password')
 class ResetPassword(object):

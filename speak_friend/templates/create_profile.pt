@@ -1,3 +1,7 @@
 <metal:main use-macro="load: base.pt">
-    <metal:title fill-slot="page-title">Create Profile</metal:title>
+    <metal:title fill-slot="page-title" tal:condition="not: exists: success">Create Profile</metal:title>
+    <metal:title fill-slot="page-title" tal:condition="exists: success">Profile Created</metal:title>
+    <metal:content fill-slot="content">
+        <tal:block tal:condition="exists: rendered_form" tal:replace="structure rendered_form"></tal:block>
+    </metal:content>
 </metal:main>
