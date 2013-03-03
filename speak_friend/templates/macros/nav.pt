@@ -6,7 +6,7 @@
            <div class="navbar-inner">
                <ul id="site-nav" class="nav">
                    <li><a href="#">Sign In</a></li>
-                   <li><a href="#">Create Account</a></li>
+                   <li><a tal:attributes="href python:request.route_url('create_profile')">Create Account</a></li>
                    <li><a href="/">Home</a></li>
                    <li><a href="/control_panel">Settings</a></li>
                    <li><a href="#">Admin</a></li>

@@ -259,7 +259,6 @@ This package can integrate the pyramid_exclog and mailinglogger packages to auto
    
    # End logging configuration
 
-
 Overriding Assets
 -----------------
 

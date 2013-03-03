@@ -2,6 +2,8 @@ import datetime
 
 import colander
 
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
@@ -20,6 +22,7 @@ from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
+
 from speak_friend.views import contactus
 from speak_friend.subscribers import register_api
 from speak_friend.configuration import add_controlpanel_section
@@ -48,7 +51,9 @@ def includeme(config):
 
     # Routes
     config.add_route('create_profile', '/create_profile')
-    config.add_view(accounts.create_profile, route_name='create_profile',
+    config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
+                    renderer='templates/create_profile.pt')
+    config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     renderer='templates/create_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',

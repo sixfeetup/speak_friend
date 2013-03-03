@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import Email, Regex
+from colander import Email, Function, Regex
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -36,27 +36,6 @@ class StrengthValidatingPasswordWidget(CheckedPasswordWidget):
     template = 'widgets/strength_validating_password'
 
 
-class Profile(MappingSchema):
-    username = SchemaNode(String())
-    first_name = SchemaNode(String())
-    last_name = SchemaNode(String())
-    email = SchemaNode(String(),
-                       validator=Email(),
-                       widget=CheckedInputWidget())
-    password = SchemaNode(String(),
-                          widget=StrengthValidatingPasswordWidget())
-    agree_to_policy = SchemaNode(Bool(),
-                                 title='I agree to the usage policy.')
-    captcha = SchemaNode(String())
-
-
-# instantiate our form with custom registry and renderer to get extra
-# templates and resources
-profile_form = Form(Profile(), buttons=('submit', 'cancel'),
-                    resource_registry=password_registry,
-                    renderer=renderer)
-
-
 fqdn_re = re.compile(
     r'(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)')
 
@@ -74,14 +53,18 @@ class FQDN(Regex):
 
 
 class UserEmail(Email):
-    """Validator to ensure an email exists in UserProfiles
+    """Validator to check email existence in UserProfiles
 
     If ``msg`` is supplied, it will be the error message to be used when
     raising `colander.Invalid`; otherwise, defaults to 'No user with that email address'
+
+    The ``should_exist`` keyword argument specifies whether the validator checks for the
+    email existing or not in the table. It defaults to `True`
     """
-    def __init__(self, msg=None):
+    def __init__(self, msg=None, should_exist=True):
         if msg is None:
             msg = "No user with that email address"
+        self.should_exist = should_exist
         super(UserEmail, self).__init__(msg=msg)
 
     def __call__(self, node, value):
@@ -89,10 +72,57 @@ class UserEmail(Email):
         session = DBSession()
         query = session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
-        results = query.count()
-        if results == 0:
+        exists = bool(query.count())
+        if exists != self.should_exist:
             raise Invalid(node, self.msg)
 
+
+def username_validator(should_exist):
+    """Generates validator function to check existence of a username
+
+    This function generates another function that will be used by a
+    ``colander.Function`` validator.
+
+    The ``should_exist`` argument specifies whether the validator
+    checks for the user existing or not in the table. It defaults to `True`
+    """
+    def inner_username_validator(value):
+        session = DBSession()
+        query = session.query(UserProfile)
+        query = query.filter(UserProfile.username==value)
+        exists = bool(query.count())
+        if exists != should_exist:
+            if should_exist == True:
+                return "Username does not exist."
+            else:
+                return "Username already exists."
+        # Functions used with the function validator must return True.
+        return True
+    return inner_username_validator
+
+
+class Profile(MappingSchema):
+    username = SchemaNode(String(), validator=Function(
+                username_validator(False)))
+    first_name = SchemaNode(String())
+    last_name = SchemaNode(String())
+    email = SchemaNode(String(),
+                       title=u'Email Address',
+                       validator=UserEmail(should_exist=False,
+                                        msg="Email address already in use."),
+                       widget=CheckedInputWidget(subject=u'Email Address',
+                                                confirm_subject=u'Confirm Email Address'))
+    password = SchemaNode(String(),
+                          widget=CheckedPasswordWidget())
+    agree_to_policy = SchemaNode(Bool(),
+                                 title='I agree to the usage policy.')
+    captcha = SchemaNode(String())
+
+# instantiate our form with custom registry and renderer to get extra
+# templates and resources
+profile_form = Form(Profile(), buttons=('submit', 'cancel'),
+                    resource_registry=password_registry,
+                    renderer=renderer)
 
 class Domain(MappingSchema):
     name = SchemaNode(
@@ -118,7 +148,7 @@ class PasswordResetRequest(MappingSchema):
       email = SchemaNode(
           String(),
           title=u'Email Address',
-          validator=UserEmail(),
+          validator=UserEmail(should_exist=True),
       )
 
 
