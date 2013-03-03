@@ -1,7 +1,7 @@
 import re
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import Email, Regex
+from colander import Email, Function, Regex
 from deform import Button, Form
 from deform.widget import CheckedInputWidget, CheckedPasswordWidget
 
@@ -52,33 +52,33 @@ class UserEmail(Email):
             raise Invalid(node, self.msg)
 
 
-class Username(String):
-    """Validator to check existence of a username in UserProfiles
+def username_validator(should_exist):
+    """Generates validator function to check existence of a username
 
-    If ``msg`` is supplied, it will be the error message to be used when
-    raising `colander.Invalid`; otherwise, defaults to 'User already in use'
+    This function generates another function that will be used by a
+    ``colander.Function`` validator.
 
-    The ``should_exist`` keyword argument specifies whether the validator checks for the
-    user existing or not in the table. It defaults to `True`
+    The ``should_exist`` argument specifies whether the validator
+    checks for the user existing or not in the table. It defaults to `True`
     """
-    def __init__(self, msg=None, should_exist=True):
-        if msg is None:
-            msg = "Username already in use"
-        self.should_exist = should_exist
-        super(Username, self).__init__()
-
-    def __call__(self, node, value):
-        super(Username, self).__call__(node, value)
+    def inner_username_validator(value):
         session = DBSession()
         query = session.query(UserProfile)
-        query = query.filter(UserProfile.email==value)
+        query = query.filter(UserProfile.username==value)
         exists = bool(query.count())
-        if exists != self.should_exist:
-            raise Invalid(node, self.msg)
+        if exists != should_exist:
+            if should_exist == True:
+                return "Username does not exist."
+            else:
+                return "Username already exists."
+        # Functions used with the function validator must return True.
+        return True
+    return inner_username_validator
 
 
 class Profile(MappingSchema):
-    username = SchemaNode(String(), validator=Username(should_exist=False))
+    username = SchemaNode(String(), validator=Function(
+                username_validator(False)))
     first_name = SchemaNode(String())
     last_name = SchemaNode(String())
     email = SchemaNode(String(),
