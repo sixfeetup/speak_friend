@@ -85,7 +85,8 @@ class Profile(MappingSchema):
                        title=u'Email Address',
                        validator=UserEmail(should_exist=False,
                                         msg="Email address already in use."),
-                       widget=CheckedInputWidget())
+                       widget=CheckedInputWidget(subject=u'Email Address',
+                                                confirm_subject=u'Confirm Email Address'))
     password = SchemaNode(String(),
                           widget=CheckedPasswordWidget())
     agree_to_policy = SchemaNode(Bool(),
