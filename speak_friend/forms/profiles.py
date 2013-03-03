@@ -1,14 +1,40 @@
 import re
+from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
 from colander import Email, Function, Regex
 from deform import Button, Form
-from deform.widget import CheckedInputWidget, CheckedPasswordWidget, HiddenWidget
+from deform import ZPTRendererFactory
+from deform.widget import CheckedInputWidget
+from deform.widget import CheckedPasswordWidget, PasswordWidget
+from deform.widget import HiddenWidget
+from deform.widget import ResourceRegistry
 
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
+# set a resource registry that contains resources for the password widget
+password_registry = ResourceRegistry()
+password_registry.set_js_resources('password', None,
+                                   'js/zxcvbn-async.js',
+                                   'js/password_strength.js')
+password_registry.set_css_resources('password', None,
+                                    'css/password_strength.css')
+
+
+# set a template renderer that loads both deform and speak_friend templates
+deform_path = resource_filename('deform', 'templates')
+deform_bootstrap_path = resource_filename('deform_bootstrap', 'templates')
+speak_friend_path = resource_filename('speak_friend', 'templates')
+search_path = (speak_friend_path, deform_bootstrap_path, deform_path)
+renderer = ZPTRendererFactory(search_path)
+
+
+class StrengthValidatingPasswordWidget(CheckedPasswordWidget):
+    requirements = (('jquery.maskedinput', None),
+                    ('password', None), )
+    template = 'widgets/strength_validating_password'
 
 
 fqdn_re = re.compile(
@@ -105,8 +131,11 @@ class Profile(MappingSchema):
         widget = HiddenWidget(),
     )
 
-profile_form = Form(Profile(), buttons=('submit', 'cancel'))
-
+# instantiate our form with custom registry and renderer to get extra
+# templates and resources
+profile_form = Form(Profile(), buttons=('submit', 'cancel'),
+                    resource_registry=password_registry,
+                    renderer=renderer)
 
 class Domain(MappingSchema):
     name = SchemaNode(
@@ -145,4 +174,17 @@ password_reset_request_form = Form(
         Button('submit', title='Request Password'),
         'cancel'
     ),
+)
+
+
+class Login(MappingSchema):
+    login = SchemaNode(String())
+    password = SchemaNode(String(),
+                          widget=PasswordWidget())
+
+login_form = Form(Login(),
+        buttons=(
+            Button('submit', title='Log In'),
+            'cancel'
+        )
 )
