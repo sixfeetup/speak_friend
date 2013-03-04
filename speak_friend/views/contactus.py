@@ -9,7 +9,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 
-from speak_friend.forms.contactus import contact_us_form
+from speak_friend.forms.contactus import make_contact_us_form
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 
@@ -31,13 +31,14 @@ class ContactUs(object):
             self.recipients = []
 
     def post(self):
+        frm = make_contact_us_form()
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST:
             return self.get()
         try:
             controls = self.request.POST.items()
-            captured = contact_us_form.validate(controls)
+            captured = frm.validate(controls)
             self.notify(captured)
             url = self.request.route_url('home')
             return HTTPFound(location=url)
@@ -46,14 +47,15 @@ class ContactUs(object):
             html = e.render()
 
         return {
-            'forms': [contact_us_form],
+            'forms': [frm],
             'rendered_form': html,
         }
 
     def get(self):
+        frm = make_contact_us_form()
         return {
-            'forms': [contact_us_form],
-            'rendered_form': contact_us_form.render(),
+            'forms': [frm],
+            'rendered_form': frm.render(),
         }
 
     def notify(self, captured):

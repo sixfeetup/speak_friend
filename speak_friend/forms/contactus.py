@@ -22,7 +22,9 @@ class ContactUs(MappingSchema):
     description='Have a question or want to tell us something? Let us know.',
 
 
-contact_us_form = Form(
-    ContactUs(),
-    buttons=('submit',),
-)
+def make_contact_us_form():
+    contact_us_form = Form(
+        ContactUs(),
+        buttons=('submit',),
+    )
+    return contact_us_form
