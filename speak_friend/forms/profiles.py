@@ -3,7 +3,7 @@ import re
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
 from colander import Email, Function, Regex
 from deform import Button, Form
-from deform.widget import CheckedInputWidget, CheckedPasswordWidget
+from deform.widget import CheckedInputWidget, CheckedPasswordWidget, HiddenWidget
 
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
@@ -100,6 +100,10 @@ class Profile(MappingSchema):
         title='I agree to the usage policy.',
     )
     captcha = SchemaNode(String())
+    came_from = SchemaNode(
+        String(),
+        widget = HiddenWidget(),
+    )
 
 profile_form = Form(Profile(), buttons=('submit', 'cancel'))
 

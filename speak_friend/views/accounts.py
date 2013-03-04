@@ -52,14 +52,20 @@ class CreateProfile(object):
         self.session.add(profile)
         self.request.session.flash('Account successfully created!',
                                    queue='success')
-        return self.get(success=True)
+        if appstruct['came_from']:
+            return HTTPFound(location=appstruct['came_from'])
+        else:
+            url = self.request.route_url('home')
+            return HTTPFound(location=url)
 
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
         return {
             'forms': [profile_form],
-            'rendered_form': profile_form.render(),
+            'rendered_form': profile_form.render({
+                'came_from': self.request.referrer,
+            }),
         }
 
 
