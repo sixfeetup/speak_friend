@@ -37,7 +37,7 @@ class CreateProfile(object):
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
-            return {'rendered_form': e.render()}
+            return {'rendered_form': e.render(), 'forms': [e]}
 
         hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
 
