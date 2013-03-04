@@ -169,13 +169,15 @@ class PasswordResetRequest(MappingSchema):
       )
 
 
-password_reset_request_form = Form(
-    PasswordResetRequest(),
-    buttons=(
-        Button('submit', title='Request Password'),
-        'cancel'
-    ),
-)
+def make_password_reset_request_form():
+    password_reset_request_form = Form(
+        PasswordResetRequest(),
+        buttons=(
+            Button('submit', title='Request Password'),
+            'cancel'
+        ),
+    )
+    return password_reset_request_form
 
 
 class Login(MappingSchema):

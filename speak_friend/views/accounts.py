@@ -11,7 +11,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 from speak_friend.events import AccountCreated
-from speak_friend.forms.profiles import password_reset_request_form
+from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import profile_form, login_form
 from speak_friend.models import DBSession
@@ -102,6 +102,7 @@ class RequestPassword(object):
     def __init__(self, request):
         self.request = request
         self.session = DBSession()
+        self.frm = make_password_reset_request_form()
         self.path = 'speak_friend:templates/email/password_reset_notification.pt'
         settings = request.registry.settings
         self.subject = "%s: Reset password" % settings['site_name']
@@ -124,7 +125,7 @@ class RequestPassword(object):
             return self.get()
         try:
             controls = self.request.POST.items()
-            captured = password_reset_request_form.validate(controls)
+            captured = self.frm.validate(controls)
             self.notify(captured)
             url = self.request.route_url('home')
             return HTTPFound(location=url)
@@ -133,14 +134,14 @@ class RequestPassword(object):
             html = e.render()
 
         return {
-            'forms': [password_reset_request_form],
+            'forms': [self.frm],
             'rendered_form': html,
         }
 
     def get(self):
         return {
-            'forms': [password_reset_request_form],
-            'rendered_form': password_reset_request_form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
         }
 
     def notify(self, captured):
