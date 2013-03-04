@@ -77,20 +77,28 @@ def username_validator(should_exist):
 
 
 class Profile(MappingSchema):
-    username = SchemaNode(String(), validator=Function(
-                username_validator(False)))
+    username = SchemaNode(
+        String(),
+        validator=Function(username_validator(False)),
+    )
     first_name = SchemaNode(String())
     last_name = SchemaNode(String())
-    email = SchemaNode(String(),
-                       title=u'Email Address',
-                       validator=UserEmail(should_exist=False,
-                                        msg="Email address already in use."),
-                       widget=CheckedInputWidget(subject=u'Email Address',
-                                                confirm_subject=u'Confirm Email Address'))
-    password = SchemaNode(String(),
-                          widget=CheckedPasswordWidget())
-    agree_to_policy = SchemaNode(Bool(),
-                                 title='I agree to the usage policy.')
+    email = SchemaNode(
+        String(),
+        title=u'Email Address',
+        validator=UserEmail(should_exist=False,
+                         msg="Email address already in use."),
+        widget=CheckedInputWidget(subject=u'Email Address',
+                                 confirm_subject=u'Confirm Email Address'),
+    )
+    password = SchemaNode(
+        String(),
+        widget=CheckedPasswordWidget(),
+    )
+    agree_to_policy = SchemaNode(
+        Bool(),
+        title='I agree to the usage policy.',
+    )
     captcha = SchemaNode(String())
 
 profile_form = Form(Profile(), buttons=('submit', 'cancel'))
@@ -101,19 +109,22 @@ class Domain(MappingSchema):
         String(),
         title="Domain Name",
         description="Must be a valid Fully Qualified Domain Name",
-        validator=FQDN())
+        validator=FQDN(),
+    )
     password_valid = SchemaNode(
         Integer(),
         title="Password valid",
         description="Indicate the length of time, in minutes that a password "
                     "should be valid (a negative value will use the system "
-                    "default)")
+                    "default)",
+    )
     max_attempts = SchemaNode(
         Integer(),
         title="Maximum login attempts",
         description="Indicate the number of times a user may fail a login "
                     "attempt before being disabled (a negative value will "
-                    "use the system default)")
+                    "use the system default)",
+    )
 
 
 class PasswordResetRequest(MappingSchema):
