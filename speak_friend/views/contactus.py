@@ -34,17 +34,23 @@ class ContactUs(object):
         frm = make_contact_us_form()
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
-        if 'submit' not in self.request.POST:
+        if 'submit' not in self.request.POST and \
+           'cancel' not in self.request.POST:
             return self.get()
         try:
             controls = self.request.POST.items()
             captured = frm.validate(controls)
             self.notify(captured)
-            url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            if captured['came_from']:
+                return HTTPFound(location=captured['came_from'])
+            else:
+                return HTTPFound(location=self.request.route_url('home'))
         except ValidationFailure as e:
             # the submitted values could not be validated
             html = e.render()
+            if 'cancel' in self.request.POST and \
+               e.cstruct['came_from']:
+                return HTTPFound(location=e.cstruct['came_from'])
 
         return {
             'forms': [frm],
@@ -55,7 +61,9 @@ class ContactUs(object):
         frm = make_contact_us_form()
         return {
             'forms': [frm],
-            'rendered_form': frm.render(),
+            'rendered_form': frm.render({
+                'came_from': self.request.referrer,
+            }),
         }
 
     def notify(self, captured):

@@ -1,5 +1,6 @@
 from colander import Email, MappingSchema, SchemaNode, String
 from deform import Form
+from deform.widget import HiddenWidget
 from deform.widget import TextAreaWidget
 
 
@@ -18,6 +19,10 @@ class ContactUs(MappingSchema):
         title='Message',
         widget=TextAreaWidget(cols=50, rows=10),
     )
+    came_from = SchemaNode(
+        String(),
+        widget = HiddenWidget(),
+    )
     title='Contact Us',
     description='Have a question or want to tell us something? Let us know.',
 
@@ -25,6 +30,6 @@ class ContactUs(MappingSchema):
 def make_contact_us_form():
     contact_us_form = Form(
         ContactUs(),
-        buttons=('submit',),
+        buttons=('submit', 'cancel'),
     )
     return contact_us_form
