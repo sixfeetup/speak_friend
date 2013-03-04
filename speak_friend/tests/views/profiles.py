@@ -1,35 +1,54 @@
 from pyramid import testing
 from webob.multidict import MultiDict
-from speak_friend.views.profiles import CreateProfile, edit_profile
+from speak_friend.views.accounts import CreateProfile, edit_profile
+
+from mock import patch
 
 from speak_friend.tests.common import SFBaseCase
+from speak_friend.tests.mocks import MockSession
+
+
+class DummyPasswordContext(object):
+    def __init__(self):
+        pass
+
+    def verify(self, password, pw_hash):
+        pass
 
 
 class ViewTests(SFBaseCase):
+    def setUp(self):
+        super(ViewTests, self).setUp()
+        self.config.registry.password_context = DummyPasswordContext()
+
     def test_create_profile_view_get(self):
         request = testing.DummyRequest()
+        request.referrer = '/'
         view = CreateProfile(request)
         info = view.get()
-        self.assertTrue('form' in info)
+        self.assertTrue('rendered_form' in info)
 
     def test_create_profile_view_get_on_post(self):
         request = testing.DummyRequest()
+        request.referrer = '/'
         view = CreateProfile(request)
         info = view.post()
         self.assertEqual(info.status_code, 405)
 
     def test_create_profile_view_post_no_args(self):
         request = testing.DummyRequest(post={})
+        request.referrer = '/'
         view = CreateProfile(request)
         info = view.post()
-        self.assertTrue('form' in info)
+        self.assertTrue('rendered_form' in info)
 
     def test_create_profile_view_submit_empty_form(self):
         request = testing.DummyRequest(post={'submit': ''})
         view = CreateProfile(request)
         info = view.post()
-        self.assertTrue('form' in info)
-        self.assertTrue('errorMsg' in info['form'])
+        print(info.keys())
+        self.assertTrue('rendered_form' in info)
+        self.assertTrue('forms' in info)
 
     def test_create_profile_all_fields(self):
         data = MultiDict([
@@ -52,11 +71,12 @@ class ViewTests(SFBaseCase):
         ])
         request = testing.DummyRequest(post=data)
         view = CreateProfile(request)
-        info = view.post()
-        self.assertEqual(info['form'], None)
-
+        with patch('speak_friend.forms.profiles.DBSession',
+                    new_callable=MockSession):
+            info = view.post()
+        self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
         request = testing.DummyRequest()
         info = edit_profile(request)
-        self.assertTrue('form' in info)
+        self.assertTrue('rendered_form' in info)
