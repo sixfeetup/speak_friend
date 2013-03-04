@@ -89,6 +89,13 @@ def includeme(config):
     config.add_view(contactus.ContactUs,
                     attr="post", request_method='POST',
                     renderer='templates/contact_us.pt')
+    config.add_route('login', '/login')
+    config.add_view(accounts.LoginView, attr='get', request_method='GET',
+                    renderer='templates/login.pt')
+    config.add_view(accounts.LoginView, attr='post', request_method='POST',
+                    renderer='templates/login.pt')
+    config.add_route('logout', '/logout')
+    config.add_view(accounts.logout, route_name='logout')
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')

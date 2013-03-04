@@ -6,7 +6,7 @@ from colander import Email, Function, Regex
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
-from deform.widget import CheckedPasswordWidget
+from deform.widget import CheckedPasswordWidget, PasswordWidget
 from deform.widget import ResourceRegistry
 
 from speak_friend.models import DBSession
@@ -158,4 +158,17 @@ password_reset_request_form = Form(
         Button('submit', title='Request Password'),
         'cancel'
     ),
+)
+
+
+class Login(MappingSchema):
+    login = SchemaNode(String())
+    password = SchemaNode(String(),
+                          widget=PasswordWidget())
+
+login_form = Form(Login(),
+        buttons=(
+            Button('submit', title='Log In'),
+            'cancel'
+        )
 )
