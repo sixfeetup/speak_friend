@@ -249,6 +249,8 @@ class LoginView(object):
 
 
 def logout(request):
+    referrer = request.referrer.url
+    if not referrer:
+        referrer = '/'
     headers = forget(request)
-    return HTTPFound('/', headers=headers)
-
+    return HTTPFound(referrer, headers=headers)
