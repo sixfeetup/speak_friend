@@ -19,6 +19,7 @@ from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 class ContactUs(object):
     def __init__(self, request):
         self.request = request
+        self.frm = make_contact_us_form()
         settings = request.registry.settings
         self.subject = "Contact Us Form Submission: %s" % settings['site_name']
         self.sender = settings['site_from']
@@ -31,7 +32,6 @@ class ContactUs(object):
             self.recipients = []
 
     def post(self):
-        frm = make_contact_us_form()
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST and \
@@ -39,7 +39,7 @@ class ContactUs(object):
             return self.get()
         try:
             controls = self.request.POST.items()
-            captured = frm.validate(controls)
+            captured = self.frm.validate(controls)
             self.notify(captured)
             if captured['came_from']:
                 return HTTPFound(location=captured['came_from'])
@@ -53,15 +53,14 @@ class ContactUs(object):
                 return HTTPFound(location=e.cstruct['came_from'])
 
         return {
-            'forms': [frm],
+            'forms': [self.frm],
             'rendered_form': html,
         }
 
     def get(self):
-        frm = make_contact_us_form()
         return {
-            'forms': [frm],
-            'rendered_form': frm.render({
+            'forms': [self.frm],
+            'rendered_form': self.frm.render({
                 'came_from': self.request.referrer,
             }),
         }
