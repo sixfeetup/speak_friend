@@ -7,6 +7,7 @@ from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
 from deform.widget import CheckedPasswordWidget, PasswordWidget
+from deform.widget import HiddenWidget
 from deform.widget import ResourceRegistry
 
 from speak_friend.models import DBSession
