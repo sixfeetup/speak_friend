@@ -119,7 +119,7 @@ class Profile(MappingSchema):
     )
     password = SchemaNode(
         String(),
-        widget=CheckedPasswordWidget(),
+        widget=StrengthValidatingPasswordWidget(),
     )
     agree_to_policy = SchemaNode(
         Bool(),
