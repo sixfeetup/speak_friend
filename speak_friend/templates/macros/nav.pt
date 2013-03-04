@@ -5,11 +5,13 @@
        <div class="navbar">
            <div class="navbar-inner">
                <ul id="site-nav" class="nav">
-                   <li><a href="#">Sign In</a></li>
+                   <li><a tal:attributes="href python:request.route_url('login')">Sign In</a></li>
                    <li><a tal:attributes="href python:request.route_url('create_profile')">Create Account</a></li>
                    <li><a href="/">Home</a></li>
                    <li><a href="/control_panel">Settings</a></li>
                    <li><a href="#">Admin</a></li>
+                   <!--! Will need to check if the user is logged in -->
+                   <li><a tal:attributes="href python:request.route_url('logout')">Log Out</a></li>
                </ul>
            </div>
        </div>

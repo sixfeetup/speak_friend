@@ -4,6 +4,7 @@ from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.renderers import render_to_response
+from pyramid.security import forget, remember
 from pyramid.view import view_defaults
 
 from pyramid_mailer import get_mailer
@@ -11,7 +12,7 @@ from pyramid_mailer.message import Message
 
 from speak_friend.forms.profiles import password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.profiles import profile_form
+from speak_friend.forms.profiles import profile_form, login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -180,3 +181,74 @@ class ResetPassword(object):
         """Notify interested parties that the user successfully reset their
         pasword.
         """
+
+
+@view_defaults(route_name='login')
+class LoginView(object):
+    def __init__(self, request):
+        self.request = request
+        self.pass_ctx = request.registry.password_context
+        self.error_string = 'Username or password is invalid.'
+
+    def verify_password(self, password, saved_hash, user):
+        if not user:
+            return False
+
+        if self.pass_ctx.verify(password, saved_hash):
+            if self.pass_ctx.needs_update(saved_hash):
+                new_hash = self.pass_ctx.encrypt(password)
+                user.password_hash = new_hash
+                DBSession().add(user)
+            passes = True
+        else:
+            passes = False
+        return passes
+
+    def get(self):
+        return {
+            'forms': [login_form],
+            'rendered_form': login_form.render()
+        }
+
+    def login_error(self, msg):
+        self.request.session.flash(msg, queue='error')
+        return self.get()
+
+    def post(self):
+        url = self.request.current_route_url()
+        referrer = self.request.url
+        if referrer == url:
+            referrer = '/'
+
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+
+        try:
+            appstruct = login_form.validate(controls)
+        except ValidationFailure:
+            return self.login_error(self.error_string)
+
+        login = appstruct['login']
+        password = appstruct['password']
+
+        user = DBSession.query(UserProfile).\
+                filter(UserProfile.username==login).first()
+
+        if user:
+            saved_hash = user.password_hash
+        else:
+            return self.login_error(self.error_string)
+
+        if not self.verify_password(password, saved_hash, user):
+            return self.login_error(self.error_string)
+
+        headers = remember(self.request, login)
+        return HTTPFound(location=referrer, headers=headers)
+
+
+def logout(request):
+    headers = forget(request)
+    return HTTPFound('/', headers=headers)
+
