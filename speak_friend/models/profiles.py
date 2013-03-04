@@ -69,13 +69,14 @@ class UserProfile(Base):
         {'schema': 'profiles'}
     )
     username = Column(UnicodeText, primary_key=True)
-    first_name = Column(UnicodeText)
-    last_name = Column(UnicodeText)
+    first_name = Column(UnicodeText, nullable=False)
+    last_name = Column(UnicodeText, nullable=False)
     email = Column(UnicodeText, nullable=False, unique=True)
-    password_hash = Column(UnicodeText)
+    password_hash = Column(UnicodeText, nullable=False)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
     admin_disabled = Column(Boolean, default=False)
+    is_superuser = Column(Boolean, default=False)
 
 
     def __init__(self, username, first_name, last_name, email,
@@ -91,6 +92,11 @@ class UserProfile(Base):
 
     def __repr__(self):
         return u"<UserProfile(%s)>" % self.username
+
+    @property
+    def full_email(self):
+        email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
+        return email
 
 
 class ResetToken(Base):

@@ -66,7 +66,7 @@ class ContactUs(object):
             headers = {'Reply-To': reply_to}
             message = Message(subject=self.subject,
                               sender=self.sender,
-                              recipients=self.recipients,
+                              recipients=tuple(self.recipients),
                               extra_headers=headers,
                               body=captured['message_body'])
             mailer.send(message)

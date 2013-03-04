@@ -14,6 +14,10 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
 
+from speak_friend.configuration import add_controlpanel_section
+from speak_friend.configuration import set_password_context
+from speak_friend.configuration import set_password_validator
+from speak_friend.events import AccountCreated
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import password_reset_schema
@@ -23,13 +27,10 @@ from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
-
 from speak_friend.views import contactus
-from speak_friend.subscribers import register_api
-from speak_friend.configuration import add_controlpanel_section
-from speak_friend.configuration import set_password_context
-from speak_friend.configuration import set_password_validator
 from speak_friend.subscribers import log_activity
+from speak_friend.subscribers import notify_account_created
+from speak_friend.subscribers import register_api
 
 
 def datetime_adapter(obj, request):
@@ -49,6 +50,7 @@ def includeme(config):
     # Events
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(log_activity, UserActivity)
+    config.add_subscriber(notify_account_created, AccountCreated)
 
     # Routes
     config.add_route('create_profile', '/create_profile')
@@ -106,6 +108,8 @@ def includeme(config):
         'deform_bootstrap_static', 'deform_bootstrap:static',
         cache_max_age=3600
     )
+    # Put last, so that app routes are not swallowed
+    config.add_route('user_profile', '/{username}')
     # by providing this override, we create a search path for static assets
     # that first looks in the speak_friend static directory, and then moves
     # to the deform static directory if an asset is not found.

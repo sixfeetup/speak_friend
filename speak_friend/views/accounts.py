@@ -10,6 +10,7 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import profile_form, login_form
@@ -53,6 +54,7 @@ class CreateProfile(object):
         self.session.add(profile)
         self.request.session.flash('Account successfully created!',
                                    queue='success')
+        self.request.registry.notify(AccountCreated(self.request, profile))
         if appstruct['came_from']:
             return HTTPFound(location=appstruct['came_from'])
         else:
@@ -147,8 +149,6 @@ class RequestPassword(object):
         profile = query.first()
 
         mailer = get_mailer(self.request)
-        user_email = '%s %s <%s>' % (profile.first_name, profile.last_name,
-                                     profile.email)
         reset_token = ResetToken(profile.username)
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
@@ -156,7 +156,7 @@ class RequestPassword(object):
         self.session.merge(reset_token)
         message = Message(subject=self.subject,
                           sender=self.sender,
-                          recipients=[user_email],
+                          recipients=(profile.full_email,),
                           html=response.unicode_body)
         mailer.send(message)
         self.request.session.flash('A link to reset your password has been sent to your email. Please check.',

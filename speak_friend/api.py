@@ -4,8 +4,6 @@ import datetime
 from pyramid.renderers import get_renderer
 
 
-
-
 class TemplateAPI(object):
     def __init__(self, request, rendering_val):
         self.request = request
