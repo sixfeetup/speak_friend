@@ -69,6 +69,39 @@ class UserProfile(Base):
         return u"<UserProfile(%s)>" % self.username
 
 
+FT_TRIGGER_FUNCTION = """
+CREATE OR REPLACE FUNCTION user_searchable_text_trigger()
+RETURNS trigger AS $$
+begin
+  new.searchable_text :=
+    setweight(to_tsvector(coalesce(new.username, '')), 'D') ||
+    setweight(to_tsvector(coalesce(new.email, '')), 'C') ||
+    setweight(to_tsvector(coalesce(new.first_name, '')), 'B') ||
+    setweight(to_tsvector(coalesce(new.last_name, '')), 'A');
+  return new;
+end
+$$ LANGUAGE plpgsql;
+"""
+FT_FIELD = 'ALTER TABLE %s.%s ADD COLUMN searchable_text tsvector;'
+FT_INDEX = """
+CREATE INDEX user_searchable_text_index ON %s.%s USING gin(searchable_text)
+"""
+FT_TRIGGER = """
+CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+    ON %s.%s FOR EACH ROW EXECUTE PROCEDURE user_searchable_text_trigger();
+"""
+
+
+def after_user_profile_create(target, connection, **kw):
+    connection.execute(FT_TRIGGER_FUNCTION)
+    connection.execute(FT_FIELD % (target.schema, target.name))
+    connection.execute(FT_TRIGGER % (target.schema, target.name))
+    connection.execute(FT_INDEX % (target.schema, target.name))
+
+
+event.listen(UserProfile.__table__, "after_create", after_user_profile_create)
+
+
 class ResetToken(Base):
     __tablename__ = 'reset_tokens'
     __table_args__ = (
