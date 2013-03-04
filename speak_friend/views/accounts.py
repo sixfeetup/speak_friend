@@ -13,7 +13,7 @@ from pyramid_mailer.message import Message
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.profiles import profile_form, login_form
+from speak_friend.forms.profiles import profile_form, make_login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -190,6 +190,7 @@ class LoginView(object):
         self.request = request
         self.pass_ctx = request.registry.password_context
         self.error_string = 'Username or password is invalid.'
+        self.frm = make_login_form()
 
     def verify_password(self, password, saved_hash, user):
         if not user:
@@ -207,8 +208,8 @@ class LoginView(object):
 
     def get(self):
         return {
-            'forms': [login_form],
-            'rendered_form': login_form.render()
+            'forms': [self.frm],
+            'rendered_form': self.frm.render()
         }
 
     def login_error(self, msg):
@@ -227,7 +228,7 @@ class LoginView(object):
         controls = self.request.POST.items()
 
         try:
-            appstruct = login_form.validate(controls)
+            appstruct = self.frm.validate(controls)
         except ValidationFailure:
             return self.login_error(self.error_string)
 
