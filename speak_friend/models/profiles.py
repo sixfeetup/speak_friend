@@ -10,6 +10,8 @@ from sqlalchemy import SmallInteger
 from sqlalchemy import UnicodeText
 from sqlalchemy import event
 from sqlalchemy import func
+from sqlalchemy import types
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -39,6 +41,14 @@ class DomainProfile(Base):
         return not bool(self.password_valid)
 
 
+class tsvector(types.TypeDecorator):
+    impl = types.UnicodeText
+
+
+@compiles(tsvector, 'postgresql')
+def compile_tsvector(element, compiler, **kw):
+    return 'tsvector'
+
 class UserProfile(Base):
     __tablename__ = 'user_profiles'
     __table_args__ = (
@@ -52,6 +62,7 @@ class UserProfile(Base):
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
     admin_disabled = Column(Boolean, default=False)
+    searchable_text = Column(tsvector)
 
 
     def __init__(self, username, first_name, last_name, email,
@@ -82,7 +93,6 @@ begin
 end
 $$ LANGUAGE plpgsql;
 """
-FT_FIELD = 'ALTER TABLE %s.%s ADD COLUMN searchable_text tsvector;'
 FT_INDEX = """
 CREATE INDEX user_searchable_text_index ON %s.%s USING gin(searchable_text)
 """
@@ -94,7 +104,6 @@ CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
 
 def after_user_profile_create(target, connection, **kw):
     connection.execute(FT_TRIGGER_FUNCTION)
-    connection.execute(FT_FIELD % (target.schema, target.name))
     connection.execute(FT_TRIGGER % (target.schema, target.name))
     connection.execute(FT_INDEX % (target.schema, target.name))
 
