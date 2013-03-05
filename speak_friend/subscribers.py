@@ -61,8 +61,8 @@ def notify_account_created(event):
         return
 
     message = Message(subject=subject,
-                      sender = settings['site_from'],
-                      recipients=tuple(superusers),
+                      sender=settings['site_from'],
+                      recipients=superusers,
                       extra_headers=headers,
                       html=response.unicode_body)
     mailer.send(message)

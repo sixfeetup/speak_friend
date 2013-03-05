@@ -156,7 +156,7 @@ class RequestPassword(object):
         self.session.merge(reset_token)
         message = Message(subject=self.subject,
                           sender=self.sender,
-                          recipients=(profile.full_email,),
+                          recipients=[profile.full_email],
                           html=response.unicode_body)
         mailer.send(message)
         self.request.session.flash('A link to reset your password has been sent to your email. Please check.',
