@@ -1,5 +1,8 @@
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
+        
+        <metal:nav use-macro="api.macros['head_elements']" />
+        
         <tal:resources repeat="css_path api.css_resources">
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
