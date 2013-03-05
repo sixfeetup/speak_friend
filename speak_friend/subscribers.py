@@ -18,12 +18,12 @@ def log_activity(event):
     """
     logger = getLogger('speak_friend.user_activity')
     msg = ['User %s: %s']
-    args = [event.username, event.activity]
+    args = [event.user.username, event.activity]
     if event.activity_detail:
         msg.append('detail "%s"')
         args.append(event.activity)
-    if event.actor_username:
+    if event.actor:
         msg.append('By %s')
-        args.append(event.actor_username)
+        args.append(event.actor.username)
 
     logger.info(', '.join(msg), *args)
