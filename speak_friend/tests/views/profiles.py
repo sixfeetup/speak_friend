@@ -46,9 +46,7 @@ class ViewTests(SFBaseCase):
         request = testing.DummyRequest(post={'submit': ''})
         view = CreateProfile(request)
         info = view.post()
-        print(info.keys())
         self.assertTrue('rendered_form' in info)
-        self.assertTrue('forms' in info)
 
     def test_create_profile_all_fields(self):
         data = MultiDict([
