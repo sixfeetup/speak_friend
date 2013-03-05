@@ -18,6 +18,7 @@ from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
+from speak_friend.forms.controlpanel import domain_defaults_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import admin
@@ -109,10 +110,6 @@ def includeme(config):
     config.override_asset(to_override='deform:static/',
                           override_with='speak_friend:static/')
 
-    # Add custom directives
-    config.add_directive('add_controlpanel_section', add_controlpanel_section)
-    config.add_directive('set_password_context', set_password_context)
-
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
     json_renderer = JSON()
@@ -130,6 +127,7 @@ def includeme(config):
     config.add_controlpanel_section(contact_us_email_notification_schema)
     config.add_controlpanel_section(password_reset_schema)
     config.add_controlpanel_section(user_creation_email_notification_schema)
+    config.add_controlpanel_section(domain_defaults_schema)
     ## Password context
     from passlib.apps import ldap_context
     config.set_password_context(context=ldap_context)
