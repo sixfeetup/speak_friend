@@ -14,6 +14,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
+from speak_friend.forms.controlpanel import domain_defaults_schema
 
 
 class DomainProfile(Base):
@@ -22,8 +23,8 @@ class DomainProfile(Base):
         {'schema': 'profiles'}
     )
     name = Column(UnicodeText, primary_key=True)
-    password_valid = Column(Integer) # minutes
-    max_attempts = Column(SmallInteger)
+    password_valid = Column(Integer, default=-1) # minutes
+    max_attempts = Column(SmallInteger, default=-1)
 
     def __init__(self, name, password_valid, max_attempts):
         self.name = name
@@ -33,10 +34,33 @@ class DomainProfile(Base):
     def __repr__(self):
         return u'<DomainProfile(%s)>' % self.name
 
-    def password_always_required(self):
-        """if password is valid for 0 minutes, it is always required
+    def get_password_valid(self, cp):
+        """return value of password_valid, or control panel default if < 0
         """
-        return not bool(self.password_valid)
+        pw_valid = self.password_valid
+        if pw_valid < 0:
+            current = cp.saved_sections.get(domain_defaults_schema.name)
+            if current and current.panel_values:
+                pw_valid = current.panel_values['password_valid']
+            else:
+                for child in domain_defaults_schema.children:
+                    if child.name == 'password_valid':
+                        pw_valid = child.default
+        return pw_valid
+
+    def get_max_attempts(self, cp):
+        """return value of max_attempts, or control panel default if < 0
+        """
+        max_attempts = self.max_attempts
+        if max_attempts < 0:
+            current = cp.saved_sections.get(domain_defaults_schema.name)
+            if current and current.panel_values:
+                max_attempts = current.panel_values['max_attempts']
+            else:
+                for child in domain_defaults_schema.children:
+                    if child.name == 'max_attempts':
+                        max_attempts = child.default
+        return max_attempts
 
 
 class UserProfile(Base):
