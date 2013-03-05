@@ -14,6 +14,9 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
 
+from speak_friend.configuration import add_controlpanel_section
+from speak_friend.configuration import set_password_context
+from speak_friend.configuration import set_password_validator
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import password_reset_schema
@@ -22,13 +25,10 @@ from speak_friend.models import DBSession, Base
 from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
-
 from speak_friend.views import contactus
-from speak_friend.subscribers import register_api
-from speak_friend.configuration import add_controlpanel_section
-from speak_friend.configuration import set_password_context
-from speak_friend.configuration import set_password_validator
 from speak_friend.subscribers import log_activity
+from speak_friend.subscribers import notify_account_created
+from speak_friend.subscribers import register_api
 
 
 def datetime_adapter(obj, request):
