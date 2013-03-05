@@ -41,7 +41,7 @@ class JSON(types.TypeDecorator):
         if isinstance(value, SchemaNode):
             json = render_to_response('json', value.serialize()).unicode_body
         elif value is None:
-            json = 'null'
+            json = u'null'
         else:
             json = render_to_response('json', value).unicode_body
         return json
