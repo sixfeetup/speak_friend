@@ -128,14 +128,17 @@ class Profile(MappingSchema):
     captcha = SchemaNode(String())
     came_from = SchemaNode(
         String(),
-        widget = HiddenWidget(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
     )
 
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
-profile_form = Form(Profile(), buttons=('submit', 'cancel'),
-                    resource_registry=password_registry,
-                    renderer=renderer)
+def make_profile_form():
+    return Form(Profile(), buttons=('submit', 'cancel'),
+                        resource_registry=password_registry,
+                        renderer=renderer)
 
 
 class Domain(MappingSchema):
