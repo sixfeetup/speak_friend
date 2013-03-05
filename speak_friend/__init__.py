@@ -29,6 +29,7 @@ from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.subscribers import log_activity
+from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import register_api
 
@@ -50,6 +51,7 @@ def includeme(config):
     # Events
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(log_activity, UserActivity)
+    config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
 
     # Routes

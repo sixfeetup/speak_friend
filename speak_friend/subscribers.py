@@ -66,3 +66,21 @@ def notify_account_created(event):
                       extra_headers=headers,
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def confirm_account_created(event):
+    """Send confirmation email to user after account creation.
+    """
+    logger = getLogger('speak_friend.user_activity')
+    path = 'speak_friend:templates/email/account_creation_confirmation.pt'
+    settings = event.request.registry.settings
+    subject = '%s: New user account' % settings['site_name']
+    mailer = get_mailer(event.request)
+    response = render_to_response(path,
+                                  {'profile': event.user},
+                                  event.request)
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[event.user.email],
+                      html=response.unicode_body)
+    mailer.send(message)
