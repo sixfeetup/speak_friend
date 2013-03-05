@@ -17,6 +17,7 @@ from sqlalchemy import engine_from_config
 from speak_friend.configuration import add_controlpanel_section
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
+from speak_friend.events import AccountCreated
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import password_reset_schema
@@ -48,6 +49,7 @@ def includeme(config):
     # Events
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(log_activity, UserActivity)
+    config.add_subscriber(notify_account_created, AccountCreated)
 
     # Routes
     config.add_route('create_profile', '/create_profile')
@@ -103,6 +105,8 @@ def includeme(config):
         'deform_bootstrap_static', 'deform_bootstrap:static',
         cache_max_age=3600
     )
+    # Put last, so that app routes are not swallowed
+    config.add_route('user_profile', '/{username}')
     # by providing this override, we create a search path for static assets
     # that first looks in the speak_friend static directory, and then moves
     # to the deform static directory if an asset is not found.

@@ -10,6 +10,7 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import profile_form, login_form
@@ -53,6 +54,7 @@ class CreateProfile(object):
         self.session.add(profile)
         self.request.session.flash('Account successfully created!',
                                    queue='success')
+        self.request.registry.notify(AccountCreated(self.request, profile))
         if appstruct['came_from']:
             return HTTPFound(location=appstruct['came_from'])
         else:
