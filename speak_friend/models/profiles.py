@@ -45,10 +45,10 @@ class UserProfile(Base):
         {'schema': 'profiles'}
     )
     username = Column(UnicodeText, primary_key=True)
-    first_name = Column(UnicodeText)
-    last_name = Column(UnicodeText)
+    first_name = Column(UnicodeText, nullable=False)
+    last_name = Column(UnicodeText, nullable=False)
     email = Column(UnicodeText, nullable=False, unique=True)
-    password_hash = Column(UnicodeText)
+    password_hash = Column(UnicodeText, nullable=False)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
     admin_disabled = Column(Boolean, default=False)
