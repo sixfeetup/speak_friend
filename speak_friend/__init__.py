@@ -74,7 +74,9 @@ def includeme(config):
                     attr="post", request_method='POST',
                     renderer='templates/reset_password.pt')
     config.add_route('create_domain', '/create_domain')
-    config.add_view(admin.create_domain, route_name='create_domain',
+    config.add_view(admin.CreateDomain, attr="get", request_method='GET',
+                    renderer='templates/create_domain.pt')
+    config.add_view(admin.CreateDomain, attr='post', request_method='POST',
                     renderer='templates/create_domain.pt')
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.ControlPanel,
