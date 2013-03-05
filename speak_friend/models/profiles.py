@@ -68,6 +68,11 @@ class UserProfile(Base):
     def __repr__(self):
         return u"<UserProfile(%s)>" % self.username
 
+    @property
+    def full_email(self):
+        email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
+        return email
+
 
 class ResetToken(Base):
     __tablename__ = 'reset_tokens'

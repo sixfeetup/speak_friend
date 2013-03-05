@@ -147,8 +147,6 @@ class RequestPassword(object):
         profile = query.first()
 
         mailer = get_mailer(self.request)
-        user_email = '%s %s <%s>' % (profile.first_name, profile.last_name,
-                                     profile.email)
         reset_token = ResetToken(profile.username)
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
@@ -156,7 +154,7 @@ class RequestPassword(object):
         self.session.merge(reset_token)
         message = Message(subject=self.subject,
                           sender=self.sender,
-                          recipients=[user_email],
+                          recipients=(profile.full_email,),
                           html=response.unicode_body)
         mailer.send(message)
         self.request.session.flash('A link to reset your password has been sent to your email. Please check.',
