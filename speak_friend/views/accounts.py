@@ -288,11 +288,12 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         headers = remember(self.request, login)
+        self.request.response.headerlist.extend(headers)
         return HTTPFound(location=referrer, headers=headers)
 
 
 def logout(request):
-    referrer = request.referrer.url
+    referrer = request.referrer
     if not referrer:
         referrer = '/'
     headers = forget(request)

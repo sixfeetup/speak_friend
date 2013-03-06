@@ -28,6 +28,7 @@ from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.views import contactus
+from speak_friend.security import userfinder
 from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import notify_account_created
@@ -47,6 +48,15 @@ def includeme(config):
     config.include('deform_bootstrap')
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
+
+    # Authz/Authn
+    authn_secret = config.registry.settings['speak_friend.authn_secret']
+    authn_policy = AuthTktAuthenticationPolicy(secret=authn_secret,
+                                               callback=userfinder
+    )
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
