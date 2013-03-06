@@ -228,13 +228,21 @@ class Login(MappingSchema):
     login = SchemaNode(String())
     password = SchemaNode(String(),
                           widget=PasswordWidget())
+    came_from = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
+    )
 
 
-def make_login_form():
-    login_form = Form(Login(),
-            buttons=(
-                Button('submit', title='Log In'),
-                'cancel'
-            )
+def make_login_form(action=''):
+    login_form = Form(
+        Login(),
+        action=action,
+        buttons=(
+            Button('submit', title='Log In'),
+            'cancel'
+        )
     )
     return login_form

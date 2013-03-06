@@ -1,6 +1,7 @@
 # Views related to account management (creating, editing, deactivating)
 
 from deform import Form, ValidationFailure
+
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.renderers import render_to_response
@@ -270,7 +271,15 @@ class LoginView(object):
         self.request = request
         self.pass_ctx = request.registry.password_context
         self.error_string = 'Username or password is invalid.'
-        self.frm = make_login_form()
+        query = self.request.GET.items() + self.request.POST.items()
+        action = request.current_route_url(_query=query)
+        self.frm = make_login_form(action)
+
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = '/'
+        return came_from
 
     def verify_password(self, password, saved_hash, user):
         if not user:
@@ -289,7 +298,9 @@ class LoginView(object):
     def get(self):
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render()
+            'rendered_form': self.frm.render({
+                'came_from': self.get_referrer(),
+            }),
         }
 
     def login_error(self, msg):
@@ -328,7 +339,12 @@ class LoginView(object):
 
         headers = remember(self.request, login)
         self.request.response.headerlist.extend(headers)
-        return HTTPFound(location=referrer, headers=headers)
+
+        if appstruct['came_from']:
+            return HTTPFound(location=appstruct['came_from'], headers=headers)
+        else:
+            url = self.request.route_url('home')
+            return HTTPFound(location=url, headers=headers)
 
 
 def logout(request):

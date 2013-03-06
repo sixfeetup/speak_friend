@@ -1,6 +1,8 @@
 # The API that should be available to templates.
 import datetime
 
+from openid.yadis.constants import YADIS_HEADER_NAME
+
 from pyramid.renderers import get_renderer
 from pyramid.security import authenticated_userid
 
@@ -10,6 +12,7 @@ class TemplateAPI(object):
         self.request = request
         self.init_macros()
         self.init_forms(rendering_val)
+        self.request.response.headers[YADIS_HEADER_NAME] = self.request.route_url('yadis')
 
     @property
     def settings(self):

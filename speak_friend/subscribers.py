@@ -1,5 +1,6 @@
 from logging import getLogger
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 
 from pyramid_mailer import get_mailer
@@ -8,6 +9,7 @@ from pyramid_mailer.message import Message
 from speak_friend.api import TemplateAPI
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
+from speak_friend.views.open_id import OpenIDProvider
 
 
 def register_api(event):
@@ -84,3 +86,12 @@ def confirm_account_created(event):
                       recipients=[event.user.email],
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def handle_openid_request(event):
+    if 'openid.assoc_handle' in event.request.GET and \
+       event.response.code == 302:
+        provider = OpenIDProvider(event.request)
+        openid_response = provider.get()
+        response_url = openid_response.headers['Location']
+        event.response.headers['Location'] = response_url
