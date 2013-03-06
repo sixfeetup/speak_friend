@@ -1,3 +1,20 @@
+from speak_friend.models.profiles import UserProfile
+
+
+def create_user(username):
+    profile = UserProfile(
+        username,
+        'Fname',
+        'Lname',
+        'test@test.com',
+        'asdfklhjadsfklhjasf',
+        'sd',
+        0,
+        False,
+    )
+    return profile
+
+
 class MockQuery(object):
     def __init__(self, store=None):
         self._store = store
