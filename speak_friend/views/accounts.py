@@ -59,6 +59,7 @@ class CreateProfile(object):
                               False
         )
         self.session.add(profile)
+        self.session.flush()
         self.request.session.flash('Account successfully created!',
                                    queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
