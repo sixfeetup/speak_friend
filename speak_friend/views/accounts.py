@@ -4,7 +4,7 @@ from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.renderers import render_to_response
-from pyramid.security import forget, remember
+from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_defaults
 
 from pyramid_mailer import get_mailer
@@ -13,7 +13,7 @@ from pyramid_mailer.message import Message
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.profiles import make_profile_form, login_form
+from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -59,6 +59,7 @@ class CreateProfile(object):
                               False
         )
         self.session.add(profile)
+        self.session.flush()
         self.request.session.flash('Account successfully created!',
                                    queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
@@ -81,12 +82,82 @@ class CreateProfile(object):
         }
 
 
-def edit_profile(request):
-    form = profile_form
-    return {
-        'forms': [form],
-        'rendered_form': form.render(),
-    }
+# XXX Only logged in users should have permission
+@view_defaults(route_name='edit_profile')
+class EditProfile(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.target_username = request.matchdict['username']
+        self.current_username = authenticated_userid(request)
+        self.session = DBSession()
+        self.pass_ctx = request.registry.password_context
+
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = '/'
+        return came_from
+
+    def error(self):
+        return HTTPFound("You are not allowed to access this resource")
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+        profile_form = make_profile_form(edit=True)
+
+        try:
+            appstruct = profile_form.validate(controls)  # call validate
+        except ValidationFailure, e:
+            return {'rendered_form': e.render(),
+                    'target_username': self.target_username}
+
+        hashed_pw = ''
+        if 'password' in appstruct and appstruct['password']:
+            hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
+
+        target_user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.target_username).first()
+
+        if hashed_pw != '':
+            target_user.password_hash = hashed_pw
+        target_user.email = appstruct['email']
+        target_user.first_name = appstruct['first_name']
+        target_user.last_name = appstruct['last_name']
+        self.session.add(target_user)
+        self.session.flush()
+        self.request.session.flash('Account successfully modified!',
+                                   queue='success')
+        return self.get()
+
+    def get(self):
+        # Make sure the user who is editing is an admin, or the user requested
+        #   Return an error page if not
+        # Fetch the user information from the DB
+        # Create an appstruct
+        # Pass the appstruct to form.render(appstruct)
+        request_user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.current_username).first()
+        target_user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.target_username).first()
+        if target_user is None or request_user is None:
+            return self.error()
+        if not (request_user == target_user or
+            request_user.is_superuser):
+            return self.error()
+
+        appstruct = target_user.make_appstruct()
+        form = make_profile_form(edit=True)
+        return {
+            'forms': [form],
+            'rendered_form': form.render(appstruct),
+            'target_username': self.target_username,
+        }
 
 
 def token_expired(request):
@@ -256,11 +327,12 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         headers = remember(self.request, login)
+        self.request.response.headerlist.extend(headers)
         return HTTPFound(location=referrer, headers=headers)
 
 
 def logout(request):
-    referrer = request.referrer.url
+    referrer = request.referrer
     if not referrer:
         referrer = '/'
     headers = forget(request)

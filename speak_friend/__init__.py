@@ -28,6 +28,7 @@ from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.views import contactus
+from speak_friend.security import userfinder
 from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import notify_account_created
@@ -48,6 +49,16 @@ def includeme(config):
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
 
+    # Authz/Authn
+    authn_secret = config.registry.settings.get('speak_friend.authn_secret',
+                                                'this is bad')
+    authn_policy = AuthTktAuthenticationPolicy(secret=authn_secret,
+                                               callback=userfinder
+    )
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
+
     # Events
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(log_activity, UserActivity)
@@ -60,6 +71,11 @@ def includeme(config):
                     renderer='templates/create_profile.pt')
     config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     renderer='templates/create_profile.pt')
+    config.add_route('edit_profile', '/edit_profile/{username}/')
+    config.add_view(accounts.EditProfile, attr="get", request_method='GET',
+                    renderer='templates/edit_profile.pt')
+    config.add_view(accounts.EditProfile, attr="post", request_method='POST',
+                    renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
                     renderer='templates/token_expired.pt')
