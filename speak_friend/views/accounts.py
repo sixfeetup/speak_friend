@@ -13,7 +13,7 @@ from pyramid_mailer.message import Message
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.profiles import profile_form, make_login_form
+from speak_friend.forms.profiles import make_profile_form, login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -27,6 +27,12 @@ class CreateProfile(object):
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
 
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = '/'
+        return came_from
+
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
@@ -34,11 +40,12 @@ class CreateProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
+        profile_form = make_profile_form()
 
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
-            return {'rendered_form': e.render(), 'forms': [e]}
+            return {'rendered_form': e.render()}
 
         hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
 
@@ -64,10 +71,12 @@ class CreateProfile(object):
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
+        profile_form = make_profile_form()
+
         return {
             'forms': [profile_form],
             'rendered_form': profile_form.render({
-                'came_from': self.request.referrer,
+                'came_from': self.get_referrer(),
             }),
         }
 
@@ -251,6 +260,8 @@ class LoginView(object):
 
 
 def logout(request):
+    referrer = request.referrer.url
+    if not referrer:
+        referrer = '/'
     headers = forget(request)
-    return HTTPFound('/', headers=headers)
-
+    return HTTPFound(referrer, headers=headers)
