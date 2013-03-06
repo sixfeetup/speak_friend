@@ -2,6 +2,7 @@
 import datetime
 
 from pyramid.renderers import get_renderer
+from pyramid.security import authenticated_userid
 
 
 class TemplateAPI(object):
@@ -41,3 +42,10 @@ class TemplateAPI(object):
                 'deform:static/%s' % js_path
                 for js_path in resources['js']
             ])
+
+    @property
+    def current_userid(self):
+        userid = authenticated_userid(self.request)
+        if not userid:
+            return ''
+        return userid
