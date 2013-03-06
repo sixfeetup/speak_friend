@@ -74,6 +74,8 @@ def includeme(config):
     config.add_route('edit_profile', '/edit_profile/{username}/')
     config.add_view(accounts.EditProfile, attr="get", request_method='GET',
                     renderer='templates/edit_profile.pt')
+    config.add_view(accounts.EditProfile, attr="post", request_method='POST',
+                    renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
                     renderer='templates/token_expired.pt')

@@ -91,6 +91,7 @@ class EditProfile(object):
         self.target_username = request.matchdict['username']
         self.current_username = authenticated_userid(request)
         self.session = DBSession()
+        self.pass_ctx = request.registry.password_context
 
     def get_referrer(self):
         came_from = self.request.referrer
@@ -101,23 +102,61 @@ class EditProfile(object):
     def error(self):
         return HTTPFound("You are not allowed to access this resource")
 
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+        profile_form = make_profile_form(edit=True)
+
+        try:
+            appstruct = profile_form.validate(controls)  # call validate
+        except ValidationFailure, e:
+            return {'rendered_form': e.render(),
+                    'target_username': self.target_username}
+
+        hashed_pw = ''
+        if 'password' in appstruct and appstruct['password']:
+            hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
+
+        target_user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.target_username).first()
+
+        if hashed_pw != '':
+            target_user.password_hash = hashed_pw
+        target_user.email = appstruct['email']
+        target_user.first_name = appstruct['first_name']
+        target_user.last_name = appstruct['last_name']
+        self.session.add(target_user)
+        self.session.flush()
+        self.request.session.flash('Account successfully modified!',
+                                   queue='success')
+        return self.get()
+
     def get(self):
         # Make sure the user who is editing is an admin, or the user requested
         #   Return an error page if not
         # Fetch the user information from the DB
         # Create an appstruct
         # Pass the appstruct to form.render(appstruct)
-        user = self.session.query(UserProfile).filter(
+        request_user = self.session.query(UserProfile).filter(
                 UserProfile.username==self.current_username).first()
-        if not (self.target_username == self.current_username or
-            user.is_superuser):
+        target_user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.target_username).first()
+        if target_user is None or request_user is None:
+            return self.error()
+        if not (request_user == target_user or
+            request_user.is_superuser):
             return self.error()
 
-        appstruct = user.get_appstruct()
-        form = make_profile_form()
+        appstruct = target_user.make_appstruct()
+        form = make_profile_form(edit=True)
         return {
             'forms': [form],
             'rendered_form': form.render(appstruct),
+            'target_username': self.target_username,
         }
 
 

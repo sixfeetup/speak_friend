@@ -5,7 +5,7 @@ from speak_friend.views.accounts import CreateProfile, EditProfile
 from mock import patch
 
 from speak_friend.tests.common import SFBaseCase
-from speak_friend.tests.mocks import MockSession
+from speak_friend.tests.mocks import create_user, MockSession
 
 
 class DummyPasswordContext(object):
@@ -78,6 +78,10 @@ class ViewTests(SFBaseCase):
         request = testing.DummyRequest(path="/edit_profile/testuser")
         request.matchdict['username'] = 'testuser'
         view = EditProfile(request)
+        user = create_user('test')
+        view.session = MockSession(store=[user])
+        view.target_username = 'test'
+        view.current_username = 'test'
         with patch('speak_friend.forms.profiles.DBSession',
                     new_callable=MockSession):
             info = view.get()
