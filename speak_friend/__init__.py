@@ -50,13 +50,14 @@ def includeme(config):
     config.include('pyramid_mailer')
 
     # Authz/Authn
-    authn_secret = config.registry.settings['speak_friend.authn_secret']
+    authn_secret = config.registry.settings.get('speak_friend.authn_secret',
+                                                'this is bad')
     authn_policy = AuthTktAuthenticationPolicy(secret=authn_secret,
                                                callback=userfinder
     )
     authz_policy = ACLAuthorizationPolicy()
-    config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
