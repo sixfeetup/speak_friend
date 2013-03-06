@@ -1,0 +1,6 @@
+<metal:main use-macro="load: base.pt">
+    <metal:title fill-slot="page-title">Edit Profile</metal:title>
+    <metal:content fill-slot="content">
+      <div tal:content="structure rendered_form">form</div>
+    </metal:content>
+</metal:main>

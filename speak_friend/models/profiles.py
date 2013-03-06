@@ -80,7 +80,8 @@ class UserProfile(Base):
 
 
     def __init__(self, username, first_name, last_name, email,
-                 password_hash, password_salt, login_attempts, admin_disabled):
+                 password_hash, password_salt, login_attempts, admin_disabled,
+                 is_superuser=False):
         self.username = username
         self.first_name = first_name
         self.last_name = last_name
@@ -89,6 +90,7 @@ class UserProfile(Base):
         self.password_salt = password_salt
         self.login_attempts = login_attempts
         self.admin_disabled = admin_disabled
+        self.is_superuser = is_superuser
 
     def __repr__(self):
         return u"<UserProfile(%s)>" % self.username
@@ -97,6 +99,12 @@ class UserProfile(Base):
     def full_email(self):
         email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
         return email
+
+    def make_appstruct(self):
+        appstruct = {}
+        for attr in ('username', 'first_name', 'last_name', 'email'):
+            appstruct[attr] = getattr(self, attr)
+        return appstruct
 
 
 class ResetToken(Base):

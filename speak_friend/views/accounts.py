@@ -4,7 +4,7 @@ from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.renderers import render_to_response
-from pyramid.security import forget, remember
+from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_defaults
 
 from pyramid_mailer import get_mailer
@@ -13,7 +13,7 @@ from pyramid_mailer.message import Message
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.profiles import make_profile_form, login_form
+from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -81,12 +81,43 @@ class CreateProfile(object):
         }
 
 
-def edit_profile(request):
-    form = profile_form
-    return {
-        'forms': [form],
-        'rendered_form': form.render(),
-    }
+# XXX Only logged in users should have permission
+@view_defaults(route_name='edit_profile')
+class EditProfile(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.target_username = request.matchdict['username']
+        self.current_username = authenticated_userid(request)
+        self.session = DBSession()
+
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = '/'
+        return came_from
+
+    def error(self):
+        return HTTPFound("You are not allowed to access this resource")
+
+    def get(self):
+        # Make sure the user who is editing is an admin, or the user requested
+        #   Return an error page if not
+        # Fetch the user information from the DB
+        # Create an appstruct
+        # Pass the appstruct to form.render(appstruct)
+        user = self.session.query(UserProfile).filter(
+                UserProfile.username==self.current_username).first()
+        if not (self.target_username == self.current_username or
+            user.is_superuser):
+            return self.error()
+
+        appstruct = user.get_appstruct()
+        form = make_profile_form()
+        return {
+            'forms': [form],
+            'rendered_form': form.render(appstruct),
+        }
 
 
 def token_expired(request):

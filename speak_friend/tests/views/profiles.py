@@ -1,6 +1,6 @@
 from pyramid import testing
 from webob.multidict import MultiDict
-from speak_friend.views.accounts import CreateProfile, edit_profile
+from speak_friend.views.accounts import CreateProfile, EditProfile
 
 from mock import patch
 
@@ -75,6 +75,11 @@ class ViewTests(SFBaseCase):
         self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
-        request = testing.DummyRequest()
-        info = edit_profile(request)
+        request = testing.DummyRequest(path="/edit_profile/testuser")
+        request.matchdict['username'] = 'testuser'
+        view = EditProfile(request)
+        with patch('speak_friend.forms.profiles.DBSession',
+                    new_callable=MockSession):
+            info = view.get()
+        print(info)
         self.assertTrue('rendered_form' in info)
