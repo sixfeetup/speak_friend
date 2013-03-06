@@ -60,5 +60,6 @@ setup(
       main = speak_friend:main
       [console_scripts]
       initialize_speak_friend_db = speak_friend.scripts.initializedb:main
+      create_superuser = speak_friend.scripts.create_superuser:main
       """,
       )
