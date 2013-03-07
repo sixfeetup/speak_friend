@@ -28,8 +28,11 @@ class CreateDomain(object):
 
         try:
             appstruct = self.domain_form.validate(controls)  # call validate
-        except ValidationFailure, e:    
-            return {'forms': [e], 'rendered_form': e.render()}
+        except ValidationFailure, e:
+            return {
+                'forms': [self.domain_form],
+                'rendered_form': e.render(),
+            }
 
         new_domain = DomainProfile(**appstruct)
         self.session.merge(new_domain)
@@ -44,6 +47,6 @@ class CreateDomain(object):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
         return {
-            'forms': [self.domain_form], 
+            'forms': [self.domain_form],
             'rendered_form': self.domain_form.render({}),
         }

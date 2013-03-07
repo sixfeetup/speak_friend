@@ -46,7 +46,10 @@ class CreateProfile(object):
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
-            return {'rendered_form': e.render()}
+            return {
+                'forms': [profile_form],
+                'rendered_form': e.render(),
+            }
 
         hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
 
@@ -119,8 +122,11 @@ class EditProfile(object):
             if ('password' in profile_form.cstruct
                 and profile_form.cstruct['password'] != ''):
                 profile_form.cstruct['password'] = ''
-            return {'rendered_form': e.render(),
-                    'target_username': self.target_username}
+            return {
+                'forms': [profile_form],
+                'rendered_form': e.render(),
+                'target_username': self.target_username,
+            }
 
         hashed_pw = ''
         if 'password' in appstruct and appstruct['password']:
@@ -293,7 +299,6 @@ class ResetPassword(object):
             html = e.render()
 
         return {
-
             'forms': [password_reset_form],
             'rendered_form': html,
         }
