@@ -18,11 +18,13 @@
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
         <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <tal:deform-bootstrap-js condition="api.js_resources">
+            <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
+        </tal:deform-bootstrap-js>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
         </tal:resources>
-        <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
 
         <!-- Fallback for consumers that don't support Yadis -->
