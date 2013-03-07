@@ -118,6 +118,10 @@ class EditProfile(object):
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
+            # Don't leak hash information
+            if ('password' in profile_form.cstruct
+                and profile_form.cstruct['password'] != ''):
+                profile_form.cstruct['password'] = ''
             return {'rendered_form': e.render(),
                     'target_username': self.target_username}
 
@@ -348,6 +352,9 @@ class LoginView(object):
         return passes
 
     def get(self):
+        if ('password' in self.frm.cstruct
+            and self.frm.cstruct['password'] != ''):
+            self.frm.cstruct['password'] = ''
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render()
@@ -395,6 +402,7 @@ class LoginView(object):
 
 
 def logout(request):
+    # XXX This should really check permissions first.
     referrer = request.referrer
     if not referrer:
         referrer = '/'
