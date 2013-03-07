@@ -280,6 +280,8 @@ class ResetPassword(object):
             token_query = self.session.query(ResetToken)
             token_query.filter(
                 ResetToken.username==reset_token.user.username).delete()
+
+            reset_token.user.login_attempts = 0
             self.notify(reset_token.user)
             self.request.session.flash('Password successfully reset!',
                                        queue='success')
@@ -383,8 +385,10 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         if not self.verify_password(password, saved_hash, user):
+            user.login_attempts += 1
             return self.login_error(self.error_string)
 
+        user.login_attempts = 0
         headers = remember(self.request, login)
         self.request.response.headerlist.extend(headers)
         return HTTPFound(location=referrer, headers=headers)
