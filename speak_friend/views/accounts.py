@@ -119,6 +119,10 @@ class EditProfile(object):
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
+            # Don't leak hash information
+            if ('password' in profile_form.cstruct
+                and profile_form.cstruct['password'] != ''):
+                profile_form.cstruct['password'] = ''
             return {'rendered_form': e.render(),
                     'target_username': self.target_username}
 
@@ -281,6 +285,8 @@ class ResetPassword(object):
             token_query = self.session.query(ResetToken)
             token_query.filter(
                 ResetToken.username==reset_token.user.username).delete()
+
+            reset_token.user.login_attempts = 0
             self.notify(reset_token.user)
             self.request.session.flash('Password successfully reset!',
                                        queue='success')
@@ -355,6 +361,9 @@ class LoginView(object):
         return passes
 
     def get(self):
+        if ('password' in self.frm.cstruct
+            and self.frm.cstruct['password'] != ''):
+            self.frm.cstruct['password'] = ''
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
@@ -394,8 +403,10 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         if not self.verify_password(password, saved_hash, user):
+            user.login_attempts += 1
             return self.login_error(self.error_string)
 
+        user.login_attempts = 0
         headers = remember(self.request, login)
         self.request.response.headerlist.extend(headers)
 
@@ -407,6 +418,7 @@ class LoginView(object):
 
 
 def logout(request):
+    # XXX This should really check permissions first.
     referrer = request.referrer
     if not referrer:
         referrer = '/'
