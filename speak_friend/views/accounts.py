@@ -1,4 +1,5 @@
 # Views related to account management (creating, editing, deactivating)
+from datetime import timedelta
 
 from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPFound
@@ -10,8 +11,11 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from sqlalchemy import func
+
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
+from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
@@ -170,10 +174,12 @@ def token_expired(request):
         for child in password_reset_schema.children:
             if child.name == 'token_duration':
                 token_duration = child.default
-
     request.response.status = "400 Bad Request"
-    reset_url = request.route_url('request_password')
-    return {'reset_url': reset_url, 'token_duration': token_duration}
+    url = request.route_url('request_password')
+    return {
+        'token_duration': token_duration,
+        'request_reset_url': url,
+    }
 
 
 # FIXME: attach appropriate permissions
@@ -187,16 +193,6 @@ class RequestPassword(object):
         settings = request.registry.settings
         self.subject = "%s: Reset password" % settings['site_name']
         self.sender = settings['site_from']
-        self.token_duration = None
-        cp = ControlPanel(request)
-
-        current = cp.saved_sections.get(password_reset_schema.name)
-        if current and current.panel_values:
-            self.token_duration = current.panel_values['token_duration']
-        else:
-            for child in password_reset_schema.children:
-                if child.name == 'token_duration':
-                    self.token_duration = child.default
 
     def post(self):
         if self.request.method != "POST":
@@ -234,7 +230,7 @@ class RequestPassword(object):
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
                                       self.request)
-        self.session.merge(reset_token)
+        self.session.add(reset_token)
         message = Message(subject=self.subject,
                           sender=self.sender,
                           recipients=[profile.full_email],
@@ -247,21 +243,84 @@ class RequestPassword(object):
 @view_defaults(route_name='reset_password')
 class ResetPassword(object):
     def __init__(self, request):
-        """Stub for now
-        """
+        self.request = request
+        self.session = DBSession()
+        self.token_duration = None
+        cp = ControlPanel(request)
+
+        current = cp.saved_sections.get(password_reset_schema.name)
+        if current and current.panel_values:
+            self.token_duration = current.panel_values['token_duration']
+        else:
+            for child in password_reset_schema.children:
+                if child.name == 'token_duration':
+                    self.token_duration = child.default
 
     def post(self):
-        """Stub for now
-        """
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+        token = self.request.matchdict['token']
+        reset_token = self.check_token(token)
+
+        if reset_token is None:
+            url = self.request.route_url('token_expired')
+            return HTTPFound(location=url)
+
+        password_reset_form = make_password_reset_form()
+
+        try:
+            controls = self.request.POST.items()
+            captured = password_reset_form.validate(controls)
+            pw = captured['password']
+            pw_hash = self.request.registry.password_context.encrypt(pw)
+            reset_token.user.password_hash = pw_hash
+            self.session.flush()
+            token_query = self.session.query(ResetToken)
+            token_query.filter(
+                ResetToken.username==reset_token.user.username).delete()
+            self.notify(reset_token.user)
+            self.request.session.flash('Password successfully reset!',
+                                       queue='success')
+            url = self.request.route_url('home')
+            return HTTPFound(location=url)
+        except ValidationFailure as e:
+            # the submitted values could not be validated
+            html = e.render()
+
+        return {
+
+            'forms': [password_reset_form],
+            'rendered_form': html,
+        }
 
     def get(self):
-        """Stub for now
-        """
+        token = self.request.matchdict['token']
 
-    def notify(self, captured):
+        if self.check_token(token) is None:
+            url = self.request.route_url('token_expired')
+            return HTTPFound(location=url)
+
+        password_reset_form = make_password_reset_form()
+
+        return {
+            'forms': [password_reset_form],
+            'rendered_form': password_reset_form.render(),
+        }
+
+    def notify(self, user_profile):
         """Notify interested parties that the user successfully reset their
         pasword.
         """
+
+    def check_token(self, token):
+        query = self.session.query(ResetToken)
+        query = query.filter(ResetToken.token==token)
+        ts = ResetToken.generation_ts + timedelta(minutes=self.token_duration)
+        query = query.filter(ts >= func.current_timestamp())
+        results = query.first()
+        return results
 
 
 @view_defaults(route_name='login')
