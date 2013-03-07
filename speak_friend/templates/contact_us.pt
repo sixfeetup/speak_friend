@@ -1,6 +1,7 @@
 <metal:main use-macro="load: base.pt">
     <metal:title fill-slot="page-title">Contact Us</metal:title>
     <metal:content fill-slot="content">
+        <p>Have a question or want to tell us something? Let us know</p>
         <span tal:replace="structure rendered_form"></span>
     </metal:content>
 </metal:main>
