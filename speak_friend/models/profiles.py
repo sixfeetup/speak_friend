@@ -79,6 +79,7 @@ class UserProfile(Base):
     is_superuser = Column(Boolean, default=False)
 
 
+
     def __init__(self, username, first_name, last_name, email,
                  password_hash, password_salt, login_attempts, admin_disabled,
                  is_superuser=False):
@@ -115,17 +116,20 @@ class ResetToken(Base):
     username = Column(
         UnicodeText,
         ForeignKey(UserProfile.username),
-        primary_key=True,
+        index=True,
+        nullable=False,
     )
     user = relationship(
         UserProfile,
-        foreign_keys=[UserProfile.username],
         primaryjoin='ResetToken.username==UserProfile.username',
+        single_parent=True,
+        passive_deletes=True,
+        uselist=False,
     )
     token = Column(
         UUID(as_uuid=True),
         default=uuid.uuid4,
-        unique=True,
+        primary_key=True,
     )
     came_from = Column(UnicodeText)
     generation_ts = Column(
@@ -135,7 +139,6 @@ class ResetToken(Base):
         server_onupdate=FetchedValue(),
         index=True,
     )
-
 
     def __init__(self, username, token=None, came_from=None):
         self.username = username
