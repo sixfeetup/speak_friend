@@ -98,6 +98,8 @@ def username_validator(should_exist):
         query = query.filter(UserProfile.username==value)
         exists = bool(query.count())
         if exists != should_exist:
+
+
             if should_exist == True:
                 return "Username does not exist."
             else:
@@ -246,3 +248,30 @@ def make_login_form(action=''):
         )
     )
     return login_form
+
+
+class PasswordReset(MappingSchema):
+    password = SchemaNode(
+        String(),
+        missing=null,
+        widget=StrengthValidatingPasswordWidget(),
+    )
+    came_from = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
+    )
+
+
+def make_password_reset_form():
+    password_reset_form = Form(
+        PasswordReset(),
+        buttons=(
+            Button('submit', title='Reset Password'),
+            'cancel'
+        ),
+        resource_registry=password_registry,
+        renderer=renderer
+    )
+    return password_reset_form
