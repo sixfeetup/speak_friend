@@ -5,13 +5,13 @@
        <div class="navbar">
            <div class="navbar-inner">
                <ul id="site-nav" class="nav">
-                   <li><a tal:attributes="href python:request.route_url('login')">Sign In</a></li>
-                   <li><a tal:attributes="href python:request.route_url('create_profile')">Log In Details</a></li>
-                   <li><a href="/">Home</a></li>
-                   <li><a href="/control_panel">Settings</a></li>
+                   <li tal:attributes="class python:api.is_active_tab('login')"><a tal:attributes="href python:request.route_url('login')">Sign In</a></li>
+                   <li tal:attributes="class python:api.is_active_tab('create_profile')"><a tal:attributes="href python:request.route_url('create_profile')">Create Profile</a></li>
+                   <li tal:attributes="class python:api.is_active_tab('home')"><a href="/">Home</a></li>
+                   <li tal:attributes="class python:api.is_active_tab('control_panel')"><a href="/control_panel">Settings</a></li>
                    <li><a href="#">Admin</a></li>
                    <tal:my_profile tal:condition="api.current_userid">
-                   <li><a tal:attributes="href python:request.route_url('edit_profile',
+                   <li tal:attributes="class python:api.is_active_tab('edit_profile')"><a tal:attributes="href python:request.route_url('edit_profile',
                        username=api.current_userid)">Edit Profile</a></li>
                    </tal:my_profile>
                    <li>

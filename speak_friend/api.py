@@ -46,6 +46,12 @@ class TemplateAPI(object):
                 for js_path in resources['js']
             ])
 
+    def is_active_tab(self, route_name):
+        if self.request.matched_route.name == route_name:
+            return 'active'
+        else:
+            return ''
+
     @property
     def current_userid(self):
         userid = authenticated_userid(self.request)
