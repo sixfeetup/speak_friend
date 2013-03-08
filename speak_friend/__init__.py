@@ -154,6 +154,7 @@ def includeme(config):
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout')
     config.add_notfound_view(error.notfound)
+    config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')

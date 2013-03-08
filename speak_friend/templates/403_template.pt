@@ -1,0 +1,6 @@
+<metal:main use-macro="load: base.pt">
+  <metal:pagetitle metal:fill-slot="page-title">Apologies</metal:pagetitle>
+  <metal:content metal:fill-slot="content">
+    <p>You are not allowed to access the resource you have requested.</p>
+  </metal:content>
+</metal:main>
