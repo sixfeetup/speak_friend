@@ -9,6 +9,9 @@ body {
     padding: 20px;
     margin: 20px auto;
 }
+.navbar {
+    margin-top: 20px;
+}
 .navbar,
 .nav {
     width: 100%;
@@ -16,6 +19,13 @@ body {
 #footer {
     max-width: 1020px;
     margin: 0 auto;
+}
+
+.username {
+    float: right;
+    font-size: 15px;
+    font-weight: bold;
+    color: #666666;
 }
 
 /* forms */
