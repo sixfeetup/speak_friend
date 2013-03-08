@@ -34,6 +34,7 @@ from speak_friend.views import admin
 from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.views import open_id
+from speak_friend.views import error
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import handle_openid_request
 from speak_friend.subscribers import log_activity
@@ -153,6 +154,8 @@ def includeme(config):
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout')
+    config.add_notfound_view(error.notfound)
+    config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')

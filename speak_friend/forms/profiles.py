@@ -116,6 +116,7 @@ class Profile(MappingSchema):
     username = SchemaNode(
         String(),
         validator=Function(username_validator(False)),
+        description='* we suggest using your first and last name',
     )
     first_name = SchemaNode(String())
     last_name = SchemaNode(String())
@@ -133,6 +134,7 @@ class Profile(MappingSchema):
     password = SchemaNode(
         String(),
         widget=StrengthValidatingPasswordWidget(),
+        description='* Minimum of 8 characters and must include one non-alpha character.',
     )
     agree_to_policy = SchemaNode(
         Bool(),
@@ -259,6 +261,7 @@ def make_login_form(action=''):
     login_form = Form(
         Login(),
         action=action,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Log In'),
             'cancel'
