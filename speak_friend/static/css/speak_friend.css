@@ -52,3 +52,8 @@ input[type="color"],
     border: none;
     padding: 0;
 }
+
+#profile-form #item-deformField6 label,
+#profile-form #item-deformField6 div {
+    display: inline;
+}
