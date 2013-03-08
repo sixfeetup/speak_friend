@@ -237,6 +237,7 @@ class PasswordResetRequest(MappingSchema):
 def make_password_reset_request_form():
     password_reset_request_form = Form(
         PasswordResetRequest(),
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Request Password'),
             'cancel'
