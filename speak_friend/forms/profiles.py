@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import Email, Function, Regex, null
+from colander import Email, Function, OneOf, Regex, null
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -109,10 +109,13 @@ def username_validator(should_exist):
     return inner_username_validator
 
 
+def usage_policy_validator(value):
+    return value == True
+
+
 class Profile(MappingSchema):
     username = SchemaNode(
         String(),
-        missing='unchanged',
         validator=Function(username_validator(False)),
     )
     first_name = SchemaNode(String())
@@ -132,6 +135,8 @@ class Profile(MappingSchema):
     agree_to_policy = SchemaNode(
         Bool(),
         title='I agree to the usage policy.',
+        validator=Function(usage_policy_validator,
+                           message='Agreement with the usage policy is required.'),
     )
     captcha = SchemaNode(String())
     came_from = SchemaNode(
