@@ -249,6 +249,7 @@ def make_login_form(action=''):
     login_form = Form(
         Login(),
         action=action,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Log In'),
             'cancel'
