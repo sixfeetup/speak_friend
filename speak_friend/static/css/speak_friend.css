@@ -19,6 +19,13 @@ body {
 }
 
 /* forms */
+label {
+    font-weight: bold;
+}
+input,
+textarea {
+    width: 400px;
+}
 .form-horizontal .control-label {
     padding-top: 4px;
 }
@@ -39,4 +46,9 @@ input[type="color"],
 .uneditable-input  {
     height: 30px;
     margin-bottom: 5px;
+}
+.form-actions {
+    background-color: transparent;
+    border: none;
+    padding: 0;
 }
