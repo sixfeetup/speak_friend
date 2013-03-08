@@ -1,5 +1,4 @@
 # Views related to account management (creating, editing, deactivating)
-from datetime import timedelta
 
 from deform import Form, ValidationFailure
 
@@ -12,11 +11,8 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from sqlalchemy import func
-
 from speak_friend.events import AccountCreated
 from speak_friend.forms.profiles import make_password_reset_request_form
-from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
