@@ -181,11 +181,13 @@ def make_profile_form(edit=False):
     if edit:
         form = Form(EditProfileSchema(), buttons=('submit', 'cancel'),
                         resource_registry=password_registry,
-                        renderer=renderer)
+                        renderer=renderer,
+                        bootstrap_form_style='form-vertical')
     else:
         form = Form(Profile(), buttons=('submit', 'cancel'),
                         resource_registry=password_registry,
-                        renderer=renderer)
+                        renderer=renderer,
+                        bootstrap_form_style='form-vertical')
     return form
 
 
