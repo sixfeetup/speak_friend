@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import Email, Function, OneOf, Regex, null
+from colander import All, Email, Function, Regex, null
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -53,7 +53,7 @@ class FQDN(Regex):
         super(FQDN, self).__init__(fqdn_re, msg=msg)
 
 
-class UserEmail(Email):
+class UserEmail(object):
     """Validator to check email existence in UserProfiles
 
     If ``msg`` is supplied, it will be the error message to be used when
@@ -62,19 +62,18 @@ class UserEmail(Email):
     The ``should_exist`` keyword argument specifies whether the validator checks for the
     email existing or not in the table. It defaults to `True`
     """
-    def __init__(self, msg=None, should_exist=True):
+    def __init__(self, msg=None, should_exist=True, for_edit=False):
         if msg is None:
             msg = "No user with that email address"
+        self.msg = msg
         self.should_exist = should_exist
-        super(UserEmail, self).__init__(msg=msg)
+        self.for_edit = for_edit
 
     def __call__(self, node, value):
-        super(UserEmail, self).__call__(node, value)
         session = DBSession()
-        # Detect an edit to an existing profile.
-        user = session.query(UserProfile).filter(
-            UserProfile.email==value).first()
-        if user is not None:
+        # This relies on the current_value attribute being set
+        # when the form is created (based on the authenticated username)
+        if self.for_edit and value == node.current_value:
             return True
         query = session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
@@ -123,10 +122,13 @@ class Profile(MappingSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
-        validator=UserEmail(should_exist=False,
-                         msg="Email address already in use."),
+        validator=All(
+            Email(),
+            UserEmail(should_exist=False,
+                      msg="Email address already in use."),
+        ),
         widget=CheckedInputWidget(subject=u'Email Address',
-                                 confirm_subject=u'Confirm Email Address'),
+                                  confirm_subject=u'Confirm Email Address'),
     )
     password = SchemaNode(
         String(),
@@ -154,12 +156,14 @@ class EditProfileSchema(MappingSchema):
                           required=False)
     email = SchemaNode(
         String(),
-        required=False,
         title=u'Email Address',
-        validator=UserEmail(should_exist=False,
-                         msg="Email address already in use."),
+        validator=All(
+            Email(),
+            UserEmail(should_exist=False, for_edit=True,
+                      msg="Email address already in use."),
+        ),
         widget=CheckedInputWidget(subject=u'Email Address',
-                                 confirm_subject=u'Confirm Email Address'),
+                                  confirm_subject=u'Confirm Email Address'),
     )
     password = SchemaNode(
         String(),
@@ -177,9 +181,15 @@ class EditProfileSchema(MappingSchema):
 
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
-def make_profile_form(edit=False):
+def make_profile_form(request, edit=False):
     if edit:
-        form = Form(EditProfileSchema(), buttons=('submit', 'cancel'),
+        # We need to attach the current value of the user's email
+        # so we know if they're trying to change it during validation
+        schema = EditProfileSchema()
+        for fld in schema:
+            if fld.name == 'email':
+                fld.current_value = request.user.email
+        form = Form(schema, buttons=('submit', 'cancel'),
                         resource_registry=password_registry,
                         renderer=renderer,
                         bootstrap_form_style='form-vertical')

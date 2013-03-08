@@ -41,7 +41,7 @@ class CreateProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
-        profile_form = make_profile_form()
+        profile_form = make_profile_form(self.request)
 
         try:
             appstruct = profile_form.validate(controls)  # call validate
@@ -76,7 +76,7 @@ class CreateProfile(object):
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
-        profile_form = make_profile_form()
+        profile_form = make_profile_form(self.request)
 
         return {
             'forms': [profile_form],
@@ -113,7 +113,7 @@ class EditProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
-        profile_form = make_profile_form(edit=True)
+        profile_form = make_profile_form(self.request, edit=True)
 
         try:
             appstruct = profile_form.validate(controls)  # call validate
@@ -163,7 +163,7 @@ class EditProfile(object):
             return self.error()
 
         appstruct = target_user.make_appstruct()
-        form = make_profile_form(edit=True)
+        form = make_profile_form(self.request, edit=True)
         return {
             'forms': [form],
             'rendered_form': form.render(appstruct),

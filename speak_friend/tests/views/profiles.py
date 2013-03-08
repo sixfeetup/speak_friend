@@ -79,6 +79,7 @@ class ViewTests(SFBaseCase):
         request.matchdict['username'] = 'testuser'
         view = EditProfile(request)
         user = create_user('test')
+        request.user = user
         view.session = MockSession(store=[user])
         view.target_username = 'test'
         view.current_username = 'test'

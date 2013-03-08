@@ -1,8 +1,12 @@
 from pyramid.exceptions import ConfigurationError
+from pyramid.security import unauthenticated_userid
 
 from passlib.context import CryptContext
 
 from speak_friend.passwords import PasswordValidator
+
+from speak_friend.models import DBSession
+from speak_friend.models.profiles import UserProfile
 
 
 def add_controlpanel_section(config, schema, override=False):
@@ -84,3 +88,12 @@ def set_password_validator(config, validator_class=PasswordValidator):
         config.registry.password_validator = validator
 
     config.action('password_validator', initialize_validator)
+
+
+def get_user(request):
+    userid = unauthenticated_userid(request)
+    if userid is not None:
+        # this should return None if the user doesn't exist
+        # in the database
+        session = DBSession()
+        return session.query(UserProfile).get(userid)
