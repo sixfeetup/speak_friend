@@ -3,6 +3,7 @@
     <head>
         <meta http-equiv="X-XRDS-Location" content="${request.route_url('yadis')}" />
         <metal:nav use-macro="api.macros['head_elements']" />
+        <link rel="shortcut icon" href="${request.static_url('speak_friend:static/favicon.ico')}" />
         
         <tal:resources repeat="css_path api.css_resources">
           <link rel="stylesheet" media="screen" type="text/css"
