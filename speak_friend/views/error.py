@@ -8,6 +8,6 @@ def notfound(request):
 
 
 def notallowed(request):
-    return render_to_response("speak_friend:templates/",
+    return render_to_response("speak_friend:templates/403_template.pt",
                               {},
                               request=request)
