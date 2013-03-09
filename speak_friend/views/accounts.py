@@ -337,6 +337,7 @@ class LoginView(object):
         self.request = request
         self.pass_ctx = request.registry.password_context
         self.error_string = 'Username or password is invalid.'
+        self.session = DBSession()
         query = self.request.GET.items() + self.request.POST.items()
         action = request.current_route_url(_query=query)
         self.frm = make_login_form(action)
@@ -355,7 +356,7 @@ class LoginView(object):
             if self.pass_ctx.needs_update(saved_hash):
                 new_hash = self.pass_ctx.encrypt(password)
                 user.password_hash = new_hash
-                DBSession().add(user)
+                self.session.add(user)
             passes = True
         else:
             passes = False
@@ -395,8 +396,10 @@ class LoginView(object):
         login = appstruct['login']
         password = appstruct['password']
 
-        user = DBSession.query(UserProfile).\
-                filter(UserProfile.username==login).first()
+        query = self.session.query(UserProfile)
+        query = query.filter((UserProfile.username==login) | \
+                             (UserProfile.email==login))
+        user = query.first()
 
         if user:
             saved_hash = user.password_hash

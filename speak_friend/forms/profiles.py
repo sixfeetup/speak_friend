@@ -247,9 +247,14 @@ def make_password_reset_request_form():
 
 
 class Login(MappingSchema):
-    login = SchemaNode(String())
-    password = SchemaNode(String(),
-                          widget=PasswordWidget())
+    login = SchemaNode(
+        String(),
+        title='Username or Email',
+    )
+    password = SchemaNode(
+        String(),
+        widget=PasswordWidget(),
+    )
     came_from = SchemaNode(
         String(),
         widget=HiddenWidget(),
