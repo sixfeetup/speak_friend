@@ -14,7 +14,6 @@ from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 
 
-# FIXME: attach appropriate permissions
 @view_defaults(route_name='contact_us')
 class ContactUs(object):
     def __init__(self, request):

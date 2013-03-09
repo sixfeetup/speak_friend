@@ -1,10 +1,13 @@
 # Views related to account management (creating, editing, deactivating)
+from datetime import timedelta
 
 from deform import Form, ValidationFailure
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.renderers import render_to_response
+from pyramid.security import Allow
+from pyramid.security import Everyone
 from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_defaults
 
@@ -86,7 +89,6 @@ class CreateProfile(object):
         }
 
 
-# XXX Only logged in users should have permission
 @view_defaults(route_name='edit_profile')
 class EditProfile(object):
 
@@ -102,9 +104,6 @@ class EditProfile(object):
         if not came_from:
             came_from = '/'
         return came_from
-
-    def error(self):
-        return HTTPFound("You are not allowed to access this resource")
 
     def post(self):
         if self.request.method != "POST":
@@ -147,21 +146,6 @@ class EditProfile(object):
         return self.get()
 
     def get(self):
-        # Make sure the user who is editing is an admin, or the user requested
-        #   Return an error page if not
-        # Fetch the user information from the DB
-        # Create an appstruct
-        # Pass the appstruct to form.render(appstruct)
-        request_user = self.session.query(UserProfile).filter(
-                UserProfile.username==self.current_username).first()
-        target_user = self.session.query(UserProfile).filter(
-                UserProfile.username==self.target_username).first()
-        if target_user is None or request_user is None:
-            return self.error()
-        if not (request_user == target_user or
-            request_user.is_superuser):
-            return self.error()
-
         appstruct = target_user.make_appstruct()
         form = make_profile_form(self.request, edit=True)
         return {
@@ -189,7 +173,6 @@ def token_expired(request):
     }
 
 
-# FIXME: attach appropriate permissions
 @view_defaults(route_name='request_password')
 class RequestPassword(object):
     def __init__(self, request):

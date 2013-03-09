@@ -9,10 +9,12 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
+from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
 from pyramid.events import NewResponse
 from pyramid.path import DottedNameResolver
 from pyramid.renderers import JSON
+from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
@@ -28,7 +30,9 @@ from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
 from speak_friend.models import DBSession, Base
-from speak_friend.security import userfinder
+from speak_friend.security import EditProfileFactory
+from speak_friend.security import RootFactory
+from speak_friend.security import groupfinder
 from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import controlpanel
@@ -60,11 +64,11 @@ def includeme(config):
     authn_secret = config.registry.settings.get('speak_friend.authn_secret',
                                                 'this is bad')
     authn_policy = AuthTktAuthenticationPolicy(secret=authn_secret,
-                                               callback=userfinder
-    )
+                                               callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authorization_policy(authz_policy)
     config.set_authentication_policy(authn_policy)
+    config.set_root_factory(RootFactory)
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
@@ -77,83 +81,100 @@ def includeme(config):
     config.add_route('yadis', '/yadis.xml')
     config.add_view(open_id.generate_xrds, accept=YADIS_CONTENT_TYPE,
                     route_name='yadis',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/xrds.pt')
     config.add_route('openid_provider', '/server')
     config.add_view(open_id.OpenIDProvider, attr="get", request_method='GET',
                     route_name='openid_provider',
+                    permission='view',
                     renderer='templates/openid_response.pt')
     config.add_view(open_id.OpenIDProvider, attr="post", request_method='POST',
                     route_name='openid_provider',
+                    permission='view',
                     renderer='templates/openid_response.pt')
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
                     route_name='create_profile',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/create_profile.pt')
     config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     route_name='create_profile',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/create_profile.pt')
-    config.add_route('edit_profile', '/edit_profile/{username}/')
+    config.add_route('edit_profile', '/edit_profile/{username}/',
+                     factory=EditProfileFactory)
     config.add_view(accounts.EditProfile, attr="get", request_method='GET',
                     route_name='edit_profile',
+                    permission='edit',
                     renderer='templates/edit_profile.pt')
     config.add_view(accounts.EditProfile, attr="post", request_method='POST',
                     route_name='edit_profile',
+                    permission='edit',
                     renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/token_expired.pt')
     config.add_route('request_password', '/request_password')
     config.add_view(accounts.RequestPassword,
                     route_name='request_password',
+                    permission=NO_PERMISSION_REQUIRED,
                     attr="get", request_method='GET',
                     renderer='templates/request_password.pt')
     config.add_view(accounts.RequestPassword,
                     attr="post", request_method='POST',
                     route_name='request_password',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/request_password.pt')
     config.add_route('reset_password', '/reset_password/{token}')
     config.add_view(accounts.ResetPassword,
                     attr="get", request_method='GET',
                     route_name='reset_password',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/reset_password.pt')
     config.add_view(accounts.ResetPassword,
                     attr="post", request_method='POST',
                     route_name='reset_password',
+                    permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/reset_password.pt')
     config.add_route('create_domain', '/create_domain')
     config.add_view(admin.CreateDomain, attr="get", request_method='GET',
                     route_name='create_domain',
+                    permission='admin',
                     renderer='templates/create_domain.pt')
     config.add_view(admin.CreateDomain, attr='post', request_method='POST',
                     route_name='create_domain',
+                    permission='admin',
                     renderer='templates/create_domain.pt')
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.ControlPanel,
-                    route_name='control_panel',
                     attr="get", request_method='GET',
+                    route_name='control_panel',
+                    permission='admin',
                     renderer='templates/control_panel.pt')
     config.add_view(controlpanel.ControlPanel,
                     attr="post", request_method='POST',
                     route_name='control_panel',
+                    permission='admin',
                     renderer='templates/control_panel.pt')
     config.add_route('contact_us', '/contact_us')
     config.add_view(contactus.ContactUs,
                     attr="get", request_method='GET',
-                    route_name='contact_us',
+                    route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/contact_us.pt')
     config.add_view(contactus.ContactUs,
                     attr="post", request_method='POST',
-                    route_name='contact_us',
+                    route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/contact_us.pt')
     config.add_route('login', '/login')
     config.add_view(accounts.LoginView, attr='get', request_method='GET',
-                    route_name='login',
+                    route_name='login', permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/login.pt')
     config.add_view(accounts.LoginView, attr='post', request_method='POST',
-                    route_name='login',
+                    route_name='login', permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
-    config.add_view(accounts.logout, route_name='logout')
+    config.add_view(accounts.logout, route_name='logout', permission='view')
     config.add_notfound_view(error.notfound)
     config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',
