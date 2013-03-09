@@ -47,7 +47,8 @@ class TemplateAPI(object):
             ])
 
     def is_active_tab(self, route_name):
-        if self.request.matched_route.name == route_name:
+        if self.request.matched_route and \
+           self.request.matched_route.name == route_name:
             return 'active'
         else:
             return ''
@@ -58,3 +59,7 @@ class TemplateAPI(object):
         if not userid:
             return ''
         return userid
+
+    @property
+    def is_superuser(self):
+        return self.request.user and self.request.user.is_superuser

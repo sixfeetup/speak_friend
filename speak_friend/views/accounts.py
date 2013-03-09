@@ -95,7 +95,6 @@ class EditProfile(object):
     def __init__(self, request):
         self.request = request
         self.target_username = request.matchdict['username']
-        self.current_username = authenticated_userid(request)
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
 
@@ -131,8 +130,7 @@ class EditProfile(object):
         if 'password' in appstruct and appstruct['password']:
             hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
 
-        target_user = self.session.query(UserProfile).filter(
-                UserProfile.username==self.target_username).first()
+        target_user = self.session.query(UserProfile).get(self.target_username)
 
         if hashed_pw != '':
             target_user.password_hash = hashed_pw
@@ -146,6 +144,7 @@ class EditProfile(object):
         return self.get()
 
     def get(self):
+        target_user = self.session.query(UserProfile).get(self.target_username)
         appstruct = target_user.make_appstruct()
         form = make_profile_form(self.request, edit=True)
         return {
