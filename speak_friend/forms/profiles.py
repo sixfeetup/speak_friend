@@ -10,6 +10,7 @@ from deform.widget import CheckedPasswordWidget, PasswordWidget
 from deform.widget import HiddenWidget
 from deform.widget import ResourceRegistry
 
+from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
@@ -142,7 +143,10 @@ class Profile(MappingSchema):
         validator=Function(usage_policy_validator,
                            message='Agreement with the usage policy is required.'),
     )
-    captcha = SchemaNode(String())
+    captcha = SchemaNode(
+        String(),
+        widget=deferred_recaptcha_widget,
+    )
     came_from = SchemaNode(
         String(),
         widget=HiddenWidget(),
@@ -191,15 +195,15 @@ def make_profile_form(request, edit=False):
         for fld in schema:
             if fld.name == 'email':
                 fld.current_value = request.user.email
-        form = Form(schema, buttons=('submit', 'cancel'),
-                        resource_registry=password_registry,
-                        renderer=renderer,
-                        bootstrap_form_style='form-vertical')
     else:
-        form = Form(Profile(), buttons=('submit', 'cancel'),
-                        resource_registry=password_registry,
-                        renderer=renderer,
-                        bootstrap_form_style='form-vertical')
+        schema = Profile().bind(request=request)
+    form = Form(
+        schema,
+        buttons=('submit', 'cancel'),
+        resource_registry=password_registry,
+        renderer=renderer,
+        bootstrap_form_style='form-vertical',
+    )
     return form
 
 

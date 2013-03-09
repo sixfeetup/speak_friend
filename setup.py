@@ -27,6 +27,7 @@ requires = [
     'pyramid_exclog',
     'mailinglogger',
     'pyramid_mailer',
+    'requests',
     ]
 
 tests_require = requires + [
