@@ -2,6 +2,7 @@ from logging import getLogger
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
+from pyramid.response import Response
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -19,7 +20,10 @@ def register_api(event):
     event so that it will be injected into the environment, without
     having to explicily add it in each view function.
     """
-    event['api'] = TemplateAPI(event['request'], event.rendering_val)
+    if isinstance(event.rendering_val, Response):
+        event['api'] = TemplateAPI(event['request'], {})
+    else:
+        event['api'] = TemplateAPI(event['request'], event.rendering_val)
 
 
 def log_activity(event):

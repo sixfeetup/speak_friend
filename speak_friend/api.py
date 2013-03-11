@@ -12,7 +12,8 @@ class TemplateAPI(object):
         self.request = request
         self.init_macros()
         self.init_forms(rendering_val)
-        self.request.response.headers[YADIS_HEADER_NAME] = self.request.route_url('yadis')
+        if request is not None:
+            self.request.response.headers[YADIS_HEADER_NAME] = self.request.route_url('yadis')
 
     @property
     def settings(self):
