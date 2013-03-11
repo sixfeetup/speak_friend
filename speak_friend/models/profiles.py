@@ -140,12 +140,12 @@ class ResetToken(Base):
         index=True,
     )
 
-    def __init__(self, username, token=None, came_from=None):
+    def __init__(self, username, came_from, token=None):
         self.username = username
+        self.came_from = came_from
         if token is None:
             token = uuid.uuid4()
         self.token = token
-        self.came_from = came_from
 
     def __repr__(self):
         return u"<ResetToken(%s)>" % self.token

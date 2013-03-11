@@ -313,6 +313,12 @@ class RequestPassword(object):
         self.subject = "%s: Reset password" % settings['site_name']
         self.sender = settings['site_from']
 
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = '/'
+        return came_from
+
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
@@ -336,7 +342,9 @@ class RequestPassword(object):
     def get(self):
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render(),
+            'rendered_form': self.frm.render({
+                'came_from': self.get_referrer(),
+            }),
         }
 
     def notify(self, captured):
@@ -345,7 +353,7 @@ class RequestPassword(object):
         profile = query.first()
 
         mailer = get_mailer(self.request)
-        reset_token = ResetToken(profile.username)
+        reset_token = ResetToken(profile.username, captured['came_from'])
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
                                       self.request)

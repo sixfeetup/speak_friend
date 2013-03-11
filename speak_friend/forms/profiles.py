@@ -253,11 +253,17 @@ class Domain(MappingSchema):
 
 
 class PasswordResetRequest(MappingSchema):
-      email = SchemaNode(
-          String(),
-          title=u'Email Address',
-          validator=UserEmail(should_exist=True),
-      )
+    email = SchemaNode(
+        String(),
+        title=u'Email Address',
+        validator=UserEmail(should_exist=True),
+    )
+    came_from = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
+    )
 
 
 def make_password_reset_request_form(request=None):
