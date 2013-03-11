@@ -25,6 +25,7 @@ from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
+from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
@@ -192,6 +193,81 @@ class EditProfile(object):
             'target_username': self.target_username,
         }
 
+
+@view_defaults(route_name='change_password')
+class ChangePassword(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.target_username = request.matchdict['username']
+        self.pass_ctx = request.registry.password_context
+
+    def verify_password(self, password, saved_hash, user):
+        if not user:
+            return False
+
+        if self.pass_ctx.verify(password, saved_hash):
+            if self.pass_ctx.needs_update(saved_hash):
+                new_hash = self.pass_ctx.encrypt(password)
+                user.password_hash = new_hash
+                self.session.add(user)
+            passes = True
+        else:
+            passes = False
+        return passes
+
+    def get(self):
+        form = make_password_change_form()
+        return {
+            'forms': [form],
+            'rendered_form': form.render(),
+            'target_username': self.target_username,
+        }
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+        form = make_password_change_form(request=self.request)
+
+        try:
+            appstruct = form.validate(controls)  # call validate
+        except ValidationFailure, e:
+            # Don't leak hash information
+            if ('password' in form.cstruct
+                and form.cstruct['password'] != ''):
+                form.cstruct['password'] = ''
+            return {
+                'forms': [form],
+                'rendered_form': e.render(),
+                'target_username': self.target_username,
+            }
+
+        target_user = self.session.query(UserProfile).get(self.target_username)
+
+        password = appstruct['password']
+        if password == colander.null:
+            password = ''
+
+        valid_pass = self.verify_password(password,
+                                          target_user.password_hash,
+                                          target_user)
+
+        new_hash = self.pass_ctx.encrypt(appstruct['new_password'])
+
+        if valid_pass:
+            target_user.password_hash = new_hash
+            self.session.add(target_user)
+            self.session.flush()
+            self.request.session.flash('Account successfully modified!',
+                                       queue='success')
+        else:
+            self.request.session.flash('Incorrect password.',
+                                       queue='error')
+        return self.get()
 
 def token_expired(request):
     cp = ControlPanel(request)

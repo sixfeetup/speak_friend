@@ -312,3 +312,38 @@ def make_password_reset_form():
         renderer=renderer
     )
     return password_reset_form
+
+
+class PasswordChange(MappingSchema):
+    password = SchemaNode(
+        String(),
+        widget=PasswordWidget(),
+    )
+    new_password = SchemaNode(
+        String(),
+        missing=null,
+        widget=StrengthValidatingPasswordWidget(),
+        description='* Minimum of 8 characters and must include one non-alpha character.',
+    )
+    came_from = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
+    )
+
+
+def make_password_change_form(request=None):
+    schema = PasswordChange()
+    if request:
+        schema = PasswordChange().bind(request=request)
+    password_reset_form = Form(
+        schema,
+        buttons=(
+            Button('submit', title='Change Password'),
+            'cancel'
+        ),
+        resource_registry=password_registry,
+        renderer=renderer
+    )
+    return password_reset_form

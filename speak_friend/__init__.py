@@ -30,6 +30,7 @@ from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.controlpanel import user_creation_email_notification_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
 from speak_friend.models import DBSession, Base
+from speak_friend.security import ChangePasswordFactory
 from speak_friend.security import EditProfileFactory
 from speak_friend.security import RootFactory
 from speak_friend.security import groupfinder
@@ -109,6 +110,17 @@ def includeme(config):
                     renderer='templates/edit_profile.pt')
     config.add_view(accounts.EditProfile, attr="post", request_method='POST',
                     route_name='edit_profile',
+                    permission='edit',
+                    renderer='templates/edit_profile.pt')
+    config.add_route('change_password', '/change_password/{username}/',
+                     factory=ChangePasswordFactory)
+    config.add_view(accounts.ChangePassword, attr="get", request_method='GET',
+                    route_name='change_password',
+                    permission='edit',
+                    renderer='templates/edit_profile.pt')
+    config.add_view(accounts.ChangePassword, attr="post",
+                    request_method='POST',
+                    route_name='change_password',
                     permission='edit',
                     renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
