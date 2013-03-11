@@ -18,7 +18,7 @@
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
