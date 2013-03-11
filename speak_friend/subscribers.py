@@ -90,7 +90,7 @@ def confirm_account_created(event):
 
 def handle_openid_request(event):
     if 'openid.assoc_handle' in event.request.GET and \
-       event.response.code == 302:
+       event.response.status_code == 302:
         provider = OpenIDProvider(event.request)
         openid_response = provider.get()
         response_url = openid_response.headers['Location']
