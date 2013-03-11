@@ -48,3 +48,18 @@ class EditProfileFactory(object):
             self.__acl__.append(
                 (Allow, current_username, 'edit'),
             )
+
+
+class ChangePasswordFactory(object):
+    __acl__ = [
+        (Allow, Authenticated, 'view'),
+    ]
+
+    def __init__(self, request):
+        self.request = request
+        target_username = request.matchdict['username']
+        current_username = authenticated_userid(request)
+        if target_username == current_username:
+            self.__acl__.append(
+                (Allow, current_username, 'edit'),
+            )
