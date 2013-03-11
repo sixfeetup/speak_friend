@@ -548,7 +548,6 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         if not self.verify_password(password, saved_hash, user):
-            user.login_attempts += 1
             self.request.registry.notify(LoginFailed(self.request, user))
             return self.login_error(self.error_string)
 

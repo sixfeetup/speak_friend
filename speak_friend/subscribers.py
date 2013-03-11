@@ -1,4 +1,5 @@
 from logging import getLogger
+import transaction
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
@@ -99,3 +100,10 @@ def handle_openid_request(event):
         openid_response = provider.get()
         response_url = openid_response.headers['Location']
         event.response.headers['Location'] = response_url
+
+
+def increment_failed_login_count(event):
+    event.user.login_attempts += 1
+    session = DBSession()
+    session.add(event.user)
+    transaction.commit()

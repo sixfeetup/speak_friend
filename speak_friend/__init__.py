@@ -24,6 +24,7 @@ from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
+from speak_friend.events import LoginFailed
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 from speak_friend.forms.controlpanel import password_reset_schema
@@ -42,6 +43,7 @@ from speak_friend.views import open_id
 from speak_friend.views import error
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import handle_openid_request
+from speak_friend.subscribers import increment_failed_login_count
 from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import register_api
@@ -77,6 +79,7 @@ def includeme(config):
     config.add_subscriber(log_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
+    config.add_subscriber(increment_failed_login_count, LoginFailed)
 
     # Routes
     config.add_route('yadis', '/yadis.xml')
