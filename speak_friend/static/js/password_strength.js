@@ -19,6 +19,7 @@
 */
 
 zxcvbn_load_hook = function() {
+  var colorize, handleChange, passwdInput;
   colorize = function (score, target) {
     var colors, color, bar;
     colors = ['e1', 'c2','c4','c6','c8','ca','ac','8c','6c','4c','2c'];
@@ -50,6 +51,8 @@ zxcvbn_load_hook = function() {
       colorize(r.score, target);
     }
   };
+  passwordInput = $('input[type="password"]');
+  handleChange(passwordInput);
   $('input[type="password"]').keyup(function (evt) {
     var target;
     target = $(evt.target);
