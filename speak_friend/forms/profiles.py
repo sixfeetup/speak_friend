@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import All, Email, Function, Regex, null
+from colander import All, Email, Function, Regex, null, deferred
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -114,6 +114,20 @@ def usage_policy_validator(value):
     return value == True
 
 
+@deferred
+def create_password_validator(node, kw):
+    request = kw.get('request')
+    ctx_validator = request.registry.password_validator
+
+    def inner_password_validator(value):
+        error_msg = ctx_validator(value)
+        if not error_msg:
+            return True
+        else:
+            return error_msg
+    return Function(inner_password_validator)
+
+
 class Profile(MappingSchema):
     username = SchemaNode(
         String(),
@@ -137,6 +151,7 @@ class Profile(MappingSchema):
         String(),
         widget=StrengthValidatingPasswordWidget(),
         description='* Minimum of 8 characters and must include one non-alpha character.',
+        validator=create_password_validator,
     )
     agree_to_policy = SchemaNode(
         Bool(),
@@ -245,7 +260,7 @@ class PasswordResetRequest(MappingSchema):
       )
 
 
-def make_password_reset_request_form():
+def make_password_reset_request_form(request=None):
     password_reset_request_form = Form(
         PasswordResetRequest(),
         bootstrap_form_style='form-vertical',
@@ -292,6 +307,7 @@ class PasswordReset(MappingSchema):
         String(),
         missing=null,
         widget=StrengthValidatingPasswordWidget(),
+        validator=create_password_validator
     )
     came_from = SchemaNode(
         String(),
@@ -301,9 +317,12 @@ class PasswordReset(MappingSchema):
     )
 
 
-def make_password_reset_form():
+def make_password_reset_form(request=None):
+    schema = PasswordReset()
+    if request:
+        schema = PasswordReset().bind(request=request)
     password_reset_form = Form(
-        PasswordReset(),
+        schema,
         buttons=(
             Button('submit', title='Reset Password'),
             'cancel'
@@ -324,6 +343,7 @@ class PasswordChange(MappingSchema):
         missing=null,
         widget=StrengthValidatingPasswordWidget(),
         description='* Minimum of 8 characters and must include one non-alpha character.',
+        validator=create_password_validator
     )
     came_from = SchemaNode(
         String(),
