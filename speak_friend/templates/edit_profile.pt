@@ -1,6 +1,11 @@
 <metal:main use-macro="load: base.pt">
 <metal:title fill-slot="page-title">Edit Profile for ${target_username}</metal:title>
     <metal:content fill-slot="content">
+    <div id='edit-profile-nav'
+        tal:define='userid api.current_userid;'>
+        <a id='edit-profile-link' tal:attributes="href python:request.route_url('edit_profile', username=userid)">Edit Profile</a>
+        <a id='change-password-link' tal:attributes="href python:request.route_url('change_password', username=userid)">Set Password</a>
+      </div>
       <div tal:content="structure rendered_form">form</div>
     </metal:content>
 </metal:main>
