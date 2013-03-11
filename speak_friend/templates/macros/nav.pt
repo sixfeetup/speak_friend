@@ -17,7 +17,7 @@
                    <li><a href="#">Admin</a></li>
                    </tal:admin>
                    <tal:authenticated tal:condition="api.current_userid">
-                   <li tal:attributes="class python:api.is_active_tab('edit_profile')"><a tal:attributes="href python:request.route_url('edit_profile',
+                   <li tal:attributes="class python:api.is_active_tab('edit_profile') or api.is_active_tab('change_password')"><a tal:attributes="href python:request.route_url('edit_profile',
                        username=api.current_userid)">Edit Profile</a></li>
                    <li><a tal:attributes="href python:request.route_url('logout')">Log Out</a></li>
                    </tal:authenticated>
