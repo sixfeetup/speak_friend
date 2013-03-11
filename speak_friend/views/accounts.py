@@ -14,7 +14,10 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from sqlalchemy import func
+
 from speak_friend.events import AccountCreated
+from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import make_profile_form, make_login_form
@@ -245,6 +248,12 @@ class ResetPassword(object):
                 if child.name == 'token_duration':
                     self.token_duration = child.default
 
+    def get_referrer(self):
+        came_from = self.request.referrer
+        if not came_from:
+            came_from = self.request.route_url('home')
+        return came_from
+
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
@@ -271,11 +280,18 @@ class ResetPassword(object):
                 ResetToken.username==reset_token.user.username).delete()
 
             reset_token.user.login_attempts = 0
+            headers = remember(self.request, reset_token.user.username)
+            self.request.response.headerlist.extend(headers)
             self.notify(reset_token.user)
             self.request.session.flash('Password successfully reset!',
                                        queue='success')
             url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            if captured['came_from']:
+                return HTTPFound(location=captured['came_from'],
+                                 headers=headers)
+            else:
+                url = self.request.route_url('home')
+                return HTTPFound(location=url, headers=headers)
         except ValidationFailure as e:
             # the submitted values could not be validated
             html = e.render()
@@ -296,7 +312,9 @@ class ResetPassword(object):
 
         return {
             'forms': [password_reset_form],
-            'rendered_form': password_reset_form.render(),
+            'rendered_form': password_reset_form.render({
+                'came_from': self.get_referrer(),
+            }),
         }
 
     def notify(self, user_profile):
@@ -327,7 +345,7 @@ class LoginView(object):
     def get_referrer(self):
         came_from = self.request.referrer
         if not came_from:
-            came_from = '/'
+            came_from = self.request.route_url('home')
         return came_from
 
     def verify_password(self, password, saved_hash, user):
@@ -393,7 +411,7 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         user.login_attempts = 0
-        headers = remember(self.request, login)
+        headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
 
         if appstruct['came_from']:
