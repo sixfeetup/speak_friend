@@ -226,7 +226,7 @@ def includeme(config):
     factory_class = session_resolver.resolve(factory_name)
     session_factory = factory_class(session_secret)
     config.set_session_factory(session_factory)
-    config.add_request_method(get_user, 'user', reify=True)
+    config.add_request_method(get_user, 'user', property=True)
 
 
 def init_sa(config):
