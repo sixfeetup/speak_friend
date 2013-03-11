@@ -1,6 +1,7 @@
 # Views related to account management (creating, editing, deactivating)
 from datetime import timedelta
 
+import colander
 from deform import Form, ValidationFailure
 
 from pyramid.httpexceptions import HTTPFound
@@ -110,6 +111,20 @@ class EditProfile(object):
             came_from = '/'
         return came_from
 
+    def verify_password(self, password, saved_hash, user):
+        if not user:
+            return False
+
+        if self.pass_ctx.verify(password, saved_hash):
+            if self.pass_ctx.needs_update(saved_hash):
+                new_hash = self.pass_ctx.encrypt(password)
+                user.password_hash = new_hash
+                self.session.add(user)
+            passes = True
+        else:
+            passes = False
+        return passes
+
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
@@ -132,21 +147,33 @@ class EditProfile(object):
                 'target_username': self.target_username,
             }
 
-        hashed_pw = ''
-        if 'password' in appstruct and appstruct['password']:
-            hashed_pw = self.pass_ctx.encrypt(appstruct['password'])
-
         target_user = self.session.query(UserProfile).get(self.target_username)
 
-        if hashed_pw != '':
-            target_user.password_hash = hashed_pw
-        target_user.email = appstruct['email']
+        password = appstruct['password']
+        if password == colander.null:
+            password = ''
+
+        valid_pass = self.verify_password(password,
+                                          target_user.password_hash,
+                                          target_user)
+
+        failed = False
+        if (target_user.email != appstruct['email'] and
+            valid_pass):
+            target_user.email = appstruct['email']
+        elif (target_user.email != appstruct['email']
+              and not valid_pass):
+            self.request.session.flash('Must provide the correct password to edit email addresses.',
+                                      queue='error')
+            failed = True
+
         target_user.first_name = appstruct['first_name']
         target_user.last_name = appstruct['last_name']
         self.session.add(target_user)
         self.session.flush()
-        self.request.session.flash('Account successfully modified!',
-                                   queue='success')
+        if not failed:
+            self.request.session.flash('Account successfully modified!',
+                                       queue='success')
         return self.get()
 
     def get(self):
