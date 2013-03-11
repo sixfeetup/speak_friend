@@ -16,6 +16,9 @@ body {
 .nav {
     width: 100%;
 }
+.subnav {
+    margin-bottom: 20px;
+}
 #footer {
     max-width: 1020px;
     margin: 0 auto;

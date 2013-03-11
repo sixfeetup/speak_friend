@@ -65,6 +65,7 @@
                     <metal:links use-macro="api.macros['quick_links']" />
                 </div>
                 <div class="span9">
+                    <metal:content define-slot="subnav" />
                     <h1><metal:content define-slot="page-title" /></h1>
                     <!--! Flash messages from specific queues -->
                     <tal:newsflash repeat="flash_type ['success', 'info', 'error']">
