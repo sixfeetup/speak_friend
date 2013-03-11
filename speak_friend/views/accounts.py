@@ -428,10 +428,10 @@ class LoginView(object):
 
 
 def logout(request):
-    # XXX This should really check permissions first.
+    # XXX This should really check permissions on the destination first.
     referrer = request.referrer
     if not referrer:
         referrer = '/'
-    self.request.registry.notify(LoggedOut(request, request.user))
+    request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)
