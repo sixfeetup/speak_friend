@@ -9,6 +9,8 @@ from pyramid.security import authenticated_userid
 
 class TemplateAPI(object):
     def __init__(self, request, rendering_val):
+        if not request:
+            return
         self.request = request
         self.init_macros()
         self.init_forms(rendering_val)
