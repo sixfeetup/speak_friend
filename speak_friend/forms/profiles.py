@@ -9,6 +9,7 @@ from deform.widget import CheckedInputWidget
 from deform.widget import CheckedPasswordWidget, PasswordWidget
 from deform.widget import HiddenWidget
 from deform.widget import ResourceRegistry
+from deform.widget import TextInputWidget
 
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models import DBSession
@@ -156,6 +157,11 @@ class Profile(MappingSchema):
 
 
 class EditProfileSchema(MappingSchema):
+    username = SchemaNode(
+        String(),
+        missing='',
+        widget=TextInputWidget(template='readonly/textinput'),
+    )
     first_name = SchemaNode(String(),
                            required=False)
     last_name = SchemaNode(String(),
