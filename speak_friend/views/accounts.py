@@ -17,6 +17,9 @@ from pyramid_mailer.message import Message
 from sqlalchemy import func
 
 from speak_friend.events import AccountCreated
+from speak_friend.events import LoggedIn
+from speak_friend.events import LoggedOut
+from speak_friend.events import LoginFailed
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.controlpanel import password_reset_schema
@@ -408,11 +411,14 @@ class LoginView(object):
 
         if not self.verify_password(password, saved_hash, user):
             user.login_attempts += 1
+            self.request.registry.notify(LoginFailed(self.request, user))
             return self.login_error(self.error_string)
 
         user.login_attempts = 0
         headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
+
+        self.request.registry.notify(LoggedIn(self.request, user))
 
         if appstruct['came_from']:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
@@ -426,5 +432,6 @@ def logout(request):
     referrer = request.referrer
     if not referrer:
         referrer = '/'
+    self.request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)
