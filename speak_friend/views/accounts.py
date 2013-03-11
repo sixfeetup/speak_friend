@@ -112,6 +112,13 @@ class EditProfile(object):
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
 
+    def get_extended_data(self):
+        """Provide a hook to extend the dict returned by the view.
+        Any new values will require that the view template is overriden
+        to use them.
+        """
+        return None
+
     def get_referrer(self):
         came_from = self.request.referrer
         if not came_from:
@@ -187,11 +194,15 @@ class EditProfile(object):
         target_user = self.session.query(UserProfile).get(self.target_username)
         appstruct = target_user.make_appstruct()
         form = make_profile_form(self.request, edit=True)
-        return {
+        data = {
             'forms': [form],
             'rendered_form': form.render(appstruct),
             'target_username': self.target_username,
         }
+        extended_data = self.get_extended_data()
+        if extended_data:
+            data.update(extended_data)
+        return data
 
 
 @view_defaults(route_name='change_password')
