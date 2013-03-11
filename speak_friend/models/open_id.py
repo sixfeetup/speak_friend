@@ -2,7 +2,9 @@ import datetime
 import time
 
 from sqlalchemy import Column, Integer, UnicodeText
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import BYTEA
+
 from speak_friend.models import Base
 
 from openid.association import Association as OpenIDAssociation
@@ -87,15 +89,16 @@ class SFOpenIDStore(object):
         query_args = {'server_url': server_url}
         if handle is not None:
             query_args['handle'] = handle
-        query = self.session.query(Association).filter_by(**query_args)
+        query = self.session.query(Association)
+        expires = func.to_timestamp(Association.issued + Association.lifetime)
+        query = query.filter(func.current_timestamp() > expires)
+        query = query.filter_by(**query_args)
         query = query.order_by(Association.issued.desc())
-        associations = query.all()
 
-        association = None
+        association = query.first()
+        if association is None:
+            return association
 
-        if associations is not None and len(associations) > 0:
-            if not associations[0].is_expired():
-                association = associations[0]
         openid_association = OpenIDAssociation(
             association.handle,
             association.secret,
