@@ -24,10 +24,17 @@ zxcvbn_load_hook = function() {
     colors = ['e1', 'c2','c4','c6','c8','ca','ac','8c','6c','4c','2c'];
     color = colors[score];
     bar = $(target).next('div.password-strength')
-                                     .find('span.bar');
+                                     .find('div.bar');
     if (score > 0) {
       bar.css({'width': score + '0%',
                'background-color': "#" + color + "0"});
+      if (score > 5) {
+          $(".password-strength .weak").css("display","none");
+          $(".password-strength .strong").css("display","inline");
+      } else {
+          $(".password-strength .strong").css("display","none");
+          $(".password-strength .weak").css("display","inline");
+      }
     } else {
       bar.css({'width': '3px',
                'background-color': "#" + color + "0"});
