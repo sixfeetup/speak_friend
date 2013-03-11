@@ -155,9 +155,9 @@ class Profile(MappingSchema):
     )
     agree_to_policy = SchemaNode(
         Bool(),
-        title='I agree to the usage policy.',
+        title='I agree to the site policy.',
         validator=Function(usage_policy_validator,
-                           message='Agreement with the usage policy is required.'),
+                           message='Agreement with the site policy is required.'),
     )
     captcha = SchemaNode(
         String(),

@@ -9,7 +9,7 @@ class FormTests(TestCase):
     def test_profile_form_policy_title(self):
         req = testing.DummyRequest()
         self.assertEqual(profiles.make_profile_form(req)['agree_to_policy'].title,
-                         'I agree to the usage policy.')
+                         'I agree to the site policy.')
 
     def test_profile_form_email_fields(self):
         req = testing.DummyRequest()
