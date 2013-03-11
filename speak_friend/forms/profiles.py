@@ -175,7 +175,8 @@ class EditProfileSchema(MappingSchema):
         String(),
         required=False,
         missing=null,
-        widget=StrengthValidatingPasswordWidget(),
+        description=u"Password only required if changing email.",
+        widget=PasswordWidget(),
     )
     came_from = SchemaNode(
         String(),
