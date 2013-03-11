@@ -113,17 +113,6 @@ class LoggedIn(UserActivity):
               'login', actor, activity_detail)
 
 
-@implementer(ILoginFailed)
-class LoginFailed(UserActivity):
-    """ An instance of this class is emitted as an :term:`event`
-    whenever a user fails to log in. See :class:`UserActivity`.
-    """
-    def __init__(self, request, user,
-                 actor=None, activity_detail=None):
-        super(LoginFailed, self).__init__(request, user,
-              'fail_login', actor, activity_detail)
-
-
 @implementer(ILoggedOut)
 class LoggedOut(UserActivity):
     """ An instance of this class is emitted as an :term:`event`
@@ -133,6 +122,17 @@ class LoggedOut(UserActivity):
                  actor=None, activity_detail=None):
         super(LoggedOut, self).__init__(request, user,
               'logout', actor, activity_detail)
+
+
+@implementer(ILoginFailed)
+class LoginFailed(UserActivity):
+    """ An instance of this class is emitted as an :term:`event`
+    whenever a user fails to log in. See :class:`UserActivity`.
+    """
+    def __init__(self, request, user,
+                 actor=None, activity_detail=None):
+        super(LoginFailed, self).__init__(request, user,
+              'fail_login', actor, activity_detail)
 
 
 @implementer(IPasswordChanged)
