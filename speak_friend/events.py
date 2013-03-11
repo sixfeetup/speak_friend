@@ -109,6 +109,8 @@ class LoggedIn(UserActivity):
     """
     def __init__(self, request, user,
                  actor=None, activity_detail=None):
+        activity_detail = {}
+        activity_detail['ip_address'] = request['REMOTE_ADDR']
         super(LoggedIn, self).__init__(request, user,
               'login', actor, activity_detail)
 
