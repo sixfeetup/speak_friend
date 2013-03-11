@@ -6,6 +6,7 @@ from deform import Form, ValidationFailure
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.security import Allow
 from pyramid.security import Everyone
@@ -111,6 +112,10 @@ class EditProfile(object):
         self.target_username = request.matchdict['username']
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
+        query = self.session.query(UserProfile)
+        self.target_user = query.get(self.target_username)
+        if self.target_user is None:
+            raise HTTPNotFound()
 
     def get_extended_data(self):
         """Provide a hook to extend the dict returned by the view.
@@ -161,29 +166,27 @@ class EditProfile(object):
                 'target_username': self.target_username,
             }
 
-        target_user = self.session.query(UserProfile).get(self.target_username)
-
         password = appstruct['password']
         if password == colander.null:
             password = ''
 
         valid_pass = self.verify_password(password,
-                                          target_user.password_hash,
-                                          target_user)
+                                          self.target_user.password_hash,
+                                          self.target_user)
 
         failed = False
-        if (target_user.email != appstruct['email'] and
+        if (self.target_user.email != appstruct['email'] and
             valid_pass):
-            target_user.email = appstruct['email']
-        elif (target_user.email != appstruct['email']
+            self.target_user.email = appstruct['email']
+        elif (self.target_user.email != appstruct['email']
               and not valid_pass):
             self.request.session.flash('Must provide the correct password to edit email addresses.',
                                       queue='error')
             failed = True
 
-        target_user.first_name = appstruct['first_name']
-        target_user.last_name = appstruct['last_name']
-        self.session.add(target_user)
+        self.target_user.first_name = appstruct['first_name']
+        self.target_user.last_name = appstruct['last_name']
+        self.session.add(self.target_user)
         self.session.flush()
         if not failed:
             self.request.session.flash('Account successfully modified!',
@@ -191,8 +194,7 @@ class EditProfile(object):
         return self.get()
 
     def get(self):
-        target_user = self.session.query(UserProfile).get(self.target_username)
-        appstruct = target_user.make_appstruct()
+        appstruct = self.target_user.make_appstruct()
         form = make_profile_form(self.request, edit=True)
         data = {
             'forms': [form],
@@ -212,6 +214,10 @@ class ChangePassword(object):
         self.session = DBSession()
         self.target_username = request.matchdict['username']
         self.pass_ctx = request.registry.password_context
+        query = self.session.query(UserProfile)
+        self.target_user = query.get(self.target_username)
+        if self.target_user is None:
+            raise HTTPNotFound()
 
     def verify_password(self, password, saved_hash, user):
         if not user:
@@ -257,21 +263,19 @@ class ChangePassword(object):
                 'target_username': self.target_username,
             }
 
-        target_user = self.session.query(UserProfile).get(self.target_username)
-
         password = appstruct['password']
         if password == colander.null:
             password = ''
 
         valid_pass = self.verify_password(password,
-                                          target_user.password_hash,
-                                          target_user)
+                                          self.target_user.password_hash,
+                                          self.target_user)
 
         new_hash = self.pass_ctx.encrypt(appstruct['new_password'])
 
         if valid_pass:
-            target_user.password_hash = new_hash
-            self.session.add(target_user)
+            self.target_user.password_hash = new_hash
+            self.session.add(self.target_user)
             self.session.flush()
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
