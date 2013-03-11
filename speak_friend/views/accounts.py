@@ -16,6 +16,8 @@ from pyramid_mailer.message import Message
 
 from sqlalchemy import func
 
+import transaction
+
 from speak_friend.events import AccountCreated
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
@@ -76,6 +78,10 @@ class CreateProfile(object):
         self.request.session.flash('Account successfully created!',
                                    queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
+        # Have to manually commit here, as HTTPFound will cause
+        # a transaction abort
+        transaction.commit()
+
         if appstruct['came_from']:
             return HTTPFound(location=appstruct['came_from'])
         else:
@@ -289,6 +295,12 @@ class ResetPassword(object):
             self.request.session.flash('Password successfully reset!',
                                        queue='success')
             url = self.request.route_url('home')
+            self.request.registry.notify(LoggedIn(self.request,
+                                                  reset_token.user))
+            # Have to manually commit here, as HTTPFound will cause
+            # a transaction abort
+            transaction.commit()
+
             if captured['came_from']:
                 return HTTPFound(location=captured['came_from'],
                                  headers=headers)
@@ -419,6 +431,10 @@ class LoginView(object):
         self.request.response.headerlist.extend(headers)
 
         self.request.registry.notify(LoggedIn(self.request, user))
+
+        # Have to manually commit here, as HTTPFound will cause
+        # a transaction abort
+        transaction.commit()
 
         if appstruct['came_from']:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
