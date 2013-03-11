@@ -378,7 +378,7 @@ class ResetPassword(object):
             url = self.request.route_url('token_expired')
             return HTTPFound(location=url)
 
-        password_reset_form = make_password_reset_form()
+        password_reset_form = make_password_reset_form(self.request)
 
         try:
             controls = self.request.POST.items()
