@@ -29,8 +29,10 @@ from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.controlpanel import password_reset_schema
+from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
@@ -528,9 +530,34 @@ class LoginView(object):
             }),
         }
 
+    def get_domain(self, request):
+        referrer = self.get_referrer()
+        path = request['PATH_INFO']
+        if path == '/':
+            domain = path
+        if referrer.endswith(path):
+            domain = referrer[:-len(path)]
+        return domain
+
     def login_error(self, msg):
         self.request.session.flash(msg, queue='error')
         return self.get()
+
+    def check_domain_attempts(self, user):
+        """Verify whether or not the account has surpassed the attempt
+        limit.
+        """
+        msg = ''
+        domain_name = self.get_domain(self.request)
+        domain = self.session.query(DomainProfile).get(domain_name)
+        if domain:
+            max_attempts = domain.get_max_attempts()
+        else:
+            max_attempts = MAX_DOMAIN_ATTEMPTS
+
+        if user.login_attempts >= max_attempts:
+            msg = 'You account has been disabled due to too many failed attempts.'
+        return msg
 
     def post(self):
         url = self.request.current_route_url()
@@ -560,6 +587,10 @@ class LoginView(object):
             saved_hash = user.password_hash
         else:
             return self.login_error(self.error_string)
+
+        domain_msg = self.check_domain_attempts(user)
+        if domain_msg:
+            return self.login_error(domain_msg)
 
         if not self.verify_password(password, saved_hash, user):
             self.request.registry.notify(LoginFailed(self.request, user))

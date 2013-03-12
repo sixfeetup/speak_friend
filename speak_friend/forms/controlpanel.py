@@ -27,6 +27,9 @@ class PasswordReset(Schema):
     )
 
 
+MAX_DOMAIN_ATTEMPTS = 10
+
+
 class DomainDefaults(Schema):
     password_valid = SchemaNode(
         Integer(),
@@ -38,7 +41,7 @@ class DomainDefaults(Schema):
     )
     max_attempts = SchemaNode(
         Integer(),
-        default=10,
+        default=MAX_DOMAIN_ATTEMPTS,
         title="Maximum login attempts",
         description="Indicate the system default number of times a user may "
                     "fail a login attempt before being disabled (must be >= 1)",
