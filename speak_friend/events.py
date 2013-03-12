@@ -11,6 +11,7 @@ from speak_friend.interfaces import ILoggedIn
 from speak_friend.interfaces import ILoginFailed
 from speak_friend.interfaces import ILoggedOut
 from speak_friend.interfaces import IPasswordChanged
+from speak_friend.interfaces import IProfileChanged
 
 ACTIVITIES = [
     u'change_password',
@@ -22,6 +23,7 @@ ACTIVITIES = [
     u'fail_login',
     u'logout',
     u'unlock_account',
+    u'change_profile',
 ]
 
 
@@ -146,3 +148,15 @@ class PasswordChanged(UserActivity):
                  actor=None, activity_detail=None):
         super(PasswordChanged, self).__init__(request, user,
               'change_password', actor, activity_detail)
+
+
+@implementer(IProfileChanged)
+class ProfileChanged(UserActivity):
+    """ An instance of this class is emitted as an :term:`event`
+    whenever a user changes their profile (but not their password).
+    See :class:`UserActivity`.
+    """
+    def __init__(self, request, user,
+                 actor=None, activity_detail=None):
+        super(ProfileChanged, self).__init__(request, user,
+              'change_profile', actor, activity_detail)
