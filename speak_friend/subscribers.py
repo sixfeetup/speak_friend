@@ -132,3 +132,31 @@ def email_change_notification(event):
                       recipients=[old, new],
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def email_profile_change_notification(event):
+    if ('first_name' not in event.activity_detail and
+        'last_name' not in event.activity_detail):
+        return
+
+    first_name = event.activity_detail.get('first_name', '')
+    last_name = event.activity_detail.get('last_name', '')
+
+    logger = getLogger('speak_friend.user_activity')
+    for key, value in event.activity_detail.items():
+        logger.info('%s changed their %s' % (event.user.username, key))
+    path = 'speak_friend:templates/email/account_change_notification.pt'
+    settings = event.request.registry.settings
+    subject = '%s: Account settings changed' % settings['site_name']
+    mailer = get_mailer(event.request)
+    response = render_to_response(path,
+                                  {'profile': event.user,
+                                   'first_name': first_name,
+                                   'last_name': last_name
+                                  },
+                                  event.request)
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[event.user.email],
+                      html=response.unicode_body)
+    mailer.send(message)

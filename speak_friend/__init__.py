@@ -44,6 +44,7 @@ from speak_friend.views import open_id
 from speak_friend.views import error
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import email_change_notification
+from speak_friend.subscribers import email_profile_change_notification
 from speak_friend.subscribers import handle_openid_request
 from speak_friend.subscribers import increment_failed_login_count
 from speak_friend.subscribers import log_activity
@@ -83,6 +84,7 @@ def includeme(config):
     config.add_subscriber(notify_account_created, AccountCreated)
     config.add_subscriber(increment_failed_login_count, LoginFailed)
     config.add_subscriber(email_change_notification, ProfileChanged)
+    config.add_subscriber(email_profile_change_notification, ProfileChanged)
 
     # Routes
     config.add_route('yadis', '/yadis.xml')

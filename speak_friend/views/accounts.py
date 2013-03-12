@@ -196,8 +196,13 @@ class EditProfile(object):
                                       queue='error')
             failed = True
 
-        self.target_user.first_name = appstruct['first_name']
-        self.target_user.last_name = appstruct['last_name']
+        if self.target_user.first_name != appstruct['first_name']:
+            self.target_user.first_name = appstruct['first_name']
+            activity_detail['first_name'] = appstruct['first_name']
+        if self.target_user.last_name != appstruct['last_name']:
+            self.target_user.last_name = appstruct['last_name']
+            activity_detail['last_name'] = appstruct['last_name']
+
         self.session.add(self.target_user)
         self.session.flush()
         if not failed:
