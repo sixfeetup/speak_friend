@@ -108,9 +108,9 @@ class LoggedIn(UserActivity):
     whenever a user logs in. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
-        activity_detail = {}
-        activity_detail['ip_address'] = request['REMOTE_ADDR']
+                 actor=None, **activity_detail):
+        if 'ip_address' not in activity_detail:
+            activity_detail['ip_address'] = request['REMOTE_ADDR']
         super(LoggedIn, self).__init__(request, user,
               'login', actor, activity_detail)
 

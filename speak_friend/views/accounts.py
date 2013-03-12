@@ -426,7 +426,8 @@ class ResetPassword(object):
                                        queue='success')
             url = self.request.route_url('home')
             self.request.registry.notify(LoggedIn(self.request,
-                                                  reset_token.user))
+                                                  reset_token.user,
+                                                  came_from=captured['came_from']))
             # Have to manually commit here, as HTTPFound will cause
             # a transaction abort
             transaction.commit()
@@ -559,7 +560,8 @@ class LoginView(object):
         headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
 
-        self.request.registry.notify(LoggedIn(self.request, user))
+        self.request.registry.notify(LoggedIn(self.request, user,
+                                              came_from=appstruct['came_from']))
 
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
