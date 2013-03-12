@@ -27,21 +27,25 @@ def groupfinder(userid, request):
 # Since we are not using ZODB + traversal, we just use
 # this as a placeholder to attach ACLs to
 class RootFactory(object):
-    __acl__ = [
-        (Allow, Authenticated, 'view'),
-        (Allow, Admins, ALL_PERMISSIONS),
-    ]
     def __init__(self, request):
+        # Don't use a class attribute, as it will stick around
+        # between requests.
+        self.__acl__ = [
+            (Allow, Authenticated, 'view'),
+            (Allow, Admins, ALL_PERMISSIONS),
+        ]
         self.request = request
 
 
 class EditProfileFactory(object):
-    __acl__ = [
-        (Allow, Authenticated, 'view'),
-        (Allow, Admins, ALL_PERMISSIONS),
-    ]
     def __init__(self, request):
+        # Don't use a class attribute, as it will stick around
+        # between requests.
         self.request = request
+        self.__acl__ = [
+            (Allow, Authenticated, 'view'),
+            (Allow, Admins, ALL_PERMISSIONS),
+        ]
         target_username = request.matchdict['username']
         current_username = authenticated_userid(request)
         if target_username == current_username:
@@ -51,12 +55,13 @@ class EditProfileFactory(object):
 
 
 class ChangePasswordFactory(object):
-    __acl__ = [
-        (Allow, Authenticated, 'view'),
-    ]
-
     def __init__(self, request):
+        # Don't use a class attribute, as it will stick around
+        # between requests.
         self.request = request
+        self.__acl__ = [
+            (Allow, Authenticated, 'view'),
+        ]
         target_username = request.matchdict['username']
         current_username = authenticated_userid(request)
         if target_username == current_username:
