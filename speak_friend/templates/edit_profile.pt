@@ -22,6 +22,7 @@
     
     <metal:content fill-slot="content">
       <div tal:content="structure rendered_form">form</div>
+      <metal:extra-content define-slot="extra-content" />
     </metal:content>
     
 </metal:main>
