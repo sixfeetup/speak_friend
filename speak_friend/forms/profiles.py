@@ -311,7 +311,6 @@ def make_login_form(action=''):
 class PasswordReset(MappingSchema):
     password = SchemaNode(
         String(),
-        missing=null,
         widget=StrengthValidatingPasswordWidget(),
         validator=create_password_validator
     )
