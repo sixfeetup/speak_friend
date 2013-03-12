@@ -44,7 +44,7 @@ zxcvbn_load_hook = function() {
     }
   };
   handleChange = function (target) {
-    var current, last_q, r;
+    var current, last_q, r, selector;
     current = $(target).val();
     if (!current) {
       colorize(0, target);
@@ -53,9 +53,10 @@ zxcvbn_load_hook = function() {
       colorize(r.score, target);
     }
   };
-  passwordInput = $('input[name="password"]');
+  selector = 'input[type="password"]:not([name*=confirm])';
+  passwordInput = $(selector);
   handleChange(passwordInput);
-  $('input[name="password"]').keyup(function (evt) {
+  $(selector).keyup(function (evt) {
     var target;
     target = $(evt.target);
     handleChange(target);
