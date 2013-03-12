@@ -51,7 +51,7 @@
         
         <div id="body-wrapper" class="container-fluid">
             <div id="header" class="row-fluid">
-                <div class="username" tal:condition="request.user != None">
+                <div class="headUsername" tal:condition="request.user != None">
                     Welcome, <span tal:content="request.user.first_name">user</span>
                 </div>
                 <metal:nav use-macro="api.macros['logo']" />

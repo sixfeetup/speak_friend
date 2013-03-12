@@ -160,11 +160,15 @@ class EditProfile(object):
             if ('password' in profile_form.cstruct
                 and profile_form.cstruct['password'] != ''):
                 profile_form.cstruct['password'] = ''
-            return {
+            data = {
                 'forms': [profile_form],
                 'rendered_form': e.render(),
                 'target_username': self.target_username,
             }
+            ex_data = self.get_extended_data()
+            if ex_data:
+                data.update(ex_data)
+            return data
 
         password = appstruct['password']
         if password == colander.null:

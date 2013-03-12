@@ -14,10 +14,15 @@
           </div>
     </metal:nav>
 
-    <metal:title fill-slot="page-title">Edit Profile for ${target_username}</metal:title>
+    <metal:title fill-slot="page-title"
+                 tal:condition="api.is_active_tab('edit_profile')">Edit Profile for ${target_username}</metal:title>
+    
+    <metal:title fill-slot="page-title"
+                 tal:condition="api.is_active_tab('change_password')">Modify Your Password</metal:title>
     
     <metal:content fill-slot="content">
       <div tal:content="structure rendered_form">form</div>
+      <metal:extra-content define-slot="extra-content" />
     </metal:content>
     
 </metal:main>

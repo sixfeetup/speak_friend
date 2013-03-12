@@ -190,7 +190,7 @@ def includeme(config):
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout', permission='view')
-    config.add_notfound_view(error.notfound)
+    config.add_notfound_view(error.notfound, append_slash=True)
     config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
