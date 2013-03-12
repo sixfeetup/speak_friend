@@ -30,11 +30,11 @@ class PasswordValidator(object):
         'disallowed': (None, None),
     }
     error_messages = {
-        'min_length': 'Password must be longer than %(min_length)d characters.',
+        'min_length': 'Password must be at least %(min_length)d characters.',
         'max_length': 'Password must be shorter than %(max_length)d characters.',
         'min_lower': 'Password must contain at least %(min_lower)d lower case letters.',
         'min_upper': 'Password must contain at least %(min_upper)d upper case letters.',
-        'min_numeric': 'Passowrd must contain at least %(min_numeric)d numbers.',
+        'min_numeric': 'Password must contain at least %(min_numeric)d numbers.',
         'min_special': 'Password must contain at least %(min_special)d special characters.',
         'disallowed': 'Password may not contain the characters %(disallowed)s.'
     }
