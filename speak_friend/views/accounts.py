@@ -24,6 +24,7 @@ from speak_friend.events import AccountCreated
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
+from speak_friend.events import ProfileChanged
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
@@ -153,6 +154,8 @@ class EditProfile(object):
         controls = self.request.POST.items()
         profile_form = make_profile_form(self.request, edit=True)
 
+        activity_detail = {}
+
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
@@ -181,6 +184,11 @@ class EditProfile(object):
         failed = False
         if (self.target_user.email != appstruct['email'] and
             valid_pass):
+            activity_detail['old_address'] = [field.current_value
+                        for field in profile_form.schema
+                        if field.name == 'email'
+            ][0]
+            activity_detail['new_address'] = appstruct['email']
             self.target_user.email = appstruct['email']
         elif (self.target_user.email != appstruct['email']
               and not valid_pass):
@@ -193,6 +201,9 @@ class EditProfile(object):
         self.session.add(self.target_user)
         self.session.flush()
         if not failed:
+            self.request.registry.notify(ProfileChanged(self.request,
+                                                        self.target_user,
+                                                        activity_detail=activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
         return self.get()

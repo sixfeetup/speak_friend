@@ -107,3 +107,28 @@ def increment_failed_login_count(event):
     session = DBSession()
     session.add(event.user)
     transaction.commit()
+
+
+def email_change_notification(event):
+    if ('old_address' not in event.activity_detail and
+        'new_address' not in event.activity_detail):
+        return
+    old = event.activity_detail['old_address']
+    new = event.activity_detail['new_address']
+    logger = getLogger('speak_friend.user_activity')
+    logger.info('%s changed their email address' % event.user.username)
+    path = 'speak_friend:templates/email/account_email_change_notification.pt'
+    settings = event.request.registry.settings
+    subject = '%s: Email address changed' % settings['site_name']
+    mailer = get_mailer(event.request)
+    response = render_to_response(path,
+                                  {'profile': event.user,
+                                   'old_address': old,
+                                   'new_address': new,
+                                  },
+                                  event.request)
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[old, new],
+                      html=response.unicode_body)
+    mailer.send(message)
