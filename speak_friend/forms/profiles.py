@@ -329,6 +329,7 @@ def make_password_reset_form(request=None):
         schema = PasswordReset().bind(request=request)
     password_reset_form = Form(
         schema,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Reset Password'),
             'cancel'
@@ -365,6 +366,7 @@ def make_password_change_form(request=None):
         schema = PasswordChange().bind(request=request)
     password_reset_form = Form(
         schema,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
             'cancel'
