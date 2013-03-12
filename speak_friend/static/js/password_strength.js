@@ -39,6 +39,8 @@ zxcvbn_load_hook = function() {
     } else {
       bar.css({'width': '3px',
                'background-color': "#" + color + "0"});
+      $(".password-strength .strong").css("display","none");
+      $(".password-strength .weak").css("display","inline");
     }
   };
   handleChange = function (target) {
