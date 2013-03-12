@@ -53,9 +53,9 @@ zxcvbn_load_hook = function() {
       colorize(r.score, target);
     }
   };
-  passwordInput = $('input[type="password"]');
+  passwordInput = $('input[name="password"]');
   handleChange(passwordInput);
-  $('input[type="password"]').keyup(function (evt) {
+  $('input[name="password"]').keyup(function (evt) {
     var target;
     target = $(evt.target);
     handleChange(target);
