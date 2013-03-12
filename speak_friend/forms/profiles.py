@@ -315,12 +315,6 @@ class PasswordReset(MappingSchema):
         widget=StrengthValidatingPasswordWidget(),
         validator=create_password_validator
     )
-    came_from = SchemaNode(
-        String(),
-        widget=HiddenWidget(),
-        default='.',
-        title=u'came_from',
-    )
 
 
 def make_password_reset_form(request=None):

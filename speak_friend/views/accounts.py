@@ -387,11 +387,6 @@ class ResetPassword(object):
                 if child.name == 'token_duration':
                     self.token_duration = child.default
 
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = self.request.route_url('home')
-        return came_from
 
     def post(self):
         if self.request.method != "POST":
@@ -427,13 +422,13 @@ class ResetPassword(object):
             url = self.request.route_url('home')
             self.request.registry.notify(LoggedIn(self.request,
                                                   reset_token.user,
-                                                  came_from=captured['came_from']))
+                                                  came_from=reset_token.came_from))
             # Have to manually commit here, as HTTPFound will cause
             # a transaction abort
             transaction.commit()
 
-            if captured['came_from']:
-                return HTTPFound(location=captured['came_from'],
+            if reset_token.came_from:
+                return HTTPFound(location=reset_token.came_from,
                                  headers=headers)
             else:
                 url = self.request.route_url('home')
@@ -458,9 +453,7 @@ class ResetPassword(object):
 
         return {
             'forms': [password_reset_form],
-            'rendered_form': password_reset_form.render({
-                'came_from': self.get_referrer(),
-            }),
+            'rendered_form': password_reset_form.render(),
         }
 
     def notify(self, user_profile):
