@@ -24,7 +24,7 @@ body {
     margin: 0 auto;
 }
 
-.username {
+.headUsername {
     float: right;
     font-size: 15px;
     font-weight: bold;
@@ -64,6 +64,10 @@ input[type="color"],
     background-color: transparent;
     border: none;
     padding: 0;
+}
+
+.accounts-created {
+    margin-top: 25px;
 }
 /* display checkbox next to label */
 #profile-form #item-deformField6 label,
