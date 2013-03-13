@@ -91,7 +91,7 @@ class SFOpenIDStore(object):
             query_args['handle'] = handle
         query = self.session.query(Association)
         expires = func.to_timestamp(Association.issued + Association.lifetime)
-        query = query.filter(func.current_timestamp() > expires)
+        query = query.filter(func.current_timestamp() < expires)
         query = query.filter_by(**query_args)
         query = query.order_by(Association.issued.desc())
 
