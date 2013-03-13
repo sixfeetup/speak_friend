@@ -134,6 +134,10 @@ def includeme(config):
     config.add_view(accounts.token_expired, route_name='token_expired',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/token_expired.pt')
+    config.add_route('token_invalid', '/token_invalid')
+    config.add_view(accounts.token_invalid, route_name='token_invalid',
+                    permission=NO_PERMISSION_REQUIRED,
+                    renderer='templates/token_invalid.pt')
     config.add_route('request_password', '/request_password')
     config.add_view(accounts.RequestPassword,
                     route_name='request_password',

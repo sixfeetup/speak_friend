@@ -1,8 +1,11 @@
 # Views related to account management (creating, editing, deactivating)
 from datetime import timedelta
+from uuid import UUID
 
 import colander
 from deform import ValidationFailure
+
+from psycopg2 import DataError
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
@@ -339,6 +342,14 @@ def token_expired(request):
     }
 
 
+def token_invalid(request):
+    request.response.status = "400 Bad Request"
+    url = request.route_url('request_password')
+    return {
+        'request_reset_url': url,
+    }
+
+
 @view_defaults(route_name='request_password')
 class RequestPassword(object):
     def __init__(self, request):
@@ -411,7 +422,6 @@ class ResetPassword(object):
         self.session = DBSession()
         self.token_duration = None
         cp = ControlPanel(request)
-
         current = cp.saved_sections.get(authentication_schema.name)
         if current and current.panel_values:
             self.token_duration = current.panel_values['token_duration']
@@ -426,11 +436,15 @@ class ResetPassword(object):
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST:
             return self.get()
-        token = self.request.matchdict['token']
-        reset_token = self.check_token(token)
 
-        if reset_token is None:
-            url = self.request.route_url('token_expired')
+        token = self.request.matchdict['token']
+        try:
+            reset_token = self.check_token(token)
+            if reset_token is None:
+                url = self.request.route_url('token_expired')
+                return HTTPFound(location=url)
+        except (DataError, ValueError), err:
+            url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
 
         password_reset_form = make_password_reset_form(self.request)
@@ -477,9 +491,13 @@ class ResetPassword(object):
 
     def get(self):
         token = self.request.matchdict['token']
-
-        if self.check_token(token) is None:
-            url = self.request.route_url('token_expired')
+        try:
+            reset_token = self.check_token(token)
+            if reset_token is None:
+                url = self.request.route_url('token_expired')
+                return HTTPFound(location=url)
+        except (DataError, ValueError), err:
+            url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
 
         password_reset_form = make_password_reset_form()
@@ -495,8 +513,14 @@ class ResetPassword(object):
         """
 
     def check_token(self, token):
+        """Check UID token against database.
+        Can raise either ValueError or DataError if parsing the token as a UUID
+        fails in either Python or PostgreSQL, respectively.
+        """
+        # Check UID validity at Python level to avoid wasting a call to the db
+        uid = UUID(token)
         query = self.session.query(ResetToken)
-        query = query.filter(ResetToken.token==token)
+        query = query.filter(ResetToken.token==uid)
         ts = ResetToken.generation_ts + timedelta(minutes=self.token_duration)
         query = query.filter(ts >= func.current_timestamp())
         results = query.first()
