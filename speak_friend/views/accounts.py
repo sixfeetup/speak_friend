@@ -599,14 +599,6 @@ class LoginView(object):
         self.request.session.flash(msg, queue='error')
         return self.get()
 
-    def check_domain_attempts(self, user):
-        """Verify whether or not the account has surpassed the attempt
-        limit.
-        """
-        msg = ''
-        if user.login_attempts >= self.max_attempts:
-            msg = 'You account has been disabled due to too many failed attempts.'
-        return msg
 
     def post(self):
         url = self.request.current_route_url()
@@ -637,9 +629,9 @@ class LoginView(object):
         else:
             return self.login_error(self.error_string)
 
-        domain_msg = self.check_domain_attempts(user)
-        if domain_msg:
-            return self.login_error(domain_msg)
+        if user.login_attempts >= self.max_attempts:
+            msg = 'You account has been disabled due to too many failed attempts.'
+            return self.login_error(msg)
 
         if not self.verify_password(password, saved_hash, user):
             self.request.registry.notify(LoginFailed(self.request, user))
