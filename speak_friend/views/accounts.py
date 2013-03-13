@@ -36,6 +36,7 @@ from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
+from speak_friend.utils import get_referrer
 
 
 @view_defaults(route_name='create_profile')
@@ -44,12 +45,6 @@ class CreateProfile(object):
         self.request = request
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
-
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
 
     def post(self):
         if self.request.method != "POST":
@@ -102,7 +97,7 @@ class CreateProfile(object):
         return {
             'forms': [profile_form],
             'rendered_form': profile_form.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
 
