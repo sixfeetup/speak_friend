@@ -83,11 +83,13 @@ class CreateProfile(object):
         # a transaction abort
         transaction.commit()
 
+        headers = remember(self.request, appstruct['username'])
+        self.request.response.headerlist.extend(headers)
         if appstruct['came_from']:
-            return HTTPFound(location=appstruct['came_from'])
+            return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            return HTTPFound(location=url, headers=headers)
 
     def get(self, success=False):
         if success:
