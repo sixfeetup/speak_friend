@@ -9,8 +9,10 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 from speak_friend.api import TemplateAPI
+from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
+from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.views.open_id import OpenIDProvider
 
 
@@ -55,21 +57,21 @@ def notify_account_created(event):
     response = render_to_response(path,
                                   {'profile': event.user},
                                   event.request)
-    session = DBSession()
-    query = session.query(UserProfile)
-    query = query.filter(UserProfile.is_superuser==True)
-    superusers = [
-        user.full_email
-        for user in query.all()
-    ]
-    if not superusers:
-        logger.info('No super-users to notify of account creation: %s.',
+    # Obtain list of emails to notify from the control panel
+    cp = ControlPanel(event.request)
+    current = cp.saved_sections.get(email_notification_schema.name)
+    if current and current.panel_values:
+        recipients = current.panel_values['user_creation']
+    else:
+        recipients = []
+    if not recipients:
+        logger.info('No one to notify of account creation: %s.',
                     event.user)
         return
 
     message = Message(subject=subject,
                       sender=settings['site_from'],
-                      recipients=superusers,
+                      recipients=recipients,
                       extra_headers=headers,
                       html=response.unicode_body)
     mailer.send(message)
