@@ -10,8 +10,8 @@ from pyramid_mailer.message import Message
 
 
 from speak_friend.forms.contactus import make_contact_us_form
+from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.views.controlpanel import ControlPanel
-from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 
 
 @view_defaults(route_name='contact_us')
@@ -24,9 +24,9 @@ class ContactUs(object):
         self.sender = settings['site_from']
         cp = ControlPanel(request)
 
-        current = cp.saved_sections.get(contact_us_email_notification_schema.name)
+        current = cp.saved_sections.get(email_notification_schema.name)
         if current and current.panel_values:
-            self.recipients = current.panel_values['email_addresses']
+            self.recipients = current.panel_values['contact_us']
         else:
             self.recipients = []
 

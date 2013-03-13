@@ -27,10 +27,9 @@ from speak_friend.events import AccountCreated
 from speak_friend.events import LoginFailed
 from speak_friend.events import ProfileChanged
 from speak_friend.events import UserActivity
-from speak_friend.forms.controlpanel import contact_us_email_notification_schema
-from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.controlpanel import user_creation_email_notification_schema
+from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
+from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.security import ChangePasswordFactory
 from speak_friend.security import EditProfileFactory
@@ -235,9 +234,8 @@ def includeme(config):
 
     # Call custom directives
     ## Core control panel sections
-    config.add_controlpanel_section(contact_us_email_notification_schema)
-    config.add_controlpanel_section(password_reset_schema)
-    config.add_controlpanel_section(user_creation_email_notification_schema)
+    config.add_controlpanel_section(authentication_schema)
+    config.add_controlpanel_section(email_notification_schema)
     config.add_controlpanel_section(domain_defaults_schema)
     ## Password context
     from passlib.apps import ldap_context

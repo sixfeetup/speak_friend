@@ -1,4 +1,5 @@
 # Views related to configuring options for the site.
+from collections import OrderedDict
 
 from colander import MappingSchema
 from deform import Form, ValidationFailure
@@ -22,8 +23,11 @@ class ControlPanel(object):
             for cp_section in query.filter(qry_filter).all()
         ])
 
-        self.section_forms = {}
-        for section_name, section_schema in self.sections.items():
+        self.section_forms = OrderedDict()
+        sorted_sections = sorted(self.sections.items(),
+                                 key=lambda x:x[0].title,
+                                 reverse=True)
+        for section_name, section_schema in sorted_sections:
             section_form = Form(
                 section_schema,
                 buttons=('submit', 'cancel'),
