@@ -36,6 +36,7 @@ from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
+from speak_friend.utils import get_referrer
 
 
 @view_defaults(route_name='create_profile')
@@ -44,12 +45,6 @@ class CreateProfile(object):
         self.request = request
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
-
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
 
     def post(self):
         if self.request.method != "POST":
@@ -81,18 +76,20 @@ class CreateProfile(object):
         )
         self.session.add(profile)
         self.session.flush()
-        self.request.session.flash('Account successfully created!',
-                                   queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
+        self.request.session.flash('Your account has been created successfully.',
+                                   queue='success')
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
         transaction.commit()
 
+        headers = remember(self.request, appstruct['username'])
+        self.request.response.headerlist.extend(headers)
         if appstruct['came_from']:
-            return HTTPFound(location=appstruct['came_from'])
+            return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            return HTTPFound(location=url, headers=headers)
 
     def get(self, success=False):
         if success:
@@ -102,7 +99,7 @@ class CreateProfile(object):
         return {
             'forms': [profile_form],
             'rendered_form': profile_form.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
 
