@@ -2,6 +2,8 @@ from openid.extensions import sreg
 from openid.server.server import Server
 from openid.consumer import discover
 
+import transaction
+
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
@@ -45,9 +47,11 @@ class OpenIDProvider(object):
         encoded_response = self.openid_server.encodeResponse(openid_response)
         if 'location' in encoded_response.headers:
             response = HTTPFound(location=encoded_response.headers['location'])
+            transaction.commit()
             return response
 
         return {
+            'encoded_response': encoded_response,
             'openid_response': encoded_response.body,
         }
 
@@ -62,8 +66,10 @@ class OpenIDProvider(object):
         encoded_response = self.openid_server.encodeResponse(openid_response)
         if 'location' in encoded_response.headers:
             response = HTTPFound(location=encoded_response.headers['location'])
+            transaction.commit()
             return response
         return {
+            'encoded_response': encoded_response,
             'openid_response': encoded_response.body,
         }
 
