@@ -17,7 +17,7 @@
                        <a tal:attributes="href request.route_url('login')">Sign In</a>
                    </li>
                    
-                   <li tal:condition="anon or super"
+                   <li tal:condition="anon"
                        tal:attributes="class api.is_active_tab('create_profile')">
                        <a tal:attributes="href request.route_url('create_profile')">Create Profile</a>
                    </li>
