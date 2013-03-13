@@ -26,12 +26,10 @@ class DomainProfile(Base):
     )
     name = Column(UnicodeText, primary_key=True)
     password_valid = Column(Integer, default=-1) # minutes
-    max_attempts = Column(SmallInteger, default=-1)
 
-    def __init__(self, name, password_valid, max_attempts):
+    def __init__(self, name, password_valid):
         self.name = name
         self.password_valid = password_valid
-        self.max_attempts = max_attempts
 
     def __repr__(self):
         return u'<DomainProfile(%s)>' % self.name
@@ -49,20 +47,6 @@ class DomainProfile(Base):
                     if child.name == 'password_valid':
                         pw_valid = child.default
         return pw_valid
-
-    def get_max_attempts(self, cp):
-        """return value of max_attempts, or control panel default if < 0
-        """
-        max_attempts = self.max_attempts
-        if max_attempts < 0:
-            current = cp.saved_sections.get(domain_defaults_schema.name)
-            if current and current.panel_values:
-                max_attempts = current.panel_values['max_attempts']
-            else:
-                for child in domain_defaults_schema.children:
-                    if child.name == 'max_attempts':
-                        max_attempts = child.default
-        return max_attempts
 
 
 class tsvector(types.TypeDecorator):

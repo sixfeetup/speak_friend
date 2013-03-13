@@ -89,10 +89,10 @@ class DomainName(object):
     """Validator to check for exising domain names in DomainProfiles
 
     If ``msg`` is supplied, it will be the error message to be used when
-    raising `colander.Invalid`; otherwise, defaults to 'A domain with that 
+    raising `colander.Invalid`; otherwise, defaults to 'A domain with that
     name already exists'
 
-    The ``should_exist`` keyword argument specifies whether the validator 
+    The ``should_exist`` keyword argument specifies whether the validator
     checks for the domain name existing or not. It defaults to `False`
     """
     def __init__(self, msg=None, should_exist=False):
@@ -268,13 +268,6 @@ class Domain(MappingSchema):
         description="Indicate the length of time, in minutes that a password "
                     "should be valid (a negative value will use the system "
                     "default)",
-    )
-    max_attempts = SchemaNode(
-        Integer(),
-        title="Maximum login attempts",
-        description="Indicate the number of times a user may fail a login "
-                    "attempt before being disabled (a negative value will "
-                    "use the system default)",
     )
 
 

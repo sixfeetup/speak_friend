@@ -20,6 +20,8 @@ class EmailNotification(Schema):
         description=u'List of email addresses to notify when a new user is created.'
     )
 
+MAX_DOMAIN_ATTEMPTS = 10
+
 class Authentication(Schema):
     token_duration = SchemaNode(
         Integer(),
@@ -28,14 +30,12 @@ class Authentication(Schema):
     )
     max_attempts = SchemaNode(
         Integer(),
-        default=10,
+        default=MAX_DOMAIN_ATTEMPTS,
         title="Maximum login attempts",
         description="Indicate the system default number of times a user may "
                     "fail a login attempt before being disabled (must be >= 1)",
         validator=Range(min=1),
     )
-
-MAX_DOMAIN_ATTEMPTS = 10
 
 
 class DomainDefaults(Schema):

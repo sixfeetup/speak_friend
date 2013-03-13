@@ -537,6 +537,13 @@ class LoginView(object):
         query = self.request.GET.items() + self.request.POST.items()
         action = request.current_route_url(_query=query)
         self.frm = make_login_form(action)
+        cp = ControlPanel(request)
+        self.max_attempts = None
+        current = cp.saved_sections.get(authentication_schema.name)
+        if current and current.panel_values:
+            self.max_attempts = current.panel_values['max_attempts']
+        else:
+            self.max_attempts = MAX_DOMAIN_ATTEMPTS
 
     def get_referrer(self):
         came_from = self.request.referrer
@@ -597,14 +604,7 @@ class LoginView(object):
         limit.
         """
         msg = ''
-        domain_name = self.get_domain(self.request)
-        domain = self.session.query(DomainProfile).get(domain_name)
-        if domain:
-            max_attempts = domain.get_max_attempts()
-        else:
-            max_attempts = MAX_DOMAIN_ATTEMPTS
-
-        if user.login_attempts >= max_attempts:
+        if user.login_attempts >= self.max_attempts:
             msg = 'You account has been disabled due to too many failed attempts.'
         return msg
 
