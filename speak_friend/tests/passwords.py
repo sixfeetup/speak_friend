@@ -35,16 +35,16 @@ class PasswordToolsTests(TestCase):
         # self.settings = DEFAULT_PASSWORD_SETTINGS.copy()
         self.validator = PasswordValidator()
         self.passwords = {
-            'alpha_lower': ['abcdef', [6,0,0,0]],
-            'alpha_upper': ['ABCDEF', [0,6,0,0]],
-            'alpha_mixed': ['abcDEF', [3,3,0,0]],
-            'numeric': ['123456',[0,0,6,0]],
-            'alphanumeric_lower': ['123abc', [3,0,3,0]],
-            'alphanumeric_upper': ['123ABC', [0,3,3,0]],
-            'alphanumeric_mixed': ['12aAbB', [2,2,2,0]],
-            'special': ['!#@{%^', [0,0,0,6]],
-            'complex': ['yRo8$D', [2,2,1,1]],
-            'long_complex': ['nYfJ6UUt$8y4j+]W', [5,5,3,3]]
+            'alpha_lower': ['abcdef', [6,0,0,0,0]],
+            'alpha_upper': ['ABCDEF', [0,6,0,0,0]],
+            'alpha_mixed': ['abcDEF', [3,3,0,0,0]],
+            'numeric': ['123456',[0,0,6,0,6]],
+            'alphanumeric_lower': ['123abc', [3,0,3,0,3]],
+            'alphanumeric_upper': ['123ABC', [0,3,3,0,3]],
+            'alphanumeric_mixed': ['12aAbB', [2,2,2,0,2]],
+            'special': ['!#@{%^', [0,0,0,6,6]],
+            'complex': ['yRo8$D', [2,2,1,1,2]],
+            'long_complex': ['nYfJ6UUt$8y4j+]W', [5,5,3,3,6]]
         }
 
     def decompose_charcounts(self, password):
@@ -54,7 +54,8 @@ class PasswordToolsTests(TestCase):
         """
         out = []
         counts = self.validator._get_chartype_counts(password)
-        for key in ['min_lower', 'min_upper', 'min_numeric', 'min_special']:
+        for key in ['min_lower', 'min_upper', 'min_numeric', 'min_special', 
+                    'min_non_alpha']:
             out.append(counts[key])
         return out
 
@@ -172,6 +173,20 @@ class PasswordToolsTests(TestCase):
                 self.assertTrue(result is not None)
                 self.assertEqual(result, expected_error)
 
+    def test_password_min_non_alpha(self):
+        testkey = 'min_non_alpha'
+        key = '.'.join([PASSWORD_SETTINGS_PREFIX, testkey])
+        validator = PasswordValidator({key: 4})
+        expected_error = validator._get_error_message(testkey)
+        for key, val in self.passwords.items():
+            password = val[0]
+            result = validator(password)
+            if key in ['numeric', 'special', 'long_complex']:
+                self.assertEqual(result, None)
+            else:
+                self.assertTrue(result is not None)
+                self.assertEqual(result, expected_error)
+
     def test_password_disallowed(self):
         testkey = 'disallowed'
         key = '.'.join([PASSWORD_SETTINGS_PREFIX, testkey])
@@ -218,12 +233,13 @@ class PasswordSettingsTests(SFBaseCase):
             'min_upper': (10, int),
             'min_numeric': (10, int),
             'min_special': (10, int),
+            'min_non_alpha': (10, int),
             'disallowed': ("$#!%&{'[\"}])(", str)
         }
 
     def test_set_integer_vals(self):
         for key in ['min_length', 'max_length', 'min_lower', 'min_upper',
-                    'min_numeric', 'min_special']:
+                    'min_numeric', 'min_special', 'min_non_alpha']:
             expected, expected_type = self.use_settings[key]
             self.config.add_settings(
                 dict(PASSWORD_CONFIG.items(key)))
