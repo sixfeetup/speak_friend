@@ -14,6 +14,7 @@ from deform.widget import TextInputWidget
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
+from speak_friend.models.profiles import DomainProfile
 
 
 # set a resource registry that contains resources for the password widget
@@ -79,6 +80,31 @@ class UserEmail(object):
             return True
         query = session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
+        exists = bool(query.count())
+        if exists != self.should_exist:
+            raise Invalid(node, self.msg)
+
+
+class DomainName(object):
+    """Validator to check for exising domain names in DomainProfiles
+
+    If ``msg`` is supplied, it will be the error message to be used when
+    raising `colander.Invalid`; otherwise, defaults to 'A domain with that 
+    name already exists'
+
+    The ``should_exist`` keyword argument specifies whether the validator 
+    checks for the domain name existing or not. It defaults to `False`
+    """
+    def __init__(self, msg=None, should_exist=False):
+        if msg is None:
+            msg = "A domain with that name already exists"
+        self.msg = msg
+        self.should_exist = should_exist
+
+    def __call__(self, node, value):
+        session = DBSession()
+        query = session.query(DomainProfile)
+        query = query.filter(DomainProfile.name==value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
@@ -234,7 +260,7 @@ class Domain(MappingSchema):
         String(),
         title="Domain Name",
         description="Must be a valid Fully Qualified Domain Name",
-        validator=FQDN(),
+        validator=All(FQDN(), DomainName(), ),
     )
     password_valid = SchemaNode(
         Integer(),
