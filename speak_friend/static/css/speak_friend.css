@@ -42,6 +42,9 @@ textarea {
 .form-horizontal .control-label {
     padding-top: 4px;
 }
+.btn-primary {
+    color: #ffffff !important;
+}
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
