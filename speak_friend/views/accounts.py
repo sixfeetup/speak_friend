@@ -76,9 +76,9 @@ class CreateProfile(object):
         )
         self.session.add(profile)
         self.session.flush()
-        self.request.session.flash('Account successfully created!',
-                                   queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
+        self.request.session.flash('Your account has been created successfully.',
+                                   queue='success')
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
         transaction.commit()
