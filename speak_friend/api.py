@@ -27,7 +27,7 @@ class TemplateAPI(object):
         return datetime.datetime.utcnow()
 
     def init_macros(self):
-        macro_names = ['footer', 'quick_links', 'nav', 'logo', 'head_elements']
+        macro_names = ['footer', 'quick_links', 'nav', 'logo', 'head_elements', 'admin_nav']
         self.macros = {}
         for mname in macro_names:
             renderer = get_renderer('templates/macros/%s#%s.pt' % (mname, mname))
