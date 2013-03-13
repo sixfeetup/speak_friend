@@ -71,7 +71,7 @@ class CreateProfile(object):
                               appstruct['last_name'],
                               appstruct['email'],
                               hashed_pw,
-                              hashed_pw,
+                              None,
                               0,
                               False
         )
