@@ -259,3 +259,8 @@ class IPasswordChanged(IUserActivity):
     is changed.
     """
 
+
+class IProfileChanged(IUserActivity):
+    """ An event that is emitted whenever a user's profile
+    is changed.
+    """

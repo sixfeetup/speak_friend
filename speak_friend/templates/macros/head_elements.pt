@@ -1,0 +1,8 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  <metal:head define-macro="head_elements">
+       <title>Site Title</title>
+       <!-- any other meta tags, etc -->
+  </metal:head>
+</html>

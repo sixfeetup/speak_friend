@@ -9,18 +9,41 @@ body {
     padding: 20px;
     margin: 20px auto;
 }
+.navbar {
+    margin-top: 20px;
+}
 .navbar,
 .nav {
     width: 100%;
+}
+.subnav {
+    margin-bottom: 20px;
 }
 #footer {
     max-width: 1020px;
     margin: 0 auto;
 }
 
+.headUsername {
+    float: right;
+    font-size: 15px;
+    font-weight: bold;
+    color: #666666;
+}
+
 /* forms */
+label {
+    font-weight: bold;
+}
+input,
+textarea {
+    width: 400px;
+}
 .form-horizontal .control-label {
     padding-top: 4px;
+}
+.btn-primary {
+    color: #ffffff !important;
 }
 input[type="text"],
 input[type="password"],
@@ -39,4 +62,18 @@ input[type="color"],
 .uneditable-input  {
     height: 30px;
     margin-bottom: 5px;
+}
+.form-actions {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+
+.accounts-created {
+    margin-top: 25px;
+}
+/* display checkbox next to label */
+#profile-form #item-deformField6 label,
+#profile-form #item-deformField6 div {
+    display: inline;
 }

@@ -1,7 +1,11 @@
 <metal:main use-macro="load: base.pt">
-    <metal:title fill-slot="page-title">Log In</metal:title>
+    <metal:title fill-slot="page-title">Sign In</metal:title>
     <metal:content fill-slot="content">
         <tal:block tal:condition="exists: rendered_form" tal:replace="structure rendered_form">
         </tal:block>
+
+        <span id="forgot-password">
+            <a tal:attributes="href request.route_url('request_password')">Forgot password?</a>
+        </span>
     </metal:content>
 </metal:main>

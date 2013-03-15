@@ -1,38 +1,52 @@
 # Views related to administrator actions. (deactivating accounts,
 # changing user passwords)
-from deform import Form
+from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.view import view_defaults
 from deform import ValidationFailure
+from deform import Form
 
-from speak_friend.models import DBSession
 from speak_friend.forms.profiles import Domain
+from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 
 
-def create_domain(request):
-    domain_schema = Domain()
-    domain_form = Form(domain_schema, buttons=('submit', 'cancel', ))
-    if 'submit' in request.POST:
-        # the form has been submitted
-        controls = request.POST.items()
+@view_defaults(route_name='create_domain')
+class CreateDomain(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.domain_form = Form(Domain(), buttons=('submit', 'cancel'))
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+
+        controls = self.request.POST.items()
+
         try:
-            appstruct = domain_form.validate(controls)
+            appstruct = self.domain_form.validate(controls)  # call validate
         except ValidationFailure, e:
-            # form failed validation
             return {
-                'forms': [domain_form],
+                'forms': [self.domain_form],
                 'rendered_form': e.render(),
             }
-        # form valid outcome
-        session = DBSession()
-        new_domain = DomainProfile(**appstruct)
-        session.merge(new_domain)
-        return {
-            'forms': [domain_form],
-            'rendered_form': domain_form.render(appstruct)
-        }
 
-    # form not yet submitted outcome
-    return {
-        'forms': [domain_form],
-        'rendered_form': domain_form.render(),
-    }
+        new_domain = DomainProfile(**appstruct)
+        self.session.merge(new_domain)
+
+        self.request.session.flash('Domain successfully created!',
+                                   queue='success')
+        # XXX: Update to point to domain listing page when that is finished
+        url = self.request.route_url('home')
+        return HTTPFound(location=url)
+
+    def get(self, success=False):
+        if success:
+            return {'forms': [], 'rendered_form': '', 'success': True}
+        return {
+            'forms': [self.domain_form],
+            'rendered_form': self.domain_form.render({}),
+        }

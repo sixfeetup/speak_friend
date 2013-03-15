@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-version = '0.10'
+version = '0.15'
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
@@ -27,6 +27,7 @@ requires = [
     'pyramid_exclog',
     'mailinglogger',
     'pyramid_mailer',
+    'requests',
     ]
 
 tests_require = requires + [

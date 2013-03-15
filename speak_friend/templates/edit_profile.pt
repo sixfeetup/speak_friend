@@ -1,0 +1,28 @@
+<metal:main use-macro="load: base.pt">
+    
+    <metal:nav fill-slot="subnav">
+        <div id='edit-profile-nav' class="btn-group subnav"
+            tal:define='userid api.current_userid;'>
+            <a id='edit-profile-link'
+               tal:define="activeClass api.is_active_tab('edit_profile')"
+               tal:attributes="href request.route_url('edit_profile', username=userid);
+                               class string:${activeClass} btn">Edit Profile</a>
+            <a id='change-password-link'
+               tal:define="activeClass api.is_active_tab('change_password')"
+               tal:attributes="href request.route_url('change_password', username=userid);
+                               class string:${activeClass} btn">Set Password</a>
+          </div>
+    </metal:nav>
+
+    <metal:title fill-slot="page-title"
+                 tal:condition="api.is_active_tab('edit_profile')">Edit Profile for ${target_username}</metal:title>
+    
+    <metal:title fill-slot="page-title"
+                 tal:condition="api.is_active_tab('change_password')">Modify Your Password</metal:title>
+    
+    <metal:content fill-slot="content">
+      <div tal:content="structure rendered_form">form</div>
+      <metal:extra-content define-slot="extra-content" />
+    </metal:content>
+    
+</metal:main>

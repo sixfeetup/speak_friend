@@ -1,0 +1,16 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal">
+    <metal:admin define-macro="admin_nav">  
+        <metal:nav tal:condition="api.is_superuser">
+            <div class="btn-group subnav">
+                <a class="btn" href="/create_profile"
+                   tal:define="activeClass api.is_active_tab('create_profile')"
+                   tal:attributes="class string:${activeClass} btn">Create Profile</a>
+               <a class="btn" href="/create_domain"
+                  tal:define="activeClass api.is_active_tab('create_domain')"
+                  tal:attributes="class string:${activeClass} btn">Create Domain</a>
+              </div>
+        </metal:nav>
+    </metal:admin>
+</html>

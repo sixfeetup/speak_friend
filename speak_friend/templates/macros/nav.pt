@@ -4,14 +4,43 @@
   <metal:nav define-macro="nav">
        <div class="navbar">
            <div class="navbar-inner">
-               <ul id="site-nav" class="nav">
-                   <li><a tal:attributes="href python:request.route_url('login')">Sign In</a></li>
-                   <li><a tal:attributes="href python:request.route_url('create_profile')">Create Account</a></li>
-                   <li><a href="/">Home</a></li>
-                   <li><a href="/control_panel">Settings</a></li>
-                   <li><a href="#">Admin</a></li>
-                   <!--! Will need to check if the user is logged in -->
-                   <li><a tal:attributes="href python:request.route_url('logout')">Log Out</a></li>
+               <ul id="site-nav" class="nav"
+                   tal:define="anon not:api.current_userid;
+                               super api.is_superuser">
+                   <li tal:condition="not anon"
+                       tal:attributes="class api.is_active_tab('home')">
+                       <a href="/">Home</a>
+                   </li>
+                   
+                   <li tal:condition="anon"
+                       tal:attributes="class api.is_active_tab('login')">
+                       <a tal:attributes="href request.route_url('login')">Sign In</a>
+                   </li>
+                   
+                   <li tal:condition="anon"
+                       tal:attributes="class api.is_active_tab('create_profile')">
+                       <a tal:attributes="href request.route_url('create_profile')">Create Profile</a>
+                   </li>
+                   
+                   <li tal:condition="super"
+                       tal:attributes="class api.is_active_tab('control_panel')">
+                       <a href="/control_panel">Settings</a>
+                   </li>
+                   
+                   <li tal:condition="super">
+                       <a href="/create_profile">Admin</a>
+                   </li>
+                   
+                   <li tal:condition="not anon"
+                       tal:attributes="class api.is_active_tab('edit_profile') or api.is_active_tab('change_password')">
+                       <a tal:attributes="href request.route_url('edit_profile',username=api.current_userid)">
+                           Edit Profile
+                       </a>
+                   </li>
+                       
+                   <li tal:condition="not anon">
+                       <a tal:attributes="href request.route_url('logout')">Log Out</a>
+                   </li>
                </ul>
            </div>
        </div>

@@ -9,16 +9,16 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 
-from speak_friend.forms.contactus import contact_us_form
+from speak_friend.forms.contactus import make_contact_us_form
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.forms.controlpanel import contact_us_email_notification_schema
 
 
-# FIXME: attach appropriate permissions
 @view_defaults(route_name='contact_us')
 class ContactUs(object):
     def __init__(self, request):
         self.request = request
+        self.frm = make_contact_us_form()
         settings = request.registry.settings
         self.subject = "Contact Us Form Submission: %s" % settings['site_name']
         self.sender = settings['site_from']
@@ -33,27 +33,35 @@ class ContactUs(object):
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
-        if 'submit' not in self.request.POST:
+        if 'submit' not in self.request.POST and \
+           'cancel' not in self.request.POST:
             return self.get()
         try:
             controls = self.request.POST.items()
-            captured = contact_us_form.validate(controls)
+            captured = self.frm.validate(controls)
             self.notify(captured)
-            url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            if captured['came_from']:
+                return HTTPFound(location=captured['came_from'])
+            else:
+                return HTTPFound(location=self.request.route_url('home'))
         except ValidationFailure as e:
             # the submitted values could not be validated
             html = e.render()
+            if 'cancel' in self.request.POST and \
+               e.cstruct['came_from']:
+                return HTTPFound(location=e.cstruct['came_from'])
 
         return {
-            'forms': [contact_us_form],
+            'forms': [self.frm],
             'rendered_form': html,
         }
 
     def get(self):
         return {
-            'forms': [contact_us_form],
-            'rendered_form': contact_us_form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render({
+                'came_from': self.request.referrer,
+            }),
         }
 
     def notify(self, captured):

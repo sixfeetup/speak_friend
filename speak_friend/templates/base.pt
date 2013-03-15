@@ -1,5 +1,10 @@
+<!DOCTYPE html>
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
+        <meta http-equiv="X-XRDS-Location" content="${request.route_url('yadis')}" />
+        <metal:nav use-macro="api.macros['head_elements']" />
+        <link rel="shortcut icon" href="${request.static_url('speak_friend:static/favicon.ico')}" />
+        
         <tal:resources repeat="css_path api.css_resources">
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
@@ -13,13 +18,19 @@
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
         </tal:resources>
-        <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
+        <tal:deform-bootstrap-js condition="api.js_resources">
+            <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
+        </tal:deform-bootstrap-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
+
+        <!-- Fallback for consumers that don't support Yadis -->
+        <link rel="openid.server" href="${request.route_url('openid_provider')}" />
+        <link rel="openid2.provider" href="${request.route_url('openid_provider')}" />
     </head>
     <body>
         <div id="flash-messages">
@@ -36,20 +47,13 @@
                 ${message}
               </div>
           </tal:message>
-          <!--! Flash messages from specific queues -->
-          <tal:newsflash repeat="flash_type ['success', 'info', 'error']">
-            <tal:message condition="request.session.peek_flash(flash_type)">
-                <div tal:repeat="message request.session.pop_flash(flash_type)"
-                     tal:attributes="class string:alert alert-$flash_type">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  ${message}
-                </div>
-            </tal:message>
-          </tal:newsflash>
         </div>
         
         <div id="body-wrapper" class="container-fluid">
             <div id="header" class="row-fluid">
+                <div class="headUsername" tal:condition="request.user != None">
+                    Welcome, <span tal:content="request.user.first_name">user</span>
+                </div>
                 <metal:nav use-macro="api.macros['logo']" />
                 <metal:nav use-macro="api.macros['nav']" />
             </div>
@@ -61,7 +65,18 @@
                     <metal:links use-macro="api.macros['quick_links']" />
                 </div>
                 <div class="span9">
+                    <metal:content define-slot="subnav" />
                     <h1><metal:content define-slot="page-title" /></h1>
+                    <!--! Flash messages from specific queues -->
+                    <tal:newsflash repeat="flash_type ['success', 'info', 'error']">
+                      <tal:message condition="request.session.peek_flash(flash_type)">
+                          <div tal:repeat="message request.session.pop_flash(flash_type)"
+                               tal:attributes="class string:alert alert-$flash_type">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            ${message}
+                          </div>
+                      </tal:message>
+                    </tal:newsflash>
                     <metal:content define-slot="content" />
                 </div>
             </div>

@@ -1,8 +1,28 @@
+from speak_friend.models.profiles import UserProfile
+
+
+def create_user(username):
+    profile = UserProfile(
+        username,
+        'Fname',
+        'Lname',
+        'test@test.com',
+        'asdfklhjadsfklhjasf',
+        'sd',
+        0,
+        False,
+    )
+    return profile
+
+
 class MockQuery(object):
     def __init__(self, store=None):
         self._store = store
         if store is None:
             self._store = []
+
+    def __call__(self, *args):
+        return self
 
     def filter_by(self, **kwargs):
         if not kwargs:
@@ -45,6 +65,9 @@ class MockQuery(object):
         # classes need to be mocked for it to do so well.
         return self
 
+    def count(self):
+        return len(self._store)
+
 
 class MockSession(object):
     def __init__(self, store=None):
@@ -53,6 +76,9 @@ class MockSession(object):
             self._store = []
 
         self.query = MockQuery(store=self._store)
+
+    def __call__(self):
+        return self
 
     def delete(self, obj):
         if obj in self._store:

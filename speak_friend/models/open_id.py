@@ -2,9 +2,12 @@ import datetime
 import time
 
 from sqlalchemy import Column, Integer, UnicodeText
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import BYTEA
+
 from speak_friend.models import Base
 
+from openid.association import Association as OpenIDAssociation
 from openid.store.nonce import SKEW as NONCE_SKEW
 
 from zope.interface import implements
@@ -71,45 +74,61 @@ class SFOpenIDStore(object):
     def __init__(self, session):
         self.session = session
 
-    def storeAssociation(self, server_url, association):
+    def storeAssociation(self, server_url, raw_association):
+        association = Association(
+            server_url,
+            raw_association.handle,
+            raw_association.secret,
+            raw_association.issued,
+            raw_association.lifetime,
+            raw_association.assoc_type,
+        )
         self.session.add(association)
-        self.session.commit()
 
     def getAssociation(self, server_url, handle=None):
         query_args = {'server_url': server_url}
         if handle is not None:
             query_args['handle'] = handle
-        query = self.session.query.filter_by(**query_args)\
-                        .order_by(Association.issued.desc())
-        associations = query.all()
+        query = self.session.query(Association)
+        expires = func.to_timestamp(Association.issued + Association.lifetime)
+        query = query.filter(func.current_timestamp() > expires)
+        query = query.filter_by(**query_args)
+        query = query.order_by(Association.issued.desc())
 
-        association = None
+        association = query.first()
+        if association is None:
+            return association
 
-        if associations is not None and len(associations) > 0:
-            if not associations[0].is_expired():
-                association = associations[0]
-
-        return association
+        openid_association = OpenIDAssociation(
+            association.handle,
+            association.secret,
+            association.issued,
+            association.lifetime,
+            association.assoc_type,
+        )
+        return openid_association
 
     def cleanupAssociations(self):
         now = datetime.datetime.now()
         now_stamp = int(time.mktime(now.timetuple()))
 
-        self.session.query.\
-                filter(Association.issued + Association.lifetime < now_stamp).\
-                delete()
+        query = self.session.query(Association)
+        query = query.filter(Association.issued + Association.lifetime \
+                             < now_stamp)
+        query.delete()
 
     def removeAssociation(self, server_url, handle):
         kwargs = {'server_url': server_url, 'handle': handle}
-        num_deleted = self.session.query.filter_by(**kwargs).delete()
+        query = self.session.query(Association)
+        num_deleted = query.filter_by(**kwargs).delete()
         return num_deleted > 0
 
     def useNonce(self, server_url, timestamp, salt):
         past = timestamp - NONCE_SKEW
         future = timestamp + NONCE_SKEW
         query_args = {'server_url': server_url, 'salt': salt}
-        query = self.session.query.filter_by(**query_args).\
-                filter(Nonce.timestamp > past, Nonce.timestamp < future)
+        query = self.session.query(Nonce).filter_by(**query_args)
+        query = query.filter(Nonce.timestamp > past, Nonce.timestamp < future)
         nonces = query.all()
 
         return not len(nonces) > 0

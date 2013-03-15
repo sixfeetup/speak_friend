@@ -19,22 +19,32 @@
 */
 
 zxcvbn_load_hook = function() {
+  var colorize, handleChange, passwdInput;
   colorize = function (score, target) {
     var colors, color, bar;
     colors = ['e1', 'c2','c4','c6','c8','ca','ac','8c','6c','4c','2c'];
     color = colors[score];
     bar = $(target).next('div.password-strength')
-                                     .find('span.bar');
+                                     .find('div.bar');
     if (score > 0) {
       bar.css({'width': score + '0%',
                'background-color': "#" + color + "0"});
+      if (score > 5) {
+          $(".password-strength .weak").css("display","none");
+          $(".password-strength .strong").css("display","inline");
+      } else {
+          $(".password-strength .strong").css("display","none");
+          $(".password-strength .weak").css("display","inline");
+      }
     } else {
       bar.css({'width': '3px',
                'background-color': "#" + color + "0"});
+      $(".password-strength .strong").css("display","none");
+      $(".password-strength .weak").css("display","inline");
     }
   };
   handleChange = function (target) {
-    var current, last_q, r;
+    var current, last_q, r, selector;
     current = $(target).val();
     if (!current) {
       colorize(0, target);
@@ -43,7 +53,10 @@ zxcvbn_load_hook = function() {
       colorize(r.score, target);
     }
   };
-  $('input[type="password"]').keyup(function (evt) {
+  selector = 'input[type="password"]:not([name*=confirm])';
+  passwordInput = $(selector);
+  handleChange(passwordInput);
+  $(selector).keyup(function (evt) {
     var target;
     target = $(evt.target);
     handleChange(target);

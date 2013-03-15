@@ -16,6 +16,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
+from speak_friend.forms.controlpanel import domain_defaults_schema
 
 
 class DomainProfile(Base):
@@ -24,8 +25,8 @@ class DomainProfile(Base):
         {'schema': 'profiles'}
     )
     name = Column(UnicodeText, primary_key=True)
-    password_valid = Column(Integer) # minutes
-    max_attempts = Column(SmallInteger)
+    password_valid = Column(Integer, default=-1) # minutes
+    max_attempts = Column(SmallInteger, default=-1)
 
     def __init__(self, name, password_valid, max_attempts):
         self.name = name
@@ -35,10 +36,33 @@ class DomainProfile(Base):
     def __repr__(self):
         return u'<DomainProfile(%s)>' % self.name
 
-    def password_always_required(self):
-        """if password is valid for 0 minutes, it is always required
+    def get_password_valid(self, cp):
+        """return value of password_valid, or control panel default if < 0
         """
-        return not bool(self.password_valid)
+        pw_valid = self.password_valid
+        if pw_valid < 0:
+            current = cp.saved_sections.get(domain_defaults_schema.name)
+            if current and current.panel_values:
+                pw_valid = current.panel_values['password_valid']
+            else:
+                for child in domain_defaults_schema.children:
+                    if child.name == 'password_valid':
+                        pw_valid = child.default
+        return pw_valid
+
+    def get_max_attempts(self, cp):
+        """return value of max_attempts, or control panel default if < 0
+        """
+        max_attempts = self.max_attempts
+        if max_attempts < 0:
+            current = cp.saved_sections.get(domain_defaults_schema.name)
+            if current and current.panel_values:
+                max_attempts = current.panel_values['max_attempts']
+            else:
+                for child in domain_defaults_schema.children:
+                    if child.name == 'max_attempts':
+                        max_attempts = child.default
+        return max_attempts
 
 
 class tsvector(types.TypeDecorator):
@@ -55,18 +79,19 @@ class UserProfile(Base):
         {'schema': 'profiles'}
     )
     username = Column(UnicodeText, primary_key=True)
-    first_name = Column(UnicodeText)
-    last_name = Column(UnicodeText)
+    first_name = Column(UnicodeText, nullable=False)
+    last_name = Column(UnicodeText, nullable=False)
     email = Column(UnicodeText, nullable=False, unique=True)
-    password_hash = Column(UnicodeText)
+    password_hash = Column(UnicodeText, nullable=False)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
     admin_disabled = Column(Boolean, default=False)
+    is_superuser = Column(Boolean, default=False)
     searchable_text = Column(tsvector)
 
-
     def __init__(self, username, first_name, last_name, email,
-                 password_hash, password_salt, login_attempts, admin_disabled):
+                 password_hash, password_salt, login_attempts, admin_disabled,
+                 is_superuser=False):
         self.username = username
         self.first_name = first_name
         self.last_name = last_name
@@ -75,9 +100,21 @@ class UserProfile(Base):
         self.password_salt = password_salt
         self.login_attempts = login_attempts
         self.admin_disabled = admin_disabled
+        self.is_superuser = is_superuser
 
     def __repr__(self):
         return u"<UserProfile(%s)>" % self.username
+
+    @property
+    def full_email(self):
+        email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
+        return email
+
+    def make_appstruct(self):
+        appstruct = {}
+        for attr in ('username', 'first_name', 'last_name', 'email'):
+            appstruct[attr] = getattr(self, attr)
+        return appstruct
 
 
 FT_TRIGGER_FUNCTION = """
@@ -119,17 +156,20 @@ class ResetToken(Base):
     username = Column(
         UnicodeText,
         ForeignKey(UserProfile.username),
-        primary_key=True,
+        index=True,
+        nullable=False,
     )
     user = relationship(
         UserProfile,
-        foreign_keys=[UserProfile.username],
         primaryjoin='ResetToken.username==UserProfile.username',
+        single_parent=True,
+        passive_deletes=True,
+        uselist=False,
     )
     token = Column(
         UUID(as_uuid=True),
         default=uuid.uuid4,
-        unique=True,
+        primary_key=True,
     )
     came_from = Column(UnicodeText)
     generation_ts = Column(
@@ -140,13 +180,12 @@ class ResetToken(Base):
         index=True,
     )
 
-
-    def __init__(self, username, token=None, came_from=None):
+    def __init__(self, username, came_from, token=None):
         self.username = username
+        self.came_from = came_from
         if token is None:
             token = uuid.uuid4()
         self.token = token
-        self.came_from = came_from
 
     def __repr__(self):
         return u"<ResetToken(%s)>" % self.token

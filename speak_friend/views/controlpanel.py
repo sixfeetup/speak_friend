@@ -9,7 +9,6 @@ from speak_friend.models import DBSession
 from speak_friend.models.controlpanel import ControlPanelSection
 
 
-# FIXME: attach appropriate permissions
 @view_defaults(route_name='control_panel')
 class ControlPanel(object):
     def __init__(self, request):

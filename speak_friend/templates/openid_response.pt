@@ -1,0 +1,6 @@
+<metal:main use-macro="load: base.pt">
+    <metal:title fill-slot="page-title">OpenID Server Response</metal:title>
+    <metal:content fill-slot="content">
+        <span tal:replace="structure openid_response"></span>
+    </metal:content>
+</metal:main>
