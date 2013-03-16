@@ -1,5 +1,5 @@
 <metal:main use-macro="load: base.pt">
-    <metal:title fill-slot="page-title">User Search</metal:title>
+    <metal:title fill-slot="page-title">Find Users</metal:title>
     
     <metal:sub fill-slot="subnav">
         <metal:nav use-macro="api.macros['admin_nav']" />

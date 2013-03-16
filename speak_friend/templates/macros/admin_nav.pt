@@ -7,9 +7,12 @@
                 <a class="btn" href="/create_profile"
                    tal:define="activeClass api.is_active_tab('create_profile')"
                    tal:attributes="class string:${activeClass} btn">Create Profile</a>
-               <a class="btn" href="/create_domain"
-                  tal:define="activeClass api.is_active_tab('create_domain')"
-                  tal:attributes="class string:${activeClass} btn">Create Domain</a>
+                <a class="btn" href="/create_domain"
+                   tal:define="activeClass api.is_active_tab('create_domain')"
+                   tal:attributes="class string:${activeClass} btn">Create Domain</a>
+                <a class="btn" href="/user_search"
+                   tal:define="activeClass api.is_active_tab('user_search')"
+                   tal:attributes="class string:${activeClass} btn">Find Users</a>
               </div>
         </metal:nav>
     </metal:admin>
