@@ -394,3 +394,23 @@ def make_password_change_form(request=None):
         renderer=renderer
     )
     return password_reset_form
+
+
+class UserSearch(MappingSchema):
+    query = SchemaNode(
+        String(),
+        description="Enter all or the start of a user's first name, last name, email address or username"
+    )
+
+
+def make_user_search_form(request=None):
+    schema = UserSearch()
+    if request:
+        schema = UserSearch().bind(request=request)
+    user_search_form = Form(
+        schema,
+        # method="GET",
+        bootstrap_form_style='form-vertical',
+        buttons=(Button('submit', title='Search'), )
+    )
+    return user_search_form
