@@ -47,6 +47,7 @@ from speak_friend.subscribers import email_profile_change_notification
 from speak_friend.subscribers import handle_openid_request
 from speak_friend.subscribers import increment_failed_login_count
 from speak_friend.subscribers import log_activity
+from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import register_api
 
@@ -79,6 +80,7 @@ def includeme(config):
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(handle_openid_request, NewResponse)
     config.add_subscriber(log_activity, UserActivity)
+    config.add_subscriber(log_user_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
     config.add_subscriber(increment_failed_login_count, LoginFailed)
