@@ -589,8 +589,7 @@ class LoginView(object):
     def get_domain(self, request):
         referrer = self.get_referrer()
         path = request['PATH_INFO']
-        if path == '/':
-            domain = path
+        domain = '/'
         if referrer.endswith(path):
             domain = referrer[:-len(path)]
         return domain
