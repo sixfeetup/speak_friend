@@ -106,12 +106,19 @@ def confirm_account_created(event):
 
 
 def handle_openid_request(event):
-    if 'openid.assoc_handle' in event.request.GET and \
-       event.response.status_code == 302:
+    if 'openid.mode' in event.request.GET or \
+       'openid.mode' in event.request.POST:
         provider = OpenIDProvider(event.request)
-        openid_response = provider.get()
-        response_url = openid_response.headers['Location']
-        event.response.headers['Location'] = response_url
+        if event.request.method == 'POST':
+            openid_response = provider.post()
+        else:
+            openid_response = provider.get()
+        if event.response.status_code == 302:
+            response_url = openid_response.headers['Location']
+            event.response.headers['Location'] = response_url
+        transaction.commit()
+        if not isinstance(openid_response, HTTPFound):
+            event.response.body = openid_response
 
 
 def increment_failed_login_count(event):
