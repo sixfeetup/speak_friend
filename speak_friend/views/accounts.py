@@ -602,7 +602,7 @@ class LoginView(object):
             return self.login_error(self.error_string)
 
         if user.login_attempts >= self.max_attempts:
-            msg = 'You account has been disabled due to too many failed attempts.'
+            msg = 'Your account has been disabled due to too many failed attempts.'
             return self.login_error(msg)
 
         if not self.verify_password(password, saved_hash, user):
