@@ -436,6 +436,7 @@ def make_disable_user_form(request=None):
         schema,
         buttons=(Button('submit', title='Yes'),
                  Button('cancel', title='No')
-        )
+        ),
+        user_ajax=True,
     )
     return disable_user_form
