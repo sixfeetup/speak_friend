@@ -4,7 +4,7 @@
             ${status_msg}
         </metal:status>
         <metal:form tal:condition="not: exists: status_msg">
-            <h1>Do you want to disable the user '${username}'?</h1>
+            <h1>Do you want to ${action} the user '${username}'?</h1>
             <div tal:content="structure rendered_form">form</div>
         </metal:form>
     </body>
