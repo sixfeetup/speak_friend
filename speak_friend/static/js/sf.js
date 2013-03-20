@@ -25,3 +25,14 @@ $(document).ready(function () {
         target.hide();
     });
 })
+
+// Handle overlay form cancel
+$(document).ready(function () {
+    // Make sure we don't mess up forms outside of the overlay
+    var selector = '#overlay-container button#deformcancel';
+    $(document).on('click', selector, function (event) {
+        event.preventDefault();
+        var target = $('#overlay');
+        target.hide();
+    });
+});
