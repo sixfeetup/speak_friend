@@ -19,6 +19,7 @@
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
         <script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
+        <script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
@@ -82,5 +83,11 @@
             </div>
         </div>
         <metal:footer use-macro="api.macros['footer']" />
+        <div id="overlay">
+            <!--! A div for doing overlays on the page. -->
+            <a id="close-overlay">Close</a>
+            <div id="overlay-container">
+            </div>
+        </div>
     </body>
 </html>

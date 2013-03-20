@@ -77,3 +77,7 @@ input[type="color"],
 #profile-form #item-deformField6 div {
     display: inline;
 }
+
+#overlay {
+    display: none;
+}
