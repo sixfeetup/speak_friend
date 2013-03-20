@@ -37,6 +37,7 @@ from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
+from speak_friend.views.admin import UserSearch
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.utils import get_referrer
 
@@ -234,17 +235,18 @@ class EditProfile(object):
                                     activity_detail=activity_detail)
                 )
 
-
-
         self.session.add(self.target_user)
-        self.session.flush()
         if not failed:
             self.request.registry.notify(ProfileChanged(self.request,
                                                         self.target_user,
                                                         activity_detail=activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
-        return self.get()
+        transaction.commit()
+        if self.request.user.is_superuser:
+            return HTTPFound(self.request.route_url('user_search'))
+        else:
+            return self.get()
 
     def get(self):
         appstruct = self.target_user.make_appstruct()
