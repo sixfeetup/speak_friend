@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from sqlalchemy import Boolean
@@ -16,6 +17,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
+from speak_friend.models.reports import UserActivity
 from speak_friend.forms.controlpanel import domain_defaults_schema
 
 
@@ -99,6 +101,13 @@ class UserProfile(Base):
         for attr in ('username', 'first_name', 'last_name', 'email'):
             appstruct[attr] = getattr(self, attr)
         return appstruct
+
+    def last_login(self, session):
+        """Query UserActivity for last login."""
+        query = session.query(func.max(UserActivity.activity_ts))
+        query = query.filter(UserActivity.activity == u'login')
+        query = query.filter(UserActivity.username == self.username)
+        return query.scalar()
 
 
 FT_TRIGGER_FUNCTION = """

@@ -11,7 +11,6 @@ from sqlalchemy.orm import relationship
 from speak_friend.events import ACTIVITIES
 from speak_friend.models import Base
 from speak_friend.models.controlpanel import JSON
-from speak_friend.models.profiles import UserProfile
 
 
 class Activity(Base):
@@ -54,8 +53,8 @@ class UserActivity(Base):
     )
     user = relationship(
         "UserProfile",
-        foreign_keys=[UserProfile.username],
         primaryjoin="UserActivity.username==UserProfile.username",
+        backref='activities',
     )
     activity = Column(
         UnicodeText,
@@ -75,7 +74,6 @@ class UserActivity(Base):
     )
     actor = relationship(
         "UserProfile",
-        foreign_keys=[UserProfile.username],
         primaryjoin="UserActivity.username==UserProfile.username",
     )
     activity_detail = Column(
