@@ -1,6 +1,11 @@
+from datetime import datetime, timedelta
+import logging
+
 from openid.extensions import sreg
 from openid.server.server import Server
 from openid.consumer import discover
+
+from psycopg2.tz import FixedOffsetTimezone
 
 import transaction
 
@@ -9,10 +14,18 @@ from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
+
+from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.models import DBSession
 from speak_friend.models.open_id import SFOpenIDStore
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
+from speak_friend.utils import get_domain
+from speak_friend.utils import get_referrer
+from speak_friend.views.accounts import logout
 
+
+logger = logging.getLogger('speak_friend.openid_provider')
 
 @view_defaults(route_name='openid_provider')
 class OpenIDProvider(object):
@@ -38,40 +51,60 @@ class OpenIDProvider(object):
         else:
             self.auth_user = None
 
-    def get(self):
-        openid_request = self.openid_server.decodeRequest(self.request.GET)
+    def checkPasswordTimeout(self, now=None):
+        """Verify the last login timestamp is still valid.
+        Expects datetime.utcnow()
+        """
+        domain_name = get_domain(self.request)
+        domain = self.session.query(DomainProfile).get(domain_name)
+        if domain:
+            pw_valid = timedelta(minutes=domain.get_password_valid())
+        else:
+            pw_valid = timedelta(minutes=MAX_PASSWORD_VALID)
+
+        if now is None:
+            now = datetime.utcnow()
+        utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
+        if self.request.user:
+            last_login = self.request.user.last_login(self.session)
+            return last_login + pw_valid > utc_now
+        else:
+            # Not enough info to apply policy
+            logger.debug('Password timeout passed, no user')
+            return True
+
+    def process(self, request_params):
+        logger.debug('Processing openid request: %s', request_params)
+        if not self.checkPasswordTimeout():
+            logger.debug('Password timeout: %s', self.request.user)
+            return_to = self.request.route_url('home')
+            return logout(self.request, return_to)
+
+        openid_request = self.openid_server.decodeRequest(request_params)
+        logger.debug('Decoded request: %s', openid_request)
+        if openid_request is None:
+            return ''
+
         if openid_request.mode in ["checkid_immediate", "checkid_setup"]:
             openid_response = self.handleCheckIDRequest(openid_request)
         else:
             openid_response = self.openid_server.handleRequest(openid_request)
+        logger.debug('Decoded response: %s', openid_response)
         encoded_response = self.openid_server.encodeResponse(openid_response)
+
         if 'location' in encoded_response.headers:
             response = HTTPFound(location=encoded_response.headers['location'])
             transaction.commit()
             return response
+        return encoded_response.body
 
-        return {
-            'encoded_response': encoded_response,
-            'openid_response': encoded_response.body,
-        }
+    def get(self):
+        return self.process(self.request.GET)
 
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
-        openid_request = self.openid_server.decodeRequest(self.request.POST)
-        if openid_request.mode in ["checkid_immediate", "checkid_setup"]:
-            openid_response = self.handleCheckIDRequest(openid_request)
-        else:
-            openid_response = self.openid_server.handleRequest(openid_request)
-        encoded_response = self.openid_server.encodeResponse(openid_response)
-        if 'location' in encoded_response.headers:
-            response = HTTPFound(location=encoded_response.headers['location'])
-            transaction.commit()
-            return response
-        return {
-            'encoded_response': encoded_response,
-            'openid_response': encoded_response.body,
-        }
+        return self.process(self.request.POST)
 
     def approved(self, request, identifier=None):
         response = request.answer(True, identity=identifier)
