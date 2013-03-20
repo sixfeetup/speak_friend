@@ -38,10 +38,12 @@ class Authentication(Schema):
     )
 
 
+MAX_PASSWORD_VALID = 60*24*30
+
 class DomainDefaults(Schema):
     password_valid = SchemaNode(
         Integer(),
-        default=60*24*30,
+        default=MAX_PASSWORD_VALID,
         title="Password valid",
         description="Indicate the system default time in minutes that a "
                     "password should be valid (must be >= 0)",
