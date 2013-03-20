@@ -33,7 +33,6 @@ from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
-from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
@@ -124,12 +123,6 @@ class EditProfile(object):
         to use them.
         """
         return None
-
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
 
     def verify_password(self, password, saved_hash, user):
         if not user:
@@ -361,12 +354,6 @@ class RequestPassword(object):
         self.subject = "%s: Reset password" % settings['site_name']
         self.sender = settings['site_from']
 
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
-
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
@@ -391,7 +378,7 @@ class RequestPassword(object):
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
 
@@ -545,12 +532,6 @@ class LoginView(object):
         else:
             self.max_attempts = MAX_DOMAIN_ATTEMPTS
 
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = self.request.route_url('home')
-        return came_from
-
     def verify_password(self, password, saved_hash, user):
         if not user:
             return False
@@ -582,18 +563,9 @@ class LoginView(object):
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
-
-    def get_domain(self, request):
-        referrer = self.get_referrer()
-        path = request['PATH_INFO']
-        if path == '/':
-            domain = path
-        if referrer.endswith(path):
-            domain = referrer[:-len(path)]
-        return domain
 
     def login_error(self, msg):
         self.request.session.flash(msg, queue='error')
