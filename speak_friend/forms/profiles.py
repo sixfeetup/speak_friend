@@ -421,3 +421,21 @@ def make_user_search_form(request=None):
         buttons=(Button('submit', title='Search'), )
     )
     return user_search_form
+
+
+class DisableUser(MappingSchema):
+    username = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+    )
+
+
+def make_disable_user_form(request=None):
+    schema = DisableUser()
+    disable_user_form = Form(
+        schema,
+        buttons=(Button('submit', title='Yes'),
+                 Button('cancel', title='No')
+        )
+    )
+    return disable_user_form
