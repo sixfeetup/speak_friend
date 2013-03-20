@@ -18,7 +18,7 @@
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
@@ -51,7 +51,7 @@
         
         <div id="body-wrapper" class="container-fluid">
             <div id="header" class="row-fluid">
-                <div class="username" tal:condition="request.user != None">
+                <div class="headUsername" tal:condition="request.user != None">
                     Welcome, <span tal:content="request.user.first_name">user</span>
                 </div>
                 <metal:nav use-macro="api.macros['logo']" />
@@ -65,6 +65,7 @@
                     <metal:links use-macro="api.macros['quick_links']" />
                 </div>
                 <div class="span9">
+                    <metal:content define-slot="subnav" />
                     <h1><metal:content define-slot="page-title" /></h1>
                     <!--! Flash messages from specific queues -->
                     <tal:newsflash repeat="flash_type ['success', 'info', 'error']">

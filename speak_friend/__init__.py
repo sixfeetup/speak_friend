@@ -24,11 +24,12 @@ from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
+from speak_friend.events import LoginFailed
+from speak_friend.events import ProfileChanged
 from speak_friend.events import UserActivity
-from speak_friend.forms.controlpanel import contact_us_email_notification_schema
-from speak_friend.forms.controlpanel import password_reset_schema
-from speak_friend.forms.controlpanel import user_creation_email_notification_schema
+from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
+from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models import DBSession, Base
 from speak_friend.security import ChangePasswordFactory
 from speak_friend.security import EditProfileFactory
@@ -41,8 +42,12 @@ from speak_friend.views import contactus
 from speak_friend.views import open_id
 from speak_friend.views import error
 from speak_friend.subscribers import confirm_account_created
+from speak_friend.subscribers import email_change_notification
+from speak_friend.subscribers import email_profile_change_notification
 from speak_friend.subscribers import handle_openid_request
+from speak_friend.subscribers import increment_failed_login_count
 from speak_friend.subscribers import log_activity
+from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import register_api
 
@@ -75,8 +80,12 @@ def includeme(config):
     config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(handle_openid_request, NewResponse)
     config.add_subscriber(log_activity, UserActivity)
+    config.add_subscriber(log_user_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
+    config.add_subscriber(increment_failed_login_count, LoginFailed)
+    config.add_subscriber(email_change_notification, ProfileChanged)
+    config.add_subscriber(email_profile_change_notification, ProfileChanged)
 
     # Routes
     config.add_route('yadis', '/yadis.xml')
@@ -87,12 +96,12 @@ def includeme(config):
     config.add_route('openid_provider', '/server')
     config.add_view(open_id.OpenIDProvider, attr="get", request_method='GET',
                     route_name='openid_provider',
-                    permission='view',
-                    renderer='templates/openid_response.pt')
+                    permission=NO_PERMISSION_REQUIRED,
+                    renderer='string')
     config.add_view(open_id.OpenIDProvider, attr="post", request_method='POST',
                     route_name='openid_provider',
-                    permission='view',
-                    renderer='templates/openid_response.pt')
+                    permission=NO_PERMISSION_REQUIRED,
+                    renderer='string')
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
                     route_name='create_profile',
@@ -127,6 +136,10 @@ def includeme(config):
     config.add_view(accounts.token_expired, route_name='token_expired',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/token_expired.pt')
+    config.add_route('token_invalid', '/token_invalid')
+    config.add_view(accounts.token_invalid, route_name='token_invalid',
+                    permission=NO_PERMISSION_REQUIRED,
+                    renderer='templates/token_invalid.pt')
     config.add_route('request_password', '/request_password')
     config.add_view(accounts.RequestPassword,
                     route_name='request_password',
@@ -149,8 +162,13 @@ def includeme(config):
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/reset_password.pt')
+    config.add_route('list_domains', '/domains')
+    config.add_view(admin.ListDomains, attr='get', request_method='GET',
+                    route_name='list_domains',
+                    permission='admin',
+                    renderer='templates/list_domains.pt')
     config.add_route('create_domain', '/create_domain')
-    config.add_view(admin.CreateDomain, attr="get", request_method='GET',
+    config.add_view(admin.CreateDomain, attr='get', request_method='GET',
                     route_name='create_domain',
                     permission='admin',
                     renderer='templates/create_domain.pt')
@@ -158,6 +176,24 @@ def includeme(config):
                     route_name='create_domain',
                     permission='admin',
                     renderer='templates/create_domain.pt')
+    config.add_route('edit_domain', '/edit_domain/{domain_name}/')
+    config.add_view(admin.EditDomain, attr='get', request_method='GET',
+                    route_name='edit_domain',
+                    permission='admin',
+                    renderer='templates/edit_domain.pt')
+    config.add_view(admin.EditDomain, attr='post', request_method='POST',
+                    route_name='edit_domain',
+                    permission='admin',
+                    renderer='templates/edit_domain.pt')
+    config.add_route('user_search', '/user_search')
+    config.add_view(admin.UserSearch, attr='get', request_method='GET',
+                    route_name='user_search',
+                    permission='admin',
+                    renderer='templates/user_search.pt')
+    config.add_view(admin.UserSearch, attr='post', request_method='POST',
+                    route_name='user_search',
+                    permission='admin',
+                    renderer='templates/user_search.pt')
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.ControlPanel,
                     attr="get", request_method='GET',
@@ -187,7 +223,7 @@ def includeme(config):
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout', permission='view')
-    config.add_notfound_view(error.notfound)
+    config.add_notfound_view(error.notfound, append_slash=True)
     config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
@@ -218,9 +254,8 @@ def includeme(config):
 
     # Call custom directives
     ## Core control panel sections
-    config.add_controlpanel_section(contact_us_email_notification_schema)
-    config.add_controlpanel_section(password_reset_schema)
-    config.add_controlpanel_section(user_creation_email_notification_schema)
+    config.add_controlpanel_section(authentication_schema)
+    config.add_controlpanel_section(email_notification_schema)
     config.add_controlpanel_section(domain_defaults_schema)
     ## Password context
     from passlib.apps import ldap_context

@@ -9,10 +9,13 @@ from pyramid.security import authenticated_userid
 
 class TemplateAPI(object):
     def __init__(self, request, rendering_val):
+        if not request:
+            return
         self.request = request
         self.init_macros()
         self.init_forms(rendering_val)
-        self.request.response.headers[YADIS_HEADER_NAME] = self.request.route_url('yadis')
+        if request is not None:
+            self.request.response.headers[YADIS_HEADER_NAME] = self.request.route_url('yadis')
 
     @property
     def settings(self):
@@ -24,7 +27,7 @@ class TemplateAPI(object):
         return datetime.datetime.utcnow()
 
     def init_macros(self):
-        macro_names = ['footer', 'quick_links', 'nav', 'logo', 'head_elements']
+        macro_names = ['footer', 'quick_links', 'nav', 'logo', 'head_elements', 'admin_nav']
         self.macros = {}
         for mname in macro_names:
             renderer = get_renderer('templates/macros/%s#%s.pt' % (mname, mname))

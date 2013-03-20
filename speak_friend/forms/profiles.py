@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import All, Email, Function, Regex, null
+from colander import All, Email, Function, Regex, null, deferred
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -14,6 +14,7 @@ from deform.widget import TextInputWidget
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
+from speak_friend.models.profiles import DomainProfile
 
 
 # set a resource registry that contains resources for the password widget
@@ -84,6 +85,31 @@ class UserEmail(object):
             raise Invalid(node, self.msg)
 
 
+class DomainName(object):
+    """Validator to check for exising domain names in DomainProfiles
+
+    If ``msg`` is supplied, it will be the error message to be used when
+    raising `colander.Invalid`; otherwise, defaults to 'A domain with that
+    name already exists'
+
+    The ``should_exist`` keyword argument specifies whether the validator
+    checks for the domain name existing or not. It defaults to `False`
+    """
+    def __init__(self, msg=None, should_exist=False):
+        if msg is None:
+            msg = "A domain with that name already exists"
+        self.msg = msg
+        self.should_exist = should_exist
+
+    def __call__(self, node, value):
+        session = DBSession()
+        query = session.query(DomainProfile)
+        query = query.filter(DomainProfile.name==value)
+        exists = bool(query.count())
+        if exists != self.should_exist:
+            raise Invalid(node, self.msg)
+
+
 def username_validator(should_exist):
     """Generates validator function to check existence of a username
 
@@ -114,6 +140,20 @@ def usage_policy_validator(value):
     return value == True
 
 
+@deferred
+def create_password_validator(node, kw):
+    request = kw.get('request')
+    ctx_validator = request.registry.password_validator
+
+    def inner_password_validator(value):
+        error_msg = ctx_validator(value)
+        if not error_msg:
+            return True
+        else:
+            return error_msg
+    return Function(inner_password_validator)
+
+
 class Profile(MappingSchema):
     username = SchemaNode(
         String(),
@@ -137,12 +177,13 @@ class Profile(MappingSchema):
         String(),
         widget=StrengthValidatingPasswordWidget(),
         description='* Minimum of 8 characters and must include one non-alpha character.',
+        validator=create_password_validator,
     )
     agree_to_policy = SchemaNode(
         Bool(),
-        title='I agree to the usage policy.',
+        title='I agree to the site policy.',
         validator=Function(usage_policy_validator,
-                           message='Agreement with the usage policy is required.'),
+                           message='Agreement with the site policy is required.'),
     )
     captcha = SchemaNode(
         String(),
@@ -219,7 +260,7 @@ class Domain(MappingSchema):
         String(),
         title="Domain Name",
         description="Must be a valid Fully Qualified Domain Name",
-        validator=FQDN(),
+        validator=All(FQDN(), DomainName(), ),
     )
     password_valid = SchemaNode(
         Integer(),
@@ -228,24 +269,37 @@ class Domain(MappingSchema):
                     "should be valid (a negative value will use the system "
                     "default)",
     )
-    max_attempts = SchemaNode(
+
+class EditDomain(MappingSchema):
+    name = SchemaNode(
+        String(),
+        missing='',
+        widget=TextInputWidget(template='readonly/textinput'),
+    )
+    password_valid = SchemaNode(
         Integer(),
-        title="Maximum login attempts",
-        description="Indicate the number of times a user may fail a login "
-                    "attempt before being disabled (a negative value will "
-                    "use the system default)",
+        title="Password valid",
+        description="Indicate the length of time, in minutes that a password "
+                    "should be valid (a negative value will use the system "
+                    "default)",
     )
 
 
 class PasswordResetRequest(MappingSchema):
-      email = SchemaNode(
-          String(),
-          title=u'Email Address',
-          validator=UserEmail(should_exist=True),
-      )
+    email = SchemaNode(
+        String(),
+        title=u'Email Address',
+        validator=UserEmail(should_exist=True),
+    )
+    came_from = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+        default='.',
+        title=u'came_from',
+    )
 
 
-def make_password_reset_request_form():
+def make_password_reset_request_form(request=None):
     password_reset_request_form = Form(
         PasswordResetRequest(),
         bootstrap_form_style='form-vertical',
@@ -290,20 +344,18 @@ def make_login_form(action=''):
 class PasswordReset(MappingSchema):
     password = SchemaNode(
         String(),
-        missing=null,
         widget=StrengthValidatingPasswordWidget(),
-    )
-    came_from = SchemaNode(
-        String(),
-        widget=HiddenWidget(),
-        default='.',
-        title=u'came_from',
+        validator=create_password_validator
     )
 
 
-def make_password_reset_form():
+def make_password_reset_form(request=None):
+    schema = PasswordReset()
+    if request:
+        schema = PasswordReset().bind(request=request)
     password_reset_form = Form(
-        PasswordReset(),
+        schema,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Reset Password'),
             'cancel'
@@ -324,6 +376,7 @@ class PasswordChange(MappingSchema):
         missing=null,
         widget=StrengthValidatingPasswordWidget(),
         description='* Minimum of 8 characters and must include one non-alpha character.',
+        validator=create_password_validator
     )
     came_from = SchemaNode(
         String(),
@@ -339,6 +392,7 @@ def make_password_change_form(request=None):
         schema = PasswordChange().bind(request=request)
     password_reset_form = Form(
         schema,
+        bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
             'cancel'
@@ -347,3 +401,23 @@ def make_password_change_form(request=None):
         renderer=renderer
     )
     return password_reset_form
+
+
+class UserSearch(MappingSchema):
+    query = SchemaNode(
+        String(),
+        description="Enter all or the start of a user's first name, last name, email address or username"
+    )
+
+
+def make_user_search_form(request=None):
+    schema = UserSearch()
+    if request:
+        schema = UserSearch().bind(request=request)
+    user_search_form = Form(
+        schema,
+        # method="GET",
+        bootstrap_form_style='form-vertical',
+        buttons=(Button('submit', title='Search'), )
+    )
+    return user_search_form

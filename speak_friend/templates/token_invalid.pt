@@ -1,0 +1,9 @@
+<metal:main use-macro="load: base.pt">
+  <metal:pagetitle metal:fill-slot="page-title">Apologies</metal:pagetitle>
+  <metal:content metal:fill-slot="content">
+    <p>Your password reset attempt failed because the link you used is incorrect. Please try clicking on the link emailed to you again. Or, if you copied the link into your web browser, verify that you copied the entire link.</p>
+    <p>If you'd like to try again to reset your password, you can return to
+       the <a href="" tal:attributes="href request_reset_url">password request
+       form</a>.
+  </metal:content>
+</metal:main>

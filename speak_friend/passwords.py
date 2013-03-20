@@ -7,6 +7,7 @@ UPPERS = re.compile(r'[A-Z]{1}')
 LOWERS = re.compile(r'[a-z]{1}')
 NUMBERS = re.compile(r'[0-9]{1}')
 SPECIALS = re.compile(r'[\W|_]')
+NON_ALPHA = re.compile(r'[^a-zA-Z]{1}')
 PASSWORD_SETTINGS_PREFIX = 'speak_friend.password'
 
 
@@ -18,6 +19,7 @@ class PasswordValidator(object):
         'min_upper': 0,
         'min_numeric': 0,
         'min_special': 0,
+        'min_non_alpha': 0,
         'disallowed': None,
     }
     value_types = {
@@ -27,15 +29,17 @@ class PasswordValidator(object):
         'min_upper': (int, 0),
         'min_numeric': (int, 0),
         'min_special': (int, 0),
+        'min_non_alpha': (int, 0),
         'disallowed': (None, None),
     }
     error_messages = {
-        'min_length': 'Password must be longer than %(min_length)d characters.',
+        'min_length': 'Password must be at least %(min_length)d characters.',
         'max_length': 'Password must be shorter than %(max_length)d characters.',
         'min_lower': 'Password must contain at least %(min_lower)d lower case letters.',
         'min_upper': 'Password must contain at least %(min_upper)d upper case letters.',
-        'min_numeric': 'Passowrd must contain at least %(min_numeric)d numbers.',
+        'min_numeric': 'Password must contain at least %(min_numeric)d numbers.',
         'min_special': 'Password must contain at least %(min_special)d special characters.',
+        'min_non_alpha': 'Password must contain at least %(min_non_alpha)d non alphabetical characters.',
         'disallowed': 'Password may not contain the characters %(disallowed)s.'
     }
     disallowed = None
@@ -101,7 +105,8 @@ class PasswordValidator(object):
         counts['min_upper'] = len(UPPERS.findall(password))
         counts['min_lower'] = len(LOWERS.findall(password))
         counts['min_numeric'] = len(NUMBERS.findall(password))
-        counts['min_special']  = len(SPECIALS.findall(password))
+        counts['min_special'] = len(SPECIALS.findall(password))
+        counts['min_non_alpha'] = len(NON_ALPHA.findall(password))
 
         return counts
 

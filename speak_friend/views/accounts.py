@@ -1,15 +1,17 @@
 # Views related to account management (creating, editing, deactivating)
 from datetime import timedelta
+from uuid import UUID
 
 import colander
-from deform import Form, ValidationFailure
+from deform import ValidationFailure
+
+from psycopg2 import DataError
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.renderers import render_to_response
-from pyramid.security import Allow
-from pyramid.security import Everyone
-from pyramid.security import authenticated_userid, forget, remember
+from pyramid.security import forget, remember
 from pyramid.view import view_defaults
 
 from pyramid_mailer import get_mailer
@@ -23,15 +25,18 @@ from speak_friend.events import AccountCreated
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
+from speak_friend.events import ProfileChanged
+from speak_friend.forms.controlpanel import authentication_schema
+from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
-from speak_friend.forms.controlpanel import password_reset_schema
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
+from speak_friend.utils import get_referrer
 
 
 @view_defaults(route_name='create_profile')
@@ -40,12 +45,6 @@ class CreateProfile(object):
         self.request = request
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
-
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
 
     def post(self):
         if self.request.method != "POST":
@@ -71,24 +70,30 @@ class CreateProfile(object):
                               appstruct['last_name'],
                               appstruct['email'],
                               hashed_pw,
-                              hashed_pw,
+                              None,
                               0,
                               False
         )
         self.session.add(profile)
         self.session.flush()
-        self.request.session.flash('Account successfully created!',
-                                   queue='success')
         self.request.registry.notify(AccountCreated(self.request, profile))
+        self.request.session.flash('Your account has been created successfully.',
+                                   queue='success')
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
         transaction.commit()
 
-        if appstruct['came_from']:
-            return HTTPFound(location=appstruct['came_from'])
+        headers = remember(self.request, appstruct['username'])
+        self.request.response.headerlist.extend(headers)
+
+        came_from = appstruct.get('came_from', '')
+        local_request = came_from.startswith(self.request.host_url)
+
+        if came_from and not local_request:
+            return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
-            return HTTPFound(location=url)
+            return HTTPFound(location=url, headers=headers)
 
     def get(self, success=False):
         if success:
@@ -98,7 +103,7 @@ class CreateProfile(object):
         return {
             'forms': [profile_form],
             'rendered_form': profile_form.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
 
@@ -111,21 +116,36 @@ class EditProfile(object):
         self.target_username = request.matchdict['username']
         self.session = DBSession()
         self.pass_ctx = request.registry.password_context
+        query = self.session.query(UserProfile)
+        self.target_user = query.get(self.target_username)
+        if self.target_user is None:
+            raise HTTPNotFound()
 
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = '/'
-        return came_from
+    def get_extended_data(self):
+        """Provide a hook to extend the dict returned by the view.
+        Any new values will require that the view template is overriden
+        to use them.
+        """
+        return None
 
     def verify_password(self, password, saved_hash, user):
         if not user:
             return False
 
-        if self.pass_ctx.verify(password, saved_hash):
+        kwargs = {}
+        if user.password_salt:
+            # if the user has a password salt stored, we'll need to
+            # pass it as a keyword arg to the verify method
+            kwargs['salt'] = user.password_salt
+
+        if self.pass_ctx.verify(password, saved_hash, **kwargs):
             if self.pass_ctx.needs_update(saved_hash):
                 new_hash = self.pass_ctx.encrypt(password)
                 user.password_hash = new_hash
+                # if the user had a password_salt stored, we want to wipe it
+                # out so that the salt auto-generated by passlib will
+                # take over
+                user.password_salt = None
                 self.session.add(user)
             passes = True
         else:
@@ -141,6 +161,8 @@ class EditProfile(object):
         controls = self.request.POST.items()
         profile_form = make_profile_form(self.request, edit=True)
 
+        activity_detail = {}
+
         try:
             appstruct = profile_form.validate(controls)  # call validate
         except ValidationFailure, e:
@@ -148,50 +170,68 @@ class EditProfile(object):
             if ('password' in profile_form.cstruct
                 and profile_form.cstruct['password'] != ''):
                 profile_form.cstruct['password'] = ''
-            return {
+            data = {
                 'forms': [profile_form],
                 'rendered_form': e.render(),
                 'target_username': self.target_username,
             }
-
-        target_user = self.session.query(UserProfile).get(self.target_username)
+            ex_data = self.get_extended_data()
+            if ex_data:
+                data.update(ex_data)
+            return data
 
         password = appstruct['password']
         if password == colander.null:
             password = ''
 
         valid_pass = self.verify_password(password,
-                                          target_user.password_hash,
-                                          target_user)
+                                          self.target_user.password_hash,
+                                          self.target_user)
 
         failed = False
-        if (target_user.email != appstruct['email'] and
+        if (self.target_user.email != appstruct['email'] and
             valid_pass):
-            target_user.email = appstruct['email']
-        elif (target_user.email != appstruct['email']
+            activity_detail['old_address'] = [field.current_value
+                        for field in profile_form.schema
+                        if field.name == 'email'
+            ][0]
+            activity_detail['new_address'] = appstruct['email']
+            self.target_user.email = appstruct['email']
+        elif (self.target_user.email != appstruct['email']
               and not valid_pass):
             self.request.session.flash('Must provide the correct password to edit email addresses.',
                                       queue='error')
             failed = True
 
-        target_user.first_name = appstruct['first_name']
-        target_user.last_name = appstruct['last_name']
-        self.session.add(target_user)
+        if self.target_user.first_name != appstruct['first_name']:
+            self.target_user.first_name = appstruct['first_name']
+            activity_detail['first_name'] = appstruct['first_name']
+        if self.target_user.last_name != appstruct['last_name']:
+            self.target_user.last_name = appstruct['last_name']
+            activity_detail['last_name'] = appstruct['last_name']
+
+        self.session.add(self.target_user)
         self.session.flush()
         if not failed:
+            self.request.registry.notify(ProfileChanged(self.request,
+                                                        self.target_user,
+                                                        activity_detail=activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
         return self.get()
 
     def get(self):
-        target_user = self.session.query(UserProfile).get(self.target_username)
-        appstruct = target_user.make_appstruct()
+        appstruct = self.target_user.make_appstruct()
         form = make_profile_form(self.request, edit=True)
-        return {
+        data = {
             'forms': [form],
             'rendered_form': form.render(appstruct),
             'target_username': self.target_username,
         }
+        extended_data = self.get_extended_data()
+        if extended_data:
+            data.update(extended_data)
+        return data
 
 
 @view_defaults(route_name='change_password')
@@ -201,15 +241,29 @@ class ChangePassword(object):
         self.session = DBSession()
         self.target_username = request.matchdict['username']
         self.pass_ctx = request.registry.password_context
+        query = self.session.query(UserProfile)
+        self.target_user = query.get(self.target_username)
+        if self.target_user is None:
+            raise HTTPNotFound()
 
     def verify_password(self, password, saved_hash, user):
         if not user:
             return False
 
-        if self.pass_ctx.verify(password, saved_hash):
+        kwargs = {}
+        if user.password_salt:
+            # if the user has a password salt stored, we'll need to
+            # pass it as a keyword arg to the verify method
+            kwargs['salt'] = user.password_salt
+
+        if self.pass_ctx.verify(password, saved_hash, **kwargs):
             if self.pass_ctx.needs_update(saved_hash):
                 new_hash = self.pass_ctx.encrypt(password)
                 user.password_hash = new_hash
+                # if the user had a password_salt stored, we want to wipe it
+                # out so that the salt auto-generated by passlib will
+                # take over
+                user.password_salt = None
                 self.session.add(user)
             passes = True
         else:
@@ -246,21 +300,19 @@ class ChangePassword(object):
                 'target_username': self.target_username,
             }
 
-        target_user = self.session.query(UserProfile).get(self.target_username)
-
         password = appstruct['password']
         if password == colander.null:
             password = ''
 
         valid_pass = self.verify_password(password,
-                                          target_user.password_hash,
-                                          target_user)
+                                          self.target_user.password_hash,
+                                          self.target_user)
 
         new_hash = self.pass_ctx.encrypt(appstruct['new_password'])
 
         if valid_pass:
-            target_user.password_hash = new_hash
-            self.session.add(target_user)
+            self.target_user.password_hash = new_hash
+            self.session.add(self.target_user)
             self.session.flush()
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
@@ -272,17 +324,25 @@ class ChangePassword(object):
 def token_expired(request):
     cp = ControlPanel(request)
     token_duration = None
-    current = cp.saved_sections.get(password_reset_schema.name)
+    current = cp.saved_sections.get(authentication_schema.name)
     if current and current.panel_values:
         token_duration = current.panel_values['token_duration']
     else:
-        for child in password_reset_schema.children:
+        for child in authentication_schema.children:
             if child.name == 'token_duration':
                 token_duration = child.default
     request.response.status = "400 Bad Request"
     url = request.route_url('request_password')
     return {
         'token_duration': token_duration,
+        'request_reset_url': url,
+    }
+
+
+def token_invalid(request):
+    request.response.status = "400 Bad Request"
+    url = request.route_url('request_password')
+    return {
         'request_reset_url': url,
     }
 
@@ -321,7 +381,9 @@ class RequestPassword(object):
     def get(self):
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render(),
+            'rendered_form': self.frm.render({
+                'came_from': get_referrer(self.request),
+            }),
         }
 
     def notify(self, captured):
@@ -330,7 +392,7 @@ class RequestPassword(object):
         profile = query.first()
 
         mailer = get_mailer(self.request)
-        reset_token = ResetToken(profile.username)
+        reset_token = ResetToken(profile.username, captured['came_from'])
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
                                       self.request)
@@ -351,34 +413,32 @@ class ResetPassword(object):
         self.session = DBSession()
         self.token_duration = None
         cp = ControlPanel(request)
-
-        current = cp.saved_sections.get(password_reset_schema.name)
+        current = cp.saved_sections.get(authentication_schema.name)
         if current and current.panel_values:
             self.token_duration = current.panel_values['token_duration']
         else:
-            for child in password_reset_schema.children:
+            for child in authentication_schema.children:
                 if child.name == 'token_duration':
                     self.token_duration = child.default
 
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = self.request.route_url('home')
-        return came_from
 
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST:
             return self.get()
-        token = self.request.matchdict['token']
-        reset_token = self.check_token(token)
 
-        if reset_token is None:
-            url = self.request.route_url('token_expired')
+        token = self.request.matchdict['token']
+        try:
+            reset_token = self.check_token(token)
+            if reset_token is None:
+                url = self.request.route_url('token_expired')
+                return HTTPFound(location=url)
+        except (DataError, ValueError), err:
+            url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
 
-        password_reset_form = make_password_reset_form()
+        password_reset_form = make_password_reset_form(self.request)
 
         try:
             controls = self.request.POST.items()
@@ -399,13 +459,14 @@ class ResetPassword(object):
                                        queue='success')
             url = self.request.route_url('home')
             self.request.registry.notify(LoggedIn(self.request,
-                                                  reset_token.user))
+                                                  reset_token.user,
+                                                  came_from=reset_token.came_from))
             # Have to manually commit here, as HTTPFound will cause
             # a transaction abort
             transaction.commit()
 
-            if captured['came_from']:
-                return HTTPFound(location=captured['came_from'],
+            if reset_token.came_from:
+                return HTTPFound(location=reset_token.came_from,
                                  headers=headers)
             else:
                 url = self.request.route_url('home')
@@ -421,18 +482,20 @@ class ResetPassword(object):
 
     def get(self):
         token = self.request.matchdict['token']
-
-        if self.check_token(token) is None:
-            url = self.request.route_url('token_expired')
+        try:
+            reset_token = self.check_token(token)
+            if reset_token is None:
+                url = self.request.route_url('token_expired')
+                return HTTPFound(location=url)
+        except (DataError, ValueError), err:
+            url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
 
         password_reset_form = make_password_reset_form()
 
         return {
             'forms': [password_reset_form],
-            'rendered_form': password_reset_form.render({
-                'came_from': self.get_referrer(),
-            }),
+            'rendered_form': password_reset_form.render(),
         }
 
     def notify(self, user_profile):
@@ -441,8 +504,14 @@ class ResetPassword(object):
         """
 
     def check_token(self, token):
+        """Check UID token against database.
+        Can raise either ValueError or DataError if parsing the token as a UUID
+        fails in either Python or PostgreSQL, respectively.
+        """
+        # Check UID validity at Python level to avoid wasting a call to the db
+        uid = UUID(token)
         query = self.session.query(ResetToken)
-        query = query.filter(ResetToken.token==token)
+        query = query.filter(ResetToken.token==uid)
         ts = ResetToken.generation_ts + timedelta(minutes=self.token_duration)
         query = query.filter(ts >= func.current_timestamp())
         results = query.first()
@@ -459,21 +528,32 @@ class LoginView(object):
         query = self.request.GET.items() + self.request.POST.items()
         action = request.current_route_url(_query=query)
         self.frm = make_login_form(action)
-
-    def get_referrer(self):
-        came_from = self.request.referrer
-        if not came_from:
-            came_from = self.request.route_url('home')
-        return came_from
+        cp = ControlPanel(request)
+        self.max_attempts = None
+        current = cp.saved_sections.get(authentication_schema.name)
+        if current and current.panel_values:
+            self.max_attempts = current.panel_values['max_attempts']
+        else:
+            self.max_attempts = MAX_DOMAIN_ATTEMPTS
 
     def verify_password(self, password, saved_hash, user):
         if not user:
             return False
 
-        if self.pass_ctx.verify(password, saved_hash):
+        kwargs = {}
+        if user.password_salt:
+            # if the previous user has a password salt stored, we'll need to
+            # pass it as a keyword arg to the verify method
+            kwargs['salt'] = user.password_salt
+
+        if self.pass_ctx.verify(password, saved_hash, **kwargs):
             if self.pass_ctx.needs_update(saved_hash):
                 new_hash = self.pass_ctx.encrypt(password)
                 user.password_hash = new_hash
+                # if the user had a password_salt stored, we want to wipe it
+                # out so that the salt auto-generated by passlib will
+                # take over
+                user.password_salt = None
                 self.session.add(user)
             passes = True
         else:
@@ -487,13 +567,14 @@ class LoginView(object):
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
-                'came_from': self.get_referrer(),
+                'came_from': get_referrer(self.request),
             }),
         }
 
     def login_error(self, msg):
         self.request.session.flash(msg, queue='error')
         return self.get()
+
 
     def post(self):
         url = self.request.current_route_url()
@@ -524,8 +605,11 @@ class LoginView(object):
         else:
             return self.login_error(self.error_string)
 
+        if user.login_attempts >= self.max_attempts:
+            msg = 'Your account has been disabled due to too many failed attempts.'
+            return self.login_error(msg)
+
         if not self.verify_password(password, saved_hash, user):
-            user.login_attempts += 1
             self.request.registry.notify(LoginFailed(self.request, user))
             return self.login_error(self.error_string)
 
@@ -533,24 +617,29 @@ class LoginView(object):
         headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
 
-        self.request.registry.notify(LoggedIn(self.request, user))
+        self.request.registry.notify(LoggedIn(self.request, user,
+                                              came_from=appstruct['came_from']))
 
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
         transaction.commit()
 
-        if appstruct['came_from']:
+        came_from = appstruct.get('came_from', '')
+        local_request = came_from.startswith(self.request.host_url)
+
+        if came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
             return HTTPFound(location=url, headers=headers)
 
 
-def logout(request):
+def logout(request, return_to=None):
     # XXX This should really check permissions on the destination first.
-    referrer = request.referrer
-    if not referrer:
-        referrer = '/'
+    if return_to is None:
+        referrer = get_referrer(request)
+    else:
+        referrer = return_to
     request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)
