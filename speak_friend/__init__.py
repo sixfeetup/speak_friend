@@ -97,11 +97,11 @@ def includeme(config):
     config.add_view(open_id.OpenIDProvider, attr="get", request_method='GET',
                     route_name='openid_provider',
                     permission=NO_PERMISSION_REQUIRED,
-                    renderer='templates/openid_response.pt')
+                    renderer='string')
     config.add_view(open_id.OpenIDProvider, attr="post", request_method='POST',
                     route_name='openid_provider',
                     permission=NO_PERMISSION_REQUIRED,
-                    renderer='templates/openid_response.pt')
+                    renderer='string')
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
                     route_name='create_profile',

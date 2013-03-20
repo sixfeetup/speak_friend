@@ -24,7 +24,8 @@ def register_api(event):
     event so that it will be injected into the environment, without
     having to explicily add it in each view function.
     """
-    if isinstance(event.rendering_val, Response):
+    if isinstance(event.rendering_val, Response) or \
+       isinstance(event.rendering_val, basestring):
         event['api'] = TemplateAPI(event['request'], {})
     else:
         event['api'] = TemplateAPI(event['request'], event.rendering_val)
