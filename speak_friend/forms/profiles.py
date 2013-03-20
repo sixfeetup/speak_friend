@@ -218,13 +218,6 @@ class EditProfileSchema(MappingSchema):
         widget=CheckedInputWidget(subject=u'Email Address',
                                   confirm_subject=u'Confirm Email Address'),
     )
-    password = SchemaNode(
-        String(),
-        required=False,
-        missing=null,
-        description=u"Password only required if changing email.",
-        widget=PasswordWidget(),
-    )
     came_from = SchemaNode(
         String(),
         widget=HiddenWidget(),
@@ -236,15 +229,33 @@ class EditProfileSchema(MappingSchema):
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
 def make_profile_form(request, edit=False):
+    user = getattr(request, 'target_user', request.user)
     if edit:
         # We need to attach the current value of the user's email
         # so we know if they're trying to change it during validation
         schema = EditProfileSchema()
         for fld in schema:
             if fld.name == 'email':
-                fld.current_value = request.user.email
+                fld.current_value = user.email
+        if request.user.is_superuser:
+            schema.add(SchemaNode(Bool(),
+                                  title='User disabled?',
+                                  name="user_disabled",
+                        )
+            )
+        else:
+            schema.add(SchemaNode(
+                String(),
+                required=False,
+                missing=null,
+                description=u"Password only required if changing email.",
+                widget=PasswordWidget(),
+                title='Password',
+                name='password',
+            ))
     else:
         schema = Profile().bind(request=request)
+
     form = Form(
         schema,
         buttons=('submit', 'cancel'),

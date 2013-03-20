@@ -22,6 +22,8 @@ from sqlalchemy import func
 import transaction
 
 from speak_friend.events import AccountCreated
+from speak_friend.events import AccountDisabled
+from speak_friend.events import AccountEnabled
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
@@ -159,6 +161,7 @@ class EditProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
+        self.request.target_user = self.target_user
         profile_form = make_profile_form(self.request, edit=True)
 
         activity_detail = {}
@@ -180,13 +183,19 @@ class EditProfile(object):
                 data.update(ex_data)
             return data
 
-        password = appstruct['password']
-        if password == colander.null:
-            password = ''
+        same_user = self.request.user == self.target_user
 
-        valid_pass = self.verify_password(password,
-                                          self.target_user.password_hash,
-                                          self.target_user)
+        if same_user:
+            password = appstruct.get('password', colander.null)
+            if password == colander.null:
+                password = ''
+
+            valid_pass = self.verify_password(password,
+                                              self.target_user.password_hash,
+                                              self.target_user)
+        if not same_user and self.request.user.is_superuser:
+            # Let admins edit email addresses w/o a password check
+            valid_pass = True
 
         failed = False
         if (self.target_user.email != appstruct['email'] and
@@ -210,6 +219,23 @@ class EditProfile(object):
             self.target_user.last_name = appstruct['last_name']
             activity_detail['last_name'] = appstruct['last_name']
 
+        if self.request.user.is_superuser and 'user_disabled' in appstruct:
+            self.target_user.admin_disabled = appstruct['user_disabled']
+            if appstruct['user_disabled']:
+                self.request.registry.notify(
+                    AccountDisabled(self.request,
+                                    self.target_user,
+                                    activity_detail=activity_detail)
+                )
+            else:
+                self.request.registry.notify(
+                    AccountEnabled(self.request,
+                                    self.target_user,
+                                    activity_detail=activity_detail)
+                )
+
+
+
         self.session.add(self.target_user)
         self.session.flush()
         if not failed:
@@ -222,6 +248,10 @@ class EditProfile(object):
 
     def get(self):
         appstruct = self.target_user.make_appstruct()
+        if self.request.user.is_superuser:
+            appstruct['user_disabled'] = self.target_user.admin_disabled
+
+        self.request.target_user = self.target_user
         form = make_profile_form(self.request, edit=True)
         data = {
             'forms': [form],
