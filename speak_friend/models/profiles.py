@@ -50,6 +50,12 @@ class DomainProfile(Base):
                         pw_valid = child.default
         return pw_valid
 
+    def make_appstruct(self):
+        appstruct = {}
+        for attr in ('name', 'password_valid'):
+            appstruct[attr] = getattr(self, attr)
+        return appstruct
+
 
 class tsvector(types.TypeDecorator):
     impl = types.UnicodeText
@@ -95,6 +101,11 @@ class UserProfile(Base):
     def full_email(self):
         email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
         return email
+
+    @property
+    def full_name(self):
+        name = '%s %s' % (self.first_name, self.last_name)
+        return name
 
     def make_appstruct(self):
         appstruct = {}

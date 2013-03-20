@@ -85,7 +85,11 @@ class CreateProfile(object):
 
         headers = remember(self.request, appstruct['username'])
         self.request.response.headerlist.extend(headers)
-        if appstruct['came_from']:
+
+        came_from = appstruct.get('came_from', '')
+        local_request = came_from.startswith(self.request.host_url)
+
+        if came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
@@ -620,7 +624,10 @@ class LoginView(object):
         # a transaction abort
         transaction.commit()
 
-        if appstruct['came_from']:
+        came_from = appstruct.get('came_from', '')
+        local_request = came_from.startswith(self.request.host_url)
+
+        if came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')

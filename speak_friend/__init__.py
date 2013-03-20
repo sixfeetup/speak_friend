@@ -162,8 +162,13 @@ def includeme(config):
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/reset_password.pt')
+    config.add_route('list_domains', '/domains')
+    config.add_view(admin.ListDomains, attr='get', request_method='GET',
+                    route_name='list_domains',
+                    permission='admin',
+                    renderer='templates/list_domains.pt')
     config.add_route('create_domain', '/create_domain')
-    config.add_view(admin.CreateDomain, attr="get", request_method='GET',
+    config.add_view(admin.CreateDomain, attr='get', request_method='GET',
                     route_name='create_domain',
                     permission='admin',
                     renderer='templates/create_domain.pt')
@@ -171,6 +176,15 @@ def includeme(config):
                     route_name='create_domain',
                     permission='admin',
                     renderer='templates/create_domain.pt')
+    config.add_route('edit_domain', '/edit_domain/{domain_name}/')
+    config.add_view(admin.EditDomain, attr='get', request_method='GET',
+                    route_name='edit_domain',
+                    permission='admin',
+                    renderer='templates/edit_domain.pt')
+    config.add_view(admin.EditDomain, attr='post', request_method='POST',
+                    route_name='edit_domain',
+                    permission='admin',
+                    renderer='templates/edit_domain.pt')
     config.add_route('user_search', '/user_search')
     config.add_view(admin.UserSearch, attr='get', request_method='GET',
                     route_name='user_search',
