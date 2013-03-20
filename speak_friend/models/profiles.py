@@ -100,6 +100,11 @@ class UserProfile(Base):
         email = '%s %s <%s>' % (self.first_name, self.last_name, self.email)
         return email
 
+    @property
+    def full_name(self):
+        name = '%s %s' % (self.first_name, self.last_name)
+        return name
+
     def make_appstruct(self):
         appstruct = {}
         for attr in ('username', 'first_name', 'last_name', 'email'):

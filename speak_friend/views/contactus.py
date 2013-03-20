@@ -57,11 +57,15 @@ class ContactUs(object):
         }
 
     def get(self):
+        appstruct = {}
+        appstruct['came_from'] = self.request.referrer
+        if self.request.user:
+            appstruct['contact_name'] = self.request.user.full_name
+            appstruct['reply_email'] = self.request.user.email
+        rendered_form = self.frm.render(appstruct=appstruct)
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render({
-                'came_from': self.request.referrer,
-            }),
+            'rendered_form': rendered_form,
         }
 
     def notify(self, captured):
