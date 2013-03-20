@@ -63,10 +63,14 @@ class UserSearch(object):
 
     def get(self):
         form = make_user_search_form()
+        query = self.session.query(UserProfile)
+        query = query.order_by(UserProfile.username.desc())
+
+        results = query.all()
         return {
             'forms': [form],
             'rendered_form': form.render(),
-            'results': [],
+            'results': results,
             'ran_search': False
         }
 

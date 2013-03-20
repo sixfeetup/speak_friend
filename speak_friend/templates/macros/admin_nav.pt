@@ -12,7 +12,7 @@
                    tal:attributes="class string:${activeClass} btn">Create Domain</a>
                 <a class="btn" href="/user_search"
                    tal:define="activeClass api.is_active_tab('user_search')"
-                   tal:attributes="class string:${activeClass} btn">Find Users</a>
+                   tal:attributes="class string:${activeClass} btn">List Users</a>
               </div>
         </metal:nav>
     </metal:admin>
