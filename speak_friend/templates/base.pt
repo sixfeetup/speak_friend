@@ -27,6 +27,8 @@
         <tal:deform-bootstrap-js condition="api.js_resources">
             <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
         </tal:deform-bootstrap-js>
+        <metal:extend-js define-slot="extend-js">
+        </metal:extend-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
 
         <!-- Fallback for consumers that don't support Yadis -->
