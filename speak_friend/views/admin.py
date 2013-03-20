@@ -13,6 +13,7 @@ from sqlalchemy import select, func, desc
 from speak_friend.forms.profiles import Domain
 from speak_friend.forms.profiles import EditDomain as EditDomainSchema
 from speak_friend.forms.profiles import make_user_search_form
+from speak_friend.forms.profiles import make_disable_user_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
@@ -203,4 +204,49 @@ class UserSearch(object):
             'rendered_form': myform.render(),
             'results': results,
             'ran_search': ran_search,
+        }
+
+
+@view_defaults(route_name='disable_user')
+class DisableUser(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.target_username = request.matchdict['username']
+        self.form = make_disable_user_form()
+        self.form.action = request.route_url('disable_user',
+                                             username=self.target_username)
+
+    def get(self):
+        appstruct = {'username': self.target_username}
+        rendered = self.form.render(appstruct)
+        return {
+            'forms': [self.form],
+            'rendered_form': rendered,
+            'username': self.target_username,
+        }
+
+    def post(self):
+        if 'submit' not in self.request.POST:
+            return self.get()
+        controls = self.request.POST.items()
+        try:
+            appstruct = self.form.validate(controls)
+        except ValidationFailure,e:
+            data = {
+                'forms': [self.form],
+                'rendered_form': e.render(),
+                'username': self.target_username,
+            }
+            return data
+        user_query = self.session.query(UserProfile)
+        user_query = user_query.filter(UserProfile.username==self.target_username)
+        user = user_query.first()
+
+        user.admin_disabled = True
+
+        self.session.add(user)
+        transaction.commit()
+        return {
+            'status_msg': '%s was disabled.' % self.target_username
         }
