@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 
 from sqlalchemy import Column, Integer, UnicodeText
@@ -73,6 +74,7 @@ class SFOpenIDStore(object):
 
     def __init__(self, session):
         self.session = session
+        self.logger = logging.getLogger('speak_friend.openid_store')
 
     def storeAssociation(self, server_url, raw_association):
         association = Association(
@@ -83,6 +85,7 @@ class SFOpenIDStore(object):
             raw_association.lifetime,
             raw_association.assoc_type,
         )
+        self.logger.debug('Storing association: %s', association)
         self.session.add(association)
 
     def getAssociation(self, server_url, handle=None):
@@ -97,6 +100,7 @@ class SFOpenIDStore(object):
 
         association = query.first()
         if association is None:
+            self.logger.debug('Association not found: %s', query_args)
             return association
 
         openid_association = OpenIDAssociation(
@@ -106,6 +110,7 @@ class SFOpenIDStore(object):
             association.lifetime,
             association.assoc_type,
         )
+        self.logger.debug('Returning association: %s', openid_association)
         return openid_association
 
     def cleanupAssociations(self):
@@ -121,6 +126,7 @@ class SFOpenIDStore(object):
         kwargs = {'server_url': server_url, 'handle': handle}
         query = self.session.query(Association)
         num_deleted = query.filter_by(**kwargs).delete()
+        self.logger.debug('Removing association: %s', kwargs)
         return num_deleted > 0
 
     def useNonce(self, server_url, timestamp, salt):
