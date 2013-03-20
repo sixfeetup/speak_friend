@@ -1,0 +1,11 @@
+<metal:main use-macro="load: base.pt">
+    <metal:title fill-slot="page-title">Edit ${target_domainname}</metal:title>
+    
+    <metal:sub fill-slot="subnav">
+        <metal:nav use-macro="api.macros['admin_nav']" />
+    </metal:sub>
+    
+    <metal:content metal:fill-slot="content">
+        <div tal:content="structure rendered_form">form</div>
+    </metal:content>
+</metal:main>
