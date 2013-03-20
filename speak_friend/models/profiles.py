@@ -48,6 +48,12 @@ class DomainProfile(Base):
                         pw_valid = child.default
         return pw_valid
 
+    def make_appstruct(self):
+        appstruct = {}
+        for attr in ('name', 'password_valid'):
+            appstruct[attr] = getattr(self, attr)
+        return appstruct
+
 
 class tsvector(types.TypeDecorator):
     impl = types.UnicodeText

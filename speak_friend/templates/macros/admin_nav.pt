@@ -4,15 +4,18 @@
     <metal:admin define-macro="admin_nav">  
         <metal:nav tal:condition="api.is_superuser">
             <div class="btn-group subnav">
-                <a class="btn" href="/create_profile"
+                <a class="btn" href="#"
                    tal:define="activeClass api.is_active_tab('create_profile')"
-                   tal:attributes="class string:${activeClass} btn">Create Profile</a>
-                <a class="btn" href="/create_domain"
-                   tal:define="activeClass api.is_active_tab('create_domain')"
-                   tal:attributes="class string:${activeClass} btn">Create Domain</a>
-                <a class="btn" href="/user_search"
+                   tal:attributes="class string:${activeClass} btn;
+                                   href request.route_url('create_profile')">Create Profile</a>
+                <a class="btn" href=""
+                   tal:define="activeClass api.is_active_tab('list_domains')"
+                   tal:attributes="class string:${activeClass} btn;
+                                   href request.route_url('list_domains')">List Domains</a>
+                <a class="btn" href="#"
                    tal:define="activeClass api.is_active_tab('user_search')"
-                   tal:attributes="class string:${activeClass} btn">List Users</a>
+                   tal:attributes="class string:${activeClass} btn;
+                                   href request.route_url('user_search')">List Users</a>
               </div>
         </metal:nav>
     </metal:admin>
