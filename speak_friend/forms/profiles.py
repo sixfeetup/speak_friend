@@ -12,7 +12,6 @@ from deform.widget import ResourceRegistry
 from deform.widget import TextInputWidget
 
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
 
