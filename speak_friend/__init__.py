@@ -186,6 +186,10 @@ def includeme(config):
                     route_name='edit_domain',
                     permission='admin',
                     renderer='templates/edit_domain.pt')
+    config.add_route('delete_domain', '/delete_domain')
+    config.add_view(admin.DeleteDomain, attr='post', request_method='POST',
+                    route_name='delete_domain',
+                    permission='admin')
     config.add_route('user_search', '/user_search')
     config.add_view(admin.UserSearch, attr='get', request_method='GET',
                     route_name='user_search',
