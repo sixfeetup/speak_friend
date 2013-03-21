@@ -13,7 +13,6 @@ from sqlalchemy import select, func, desc
 from speak_friend.forms.profiles import Domain
 from speak_friend.forms.profiles import EditDomain as EditDomainSchema
 from speak_friend.forms.profiles import make_user_search_form
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
@@ -23,11 +22,10 @@ from speak_friend.views.controlpanel import ControlPanel
 class ListDomains(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.cp = ControlPanel(request)
 
     def get(self):
-        domain_records = self.session.query(DomainProfile)
+        domain_records = self.request.db_session.query(DomainProfile)
         domain_records = domain_records.order_by(DomainProfile.name).all()
         domains = []
         for domain in domain_records:
@@ -50,7 +48,6 @@ class ListDomains(object):
 class CreateDomain(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.domain_form = Form(Domain(), buttons=('submit', 'cancel'))
 
     def post(self):
@@ -70,7 +67,7 @@ class CreateDomain(object):
             }
 
         new_domain = DomainProfile(**appstruct)
-        self.session.merge(new_domain)
+        self.request.db_session.merge(new_domain)
 
         self.request.session.flash('Domain successfully created!',
                                    queue='success')
@@ -91,13 +88,11 @@ class EditDomain(object):
     def __init__(self, request):
         self.request = request
         self.target_domainname = request.matchdict['domain_name']
-        self.session = DBSession()
-        query = self.session.query(DomainProfile)
+        query = self.request.db_session.query(DomainProfile)
         self.target_domain = query.get(self.target_domainname)
         if self.target_domain is None:
             raise HTTPNotFound()
-        self.domain_form = Form(EditDomainSchema(),
-                                buttons=('submit', 'cancel'))
+        self.domain_form = make_edit_domain_form(request)
         self.return_url = self.request.route_url('list_domains')
 
     def get(self):
@@ -132,11 +127,11 @@ class EditDomain(object):
 
         if self.target_domain.password_valid != appstruct['password_valid']:
             self.target_domain.password_valid = appstruct['password_valid']
-        self.session.add(self.target_domain)
         self.session.flush()
         # Have to manually commit here, as HTTPFound will cause
         # a transaction abort
         transaction.commit()
+        self.request.db_session.add(self.target_domain)
 
         self.request.session.flash('Domain successfully modified!',
                                    queue='success')
@@ -148,11 +143,10 @@ class EditDomain(object):
 class UserSearch(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
 
     def get(self):
         form = make_user_search_form()
-        query = self.session.query(UserProfile)
+        query = self.request.db_session.query(UserProfile)
         query = query.order_by(UserProfile.username.desc())
 
         results = query.all()
@@ -190,7 +184,7 @@ class UserSearch(object):
         orderby = func.ts_rank_cd(UserProfile.searchable_text,
                                   select([query_select.c.query]))
 
-        res = self.session.query(UserProfile)
+        res = self.request.db_session.query(UserProfile)
         res = res.filter(
             UserProfile.searchable_text.op('@@')(
                 select([query_select.c.query])))
