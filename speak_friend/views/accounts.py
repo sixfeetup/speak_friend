@@ -226,7 +226,7 @@ class EditProfile(object):
                                     activity_detail=activity_detail)
                 )
 
-        self.session.add(self.target_user)
+        self.request.db_session.add(self.target_user)
         if not failed:
             self.request.registry.notify(ProfileChanged(self.request,
                                                         self.target_user,
