@@ -20,6 +20,7 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 
 from speak_friend.configuration import add_controlpanel_section
+from speak_friend.configuration import get_db_session
 from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
@@ -273,7 +274,8 @@ def includeme(config):
     factory_class = session_resolver.resolve(factory_name)
     session_factory = factory_class(session_secret)
     config.set_session_factory(session_factory)
-    config.add_request_method(get_user, 'user', property=True)
+    config.add_request_method(get_db_session, 'db_session', reify=True)
+    config.add_request_method(get_user, 'user', reify=True)
 
 
 def init_sa(config):
