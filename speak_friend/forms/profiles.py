@@ -106,20 +106,30 @@ class DomainName(object):
     The ``should_exist`` keyword argument specifies whether the validator
     checks for the domain name existing or not. It defaults to `False`
     """
-    def __init__(self, msg=None, should_exist=False):
+    def __init__(self, msg=None, should_exist=False, db_session=None):
         if msg is None:
             msg = "A domain with that name already exists"
         self.msg = msg
         self.should_exist = should_exist
+        self.db_session = db_session
 
     def __call__(self, node, value):
-        session = DBSession()
-        query = session.query(DomainProfile)
+        query = self.db_session.query(DomainProfile)
         query = query.filter(DomainProfile.name==value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
 
+
+@deferred
+def create_domain_validator(node, kw):
+    domain_validator = kw.get('domain_validator')
+    validator = DomainName(**domain_validator),
+    validator = All(
+        FQDN(),
+        DomainName(**domain_validator),
+    )
+    return validator
 
 
 class UserName(object):
@@ -284,7 +294,7 @@ class Domain(MappingSchema):
         String(),
         title="Domain Name",
         description="Must be a valid Fully Qualified Domain Name",
-        validator=All(FQDN(), DomainName(), ),
+        validator=create_domain_validator,
     )
     password_valid = SchemaNode(
         Integer(),
@@ -293,6 +303,17 @@ class Domain(MappingSchema):
                     "should be valid (a negative value will use the system "
                     "default)",
     )
+
+
+def make_domain_form(request):
+    domain_validator = dict(should_exist=False,
+                            db_session=request.db_session)
+    schema = Domain()
+    return Form(
+        schema.bind(request=request, domain_validator=domain_validator),
+        buttons=('submit', 'cancel'),
+    )
+
 
 class EditDomain(MappingSchema):
     name = SchemaNode(
@@ -306,6 +327,14 @@ class EditDomain(MappingSchema):
         description="Indicate the length of time, in minutes that a password "
                     "should be valid (a negative value will use the system "
                     "default)",
+    )
+
+
+def make_edit_domain_form(request):
+    schema = EditDomain()
+    return Form(
+        schema.bind(request=request),
+        buttons=('submit', 'cancel'),
     )
 
 

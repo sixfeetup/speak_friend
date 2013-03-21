@@ -5,11 +5,10 @@ from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_defaults
 from deform import ValidationFailure
-from deform import Form
 from sqlalchemy import select, func, desc
 
-from speak_friend.forms.profiles import Domain
-from speak_friend.forms.profiles import EditDomain as EditDomainSchema
+from speak_friend.forms.profiles import make_domain_form
+from speak_friend.forms.profiles import make_edit_domain_form
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
@@ -46,7 +45,7 @@ class ListDomains(object):
 class CreateDomain(object):
     def __init__(self, request):
         self.request = request
-        self.domain_form = Form(Domain(), buttons=('submit', 'cancel'))
+        self.domain_form = make_domain_form(request)
 
     def post(self):
         if self.request.method != "POST":
@@ -106,7 +105,7 @@ class EditDomain(object):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'cancel' in self.request.POST:
-            self.request.session.flash('Domain edit cancelled', 
+            self.request.session.flash('Domain edit cancelled',
                                        queue='success')
             return HTTPFound(location=self.return_url)
         if 'submit' not in self.request.POST:
