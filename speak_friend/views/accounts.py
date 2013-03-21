@@ -371,7 +371,7 @@ def token_invalid(request):
 class RequestPassword(object):
     def __init__(self, request):
         self.request = request
-        self.frm = make_password_reset_request_form()
+        self.frm = make_password_reset_request_form(request)
         self.path = 'speak_friend:templates/email/password_reset_notification.pt'
         settings = request.registry.settings
         self.subject = "%s: Reset password" % settings['site_name']
