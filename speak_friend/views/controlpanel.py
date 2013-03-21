@@ -6,7 +6,6 @@ from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.view import view_defaults
 
-from speak_friend.models import DBSession
 from speak_friend.models.controlpanel import ControlPanelSection
 
 
@@ -14,9 +13,8 @@ from speak_friend.models.controlpanel import ControlPanelSection
 class ControlPanel(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.sections = self.request.registry.get('controlpanel', {})
-        query = self.session.query(ControlPanelSection)
+        query = self.request.db_session.query(ControlPanelSection)
         qry_filter = ControlPanelSection.section.in_(self.sections.keys())
         self.saved_sections = dict([
             (cp_section.section, cp_section)
@@ -86,7 +84,7 @@ class ControlPanel(object):
             )
         else:
             cp_section.panel_values = captured
-        self.session.merge(cp_section)
+        self.request.db_session.merge(cp_section)
 
 
 def record_to_appstruct(self):
