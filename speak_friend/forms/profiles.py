@@ -12,7 +12,6 @@ from deform.widget import ResourceRegistry
 from deform.widget import TextInputWidget
 
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
 
@@ -65,24 +64,35 @@ class UserEmail(object):
     The ``should_exist`` keyword argument specifies whether the validator checks for the
     email existing or not in the table. It defaults to `True`
     """
-    def __init__(self, msg=None, should_exist=True, for_edit=False):
+    def __init__(self, msg=None, should_exist=True, for_edit=False,
+                 db_session=None):
         if msg is None:
             msg = "No user with that email address"
         self.msg = msg
         self.should_exist = should_exist
         self.for_edit = for_edit
+        self.db_session = db_session
 
     def __call__(self, node, value):
-        session = DBSession()
         # This relies on the current_value attribute being set
         # when the form is created (based on the authenticated username)
         if self.for_edit and value == node.current_value:
             return True
-        query = session.query(UserProfile)
+        query = self.db_session.query(UserProfile)
         query = query.filter(UserProfile.email==value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
+
+
+@deferred
+def create_user_email_validator(node, kw):
+    email_validator = kw.get('email_validator')
+    validator = All(
+        Email(),
+        UserEmail(**email_validator),
+    )
+    return validator
 
 
 class DomainName(object):
@@ -95,46 +105,63 @@ class DomainName(object):
     The ``should_exist`` keyword argument specifies whether the validator
     checks for the domain name existing or not. It defaults to `False`
     """
-    def __init__(self, msg=None, should_exist=False):
+    def __init__(self, msg=None, should_exist=False, for_edit=False,
+                 db_session=None):
         if msg is None:
             msg = "A domain with that name already exists"
         self.msg = msg
         self.should_exist = should_exist
+        self.for_edit = for_edit
+        self.db_session = db_session
 
     def __call__(self, node, value):
-        session = DBSession()
-        query = session.query(DomainProfile)
+        # must set current_value to target domain name in edit form
+        if self.for_edit and value == node.current_value:
+            return True
+        query = self.db_session.query(DomainProfile)
         query = query.filter(DomainProfile.name==value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
 
 
-def username_validator(should_exist):
-    """Generates validator function to check existence of a username
+@deferred
+def create_domain_validator(node, kw):
+    domain_validator = kw.get('domain_validator')
+    validator = All(
+        FQDN(),
+        DomainName(**domain_validator),
+    )
+    return validator
 
-    This function generates another function that will be used by a
-    ``colander.Function`` validator.
 
-    The ``should_exist`` argument specifies whether the validator
-    checks for the user existing or not in the table. It defaults to `True`
+class UserName(object):
+    """Validator to check username existence in UserProfiles
+
+    The ``should_exist`` keyword argument specifies whether the validator checks for the
+    username existing or not in the table. It defaults to `False`
     """
-    def inner_username_validator(value):
-        session = DBSession()
-        query = session.query(UserProfile)
+    def __init__(self, should_exist=False, db_session=None):
+        self.should_exist = should_exist
+        if should_exist == True:
+            self.msg = "Username does not exist."
+        else:
+            self.msg = "Username already exists."
+        self.db_session = db_session
+
+    def __call__(self, node, value):
+        query = self.db_session.query(UserProfile)
         query = query.filter(UserProfile.username==value)
         exists = bool(query.count())
-        if exists != should_exist:
+        if exists != self.should_exist:
+            raise Invalid(node, self.msg)
 
 
-            if should_exist == True:
-                return "Username does not exist."
-            else:
-                return "Username already exists."
-        # Functions used with the function validator must return True.
-        return True
-    return inner_username_validator
-
+@deferred
+def create_username_validator(node, kw):
+    username_validator = kw.get('username_validator')
+    validator = UserName(**username_validator)
+    return validator
 
 def usage_policy_validator(value):
     return value == True
@@ -157,7 +184,7 @@ def create_password_validator(node, kw):
 class Profile(MappingSchema):
     username = SchemaNode(
         String(),
-        validator=Function(username_validator(False)),
+        validator=create_username_validator,
         description='* we suggest using your first and last name',
     )
     first_name = SchemaNode(String())
@@ -165,11 +192,7 @@ class Profile(MappingSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
-        validator=All(
-            Email(),
-            UserEmail(should_exist=False,
-                      msg="Email address already in use."),
-        ),
+        validator=create_user_email_validator,
         widget=CheckedInputWidget(subject=u'Email Address',
                                   confirm_subject=u'Confirm Email Address'),
     )
@@ -210,20 +233,9 @@ class EditProfileSchema(MappingSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
-        validator=All(
-            Email(),
-            UserEmail(should_exist=False, for_edit=True,
-                      msg="Email address already in use."),
-        ),
+        validator=create_user_email_validator,
         widget=CheckedInputWidget(subject=u'Email Address',
                                   confirm_subject=u'Confirm Email Address'),
-    )
-    password = SchemaNode(
-        String(),
-        required=False,
-        missing=null,
-        description=u"Password only required if changing email.",
-        widget=PasswordWidget(),
     )
     came_from = SchemaNode(
         String(),
@@ -236,20 +248,45 @@ class EditProfileSchema(MappingSchema):
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
 def make_profile_form(request, edit=False):
+    user = getattr(request, 'target_user', request.user)
+    email_validator = dict(should_exist=False,
+                           msg="Email address already in use.",
+                           db_session=request.db_session)
+    username_validator = dict(should_exist=False,
+                              db_session=request.db_session)
     if edit:
         # We need to attach the current value of the user's email
         # so we know if they're trying to change it during validation
         schema = EditProfileSchema()
         for fld in schema:
             if fld.name == 'email':
-                fld.current_value = request.user.email
+                fld.current_value = user.email
+        if request.user.is_superuser:
+            schema.add(SchemaNode(Bool(),
+                                  title='User disabled?',
+                                  name="user_disabled",
+                        )
+            )
+        else:
+            schema.add(SchemaNode(
+                String(),
+                required=False,
+                missing=null,
+                description=u"Password only required if changing email.",
+                widget=PasswordWidget(),
+                title='Password',
+                name='password',
+            ))
     else:
-        schema = Profile().bind(request=request)
+        schema = Profile()
+
     form = Form(
-        schema,
         buttons=('submit', 'cancel'),
         resource_registry=password_registry,
         renderer=renderer,
+        schema = schema.bind(request=request,
+                             email_validator=email_validator,
+                             username_validator=username_validator),
         bootstrap_form_style='form-vertical',
     )
     return form
@@ -260,7 +297,7 @@ class Domain(MappingSchema):
         String(),
         title="Domain Name",
         description="Must be a valid Fully Qualified Domain Name",
-        validator=All(FQDN(), DomainName(), ),
+        validator=create_domain_validator,
     )
     password_valid = SchemaNode(
         Integer(),
@@ -270,18 +307,23 @@ class Domain(MappingSchema):
                     "default)",
     )
 
-class EditDomain(MappingSchema):
-    name = SchemaNode(
-        String(),
-        missing='',
-        widget=TextInputWidget(template='readonly/textinput'),
-    )
-    password_valid = SchemaNode(
-        Integer(),
-        title="Password valid",
-        description="Indicate the length of time, in minutes that a password "
-                    "should be valid (a negative value will use the system "
-                    "default)",
+
+def make_domain_form(request, domain=None):
+    edit=False
+    if domain is not None:
+        edit=True
+    domain_validator = dict(for_edit=edit,
+                            db_session=request.db_session)
+    schema = Domain()
+    if edit:
+        for fld in schema:
+            if fld.name == 'name':
+                fld.current_value = domain.name
+    
+    return Form(
+        schema.bind(request=request, domain_validator=domain_validator),
+        buttons=('submit', 'cancel'),
+        bootstrap_form_style='form-vertical',
     )
 
 
@@ -289,7 +331,7 @@ class PasswordResetRequest(MappingSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
-        validator=UserEmail(should_exist=True),
+        validator=create_user_email_validator,
     )
     came_from = SchemaNode(
         String(),
@@ -299,9 +341,12 @@ class PasswordResetRequest(MappingSchema):
     )
 
 
-def make_password_reset_request_form(request=None):
+def make_password_reset_request_form(request):
+    email_validator = dict(should_exist=True,
+                           db_session=request.db_session)
+    schema = PasswordResetRequest()
     password_reset_request_form = Form(
-        PasswordResetRequest(),
+        schema.bind(request=request, email_validator=email_validator),
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Request Password'),

@@ -7,8 +7,6 @@ from openid.consumer import discover
 
 from psycopg2.tz import FixedOffsetTimezone
 
-import transaction
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
@@ -16,7 +14,6 @@ from pyramid.view import view_defaults
 
 
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
-from speak_friend.models import DBSession
 from speak_friend.models.open_id import SFOpenIDStore
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
@@ -41,12 +38,11 @@ class OpenIDProvider(object):
 
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
-        self.openid_server = Server(SFOpenIDStore(self.session),
+        self.openid_server = Server(SFOpenIDStore(self.request.db_session),
                                     request.route_url('openid_provider'))
         self.auth_userid = authenticated_userid(request)
         if self.auth_userid:
-            query = self.session.query(UserProfile)
+            query = self.request.db_session.query(UserProfile)
             self.auth_user = query.get(self.auth_userid)
         else:
             self.auth_user = None
@@ -56,7 +52,7 @@ class OpenIDProvider(object):
         Expects datetime.utcnow()
         """
         domain_name = get_domain(self.request)
-        domain = self.session.query(DomainProfile).get(domain_name)
+        domain = self.request.db_session.query(DomainProfile).get(domain_name)
         if domain:
             pw_valid = timedelta(minutes=domain.get_password_valid())
         else:
@@ -66,7 +62,7 @@ class OpenIDProvider(object):
             now = datetime.utcnow()
         utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
         if self.request.user:
-            last_login = self.request.user.last_login(self.session)
+            last_login = self.request.user.last_login(self.request.db_session)
             return last_login + pw_valid > utc_now
         else:
             # Not enough info to apply policy
@@ -94,7 +90,6 @@ class OpenIDProvider(object):
 
         if 'location' in encoded_response.headers:
             response = HTTPFound(location=encoded_response.headers['location'])
-            transaction.commit()
             return response
         return encoded_response.body
 

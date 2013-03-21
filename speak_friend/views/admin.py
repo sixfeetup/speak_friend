@@ -1,19 +1,17 @@
 # Views related to administrator actions. (deactivating accounts,
 # changing user passwords)
-import transaction
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_defaults
 from deform import ValidationFailure
-from deform import Form
 from sqlalchemy import select, func, desc
+from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 
-from speak_friend.forms.profiles import Domain
-from speak_friend.forms.profiles import EditDomain as EditDomainSchema
+from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
@@ -23,11 +21,10 @@ from speak_friend.views.controlpanel import ControlPanel
 class ListDomains(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.cp = ControlPanel(request)
 
     def get(self):
-        domain_records = self.session.query(DomainProfile)
+        domain_records = self.request.db_session.query(DomainProfile)
         domain_records = domain_records.order_by(DomainProfile.name).all()
         domains = []
         for domain in domain_records:
@@ -36,7 +33,6 @@ class ListDomains(object):
                 'password_valid': domain.get_password_valid(self.cp),
                 'edit_url': self.request.route_url('edit_domain',
                                                    domain_name=domain.name),
-                'delete_url': 'http://uw.edu',
             }
             domains.append(domain_dict)
         create_url = self.request.route_url('create_domain')
@@ -50,8 +46,7 @@ class ListDomains(object):
 class CreateDomain(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
-        self.domain_form = Form(Domain(), buttons=('submit', 'cancel'))
+        self.domain_form = make_domain_form(request)
 
     def post(self):
         if self.request.method != "POST":
@@ -70,7 +65,7 @@ class CreateDomain(object):
             }
 
         new_domain = DomainProfile(**appstruct)
-        self.session.merge(new_domain)
+        self.request.db_session.merge(new_domain)
 
         self.request.session.flash('Domain successfully created!',
                                    queue='success')
@@ -91,13 +86,12 @@ class EditDomain(object):
     def __init__(self, request):
         self.request = request
         self.target_domainname = request.matchdict['domain_name']
-        self.session = DBSession()
-        query = self.session.query(DomainProfile)
+        query = self.request.db_session.query(DomainProfile)
         self.target_domain = query.get(self.target_domainname)
         if self.target_domain is None:
             raise HTTPNotFound()
-        self.domain_form = Form(EditDomainSchema(),
-                                buttons=('submit', 'cancel'))
+        self.domain_form = make_domain_form(request,
+                                            domain=self.target_domain)
         self.return_url = self.request.route_url('list_domains')
 
     def get(self):
@@ -113,7 +107,7 @@ class EditDomain(object):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'cancel' in self.request.POST:
-            self.request.session.flash('Domain edit cancelled', 
+            self.request.session.flash('Domain edit cancelled',
                                        queue='success')
             return HTTPFound(location=self.return_url)
         if 'submit' not in self.request.POST:
@@ -130,29 +124,62 @@ class EditDomain(object):
                 'target_domainname': self.target_domainname
             }
 
+        if self.target_domain.name != appstruct['name']:
+            self.target_domain.name = appstruct['name']
         if self.target_domain.password_valid != appstruct['password_valid']:
             self.target_domain.password_valid = appstruct['password_valid']
-        self.session.add(self.target_domain)
-        self.session.flush()
-        # Have to manually commit here, as HTTPFound will cause
-        # a transaction abort
-        transaction.commit()
+        self.request.db_session.add(self.target_domain)
 
         self.request.session.flash('Domain successfully modified!',
                                    queue='success')
         return HTTPFound(location=self.return_url)
 
 
+@view_defaults(route_name='delete_domain')
+class DeleteDomain(object):
+    def __init__(self, request):
+        self.request = request
+        self.return_url = self.request.route_url('list_domains')
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            # this was submitted without submitting the form, no good
+            msg = 'Unable to delete domains except by form submission'
+            return HTTPBadRequest(msg)
+
+        target_domainname = self.request.POST.get('name', None)
+        domain_found = False
+        msg = 'Unable to delete %s, '
+        msg_queue = 'error'
+        try:
+            query = self.request.db_session.query(DomainProfile).filter(
+                DomainProfile.name==target_domainname)
+            target_domain = query.one()
+            domain_found = True
+        except MultipleResultsFound:
+            msg += 'the name does not uniquely identify a domain record.'
+        except NoResultFound:
+            msg += 'the domain record does not exist.'
+
+        if domain_found:
+            self.request.db_session.delete(target_domain)
+            msg = 'The domain %s was successfully deleted'
+            msg_queue = 'success'
+
+        self.request.session.flash(msg % target_domainname, queue=msg_queue)
+        return HTTPFound(location=self.return_url)
+
 
 @view_defaults(route_name='user_search')
 class UserSearch(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
 
     def get(self):
         form = make_user_search_form()
-        query = self.session.query(UserProfile)
+        query = self.request.db_session.query(UserProfile)
         query = query.order_by(UserProfile.username.desc())
 
         results = query.all()
@@ -190,7 +217,7 @@ class UserSearch(object):
         orderby = func.ts_rank_cd(UserProfile.searchable_text,
                                   select([query_select.c.query]))
 
-        res = self.session.query(UserProfile)
+        res = self.request.db_session.query(UserProfile)
         res = res.filter(
             UserProfile.searchable_text.op('@@')(
                 select([query_select.c.query])))

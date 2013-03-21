@@ -4,7 +4,6 @@ from pyramid.security import Authenticated
 from pyramid.security import Everyone
 from pyramid.security import authenticated_userid
 
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
@@ -12,8 +11,7 @@ Viewers = 'speak_friend.viewers'
 Admins = 'speak_friend.admins'
 
 def groupfinder(userid, request):
-    session = DBSession()
-    query = session.query(UserProfile)
+    query = request.db_session.query(UserProfile)
     user = query.get(userid)
     groups = []
     if user:

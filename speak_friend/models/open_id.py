@@ -14,7 +14,6 @@ from openid.store.nonce import SKEW as NONCE_SKEW
 from zope.interface import implements
 
 from speak_friend.interfaces import IOpenIDStore
-from speak_friend.models import DBSession
 
 
 class Association(Base):
