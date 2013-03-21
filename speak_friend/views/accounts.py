@@ -19,8 +19,6 @@ from pyramid_mailer.message import Message
 
 from sqlalchemy import func
 
-import transaction
-
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountDisabled
 from speak_friend.events import AccountEnabled
@@ -79,9 +77,6 @@ class CreateProfile(object):
         self.request.registry.notify(AccountCreated(self.request, profile))
         self.request.session.flash('Your account has been created successfully.',
                                    queue='success')
-        # Have to manually commit here, as HTTPFound will cause
-        # a transaction abort
-        transaction.commit()
 
         headers = remember(self.request, appstruct['username'])
         self.request.response.headerlist.extend(headers)
@@ -238,7 +233,6 @@ class EditProfile(object):
                                                         activity_detail=activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
-        transaction.commit()
         if self.request.user.is_superuser:
             return HTTPFound(self.request.route_url('user_search'))
         else:
@@ -339,7 +333,6 @@ class ChangePassword(object):
 
         if valid_pass:
             self.target_user.password_hash = new_hash
-            self.session.flush()
             self.request.db_session.add(self.target_user)
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
@@ -471,7 +464,6 @@ class ResetPassword(object):
             pw = captured['password']
             pw_hash = self.request.registry.password_context.encrypt(pw)
             reset_token.user.password_hash = pw_hash
-            self.session.flush()
             token_query = self.request.db_session.query(ResetToken)
             token_query.filter(
                 ResetToken.username==reset_token.user.username).delete()
@@ -486,9 +478,6 @@ class ResetPassword(object):
             self.request.registry.notify(LoggedIn(self.request,
                                                   reset_token.user,
                                                   came_from=reset_token.came_from))
-            # Have to manually commit here, as HTTPFound will cause
-            # a transaction abort
-            transaction.commit()
 
             if reset_token.came_from:
                 return HTTPFound(location=reset_token.came_from,

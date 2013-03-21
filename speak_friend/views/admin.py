@@ -1,7 +1,5 @@
 # Views related to administrator actions. (deactivating accounts,
 # changing user passwords)
-import transaction
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
@@ -127,10 +125,6 @@ class EditDomain(object):
 
         if self.target_domain.password_valid != appstruct['password_valid']:
             self.target_domain.password_valid = appstruct['password_valid']
-        self.session.flush()
-        # Have to manually commit here, as HTTPFound will cause
-        # a transaction abort
-        transaction.commit()
         self.request.db_session.add(self.target_domain)
 
         self.request.session.flash('Domain successfully modified!',

@@ -1,5 +1,4 @@
 from logging import getLogger
-import transaction
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
@@ -114,14 +113,12 @@ def handle_openid_request(event):
         if event.response.status_code == 302:
             response_url = openid_response.headers['Location']
             event.response.headers['Location'] = response_url
-        transaction.commit()
         if not isinstance(openid_response, HTTPFound):
             event.response.body = openid_response
 
 
 def increment_failed_login_count(event):
     event.user.login_attempts += 1
-    transaction.commit()
     event.request.db_session.add(event.user)
 
 

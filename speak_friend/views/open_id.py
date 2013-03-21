@@ -7,8 +7,6 @@ from openid.consumer import discover
 
 from psycopg2.tz import FixedOffsetTimezone
 
-import transaction
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
@@ -92,7 +90,6 @@ class OpenIDProvider(object):
 
         if 'location' in encoded_response.headers:
             response = HTTPFound(location=encoded_response.headers['location'])
-            transaction.commit()
             return response
         return encoded_response.body
 
