@@ -105,14 +105,19 @@ class DomainName(object):
     The ``should_exist`` keyword argument specifies whether the validator
     checks for the domain name existing or not. It defaults to `False`
     """
-    def __init__(self, msg=None, should_exist=False, db_session=None):
+    def __init__(self, msg=None, should_exist=False, for_edit=False,
+                 db_session=None):
         if msg is None:
             msg = "A domain with that name already exists"
         self.msg = msg
         self.should_exist = should_exist
+        self.for_edit = for_edit
         self.db_session = db_session
 
     def __call__(self, node, value):
+        # must set current_value to target domain name in edit form
+        if self.for_edit and value == node.current_value:
+            return True
         query = self.db_session.query(DomainProfile)
         query = query.filter(DomainProfile.name==value)
         exists = bool(query.count())
@@ -123,7 +128,6 @@ class DomainName(object):
 @deferred
 def create_domain_validator(node, kw):
     domain_validator = kw.get('domain_validator')
-    validator = DomainName(**domain_validator),
     validator = All(
         FQDN(),
         DomainName(**domain_validator),
@@ -304,36 +308,22 @@ class Domain(MappingSchema):
     )
 
 
-def make_domain_form(request):
-    domain_validator = dict(should_exist=False,
+def make_domain_form(request, domain=None):
+    edit=False
+    if domain is not None:
+        edit=True
+    domain_validator = dict(for_edit=edit,
                             db_session=request.db_session)
     schema = Domain()
+    if edit:
+        for fld in schema:
+            if fld.name == 'name':
+                fld.current_value = domain.name
+    
     return Form(
         schema.bind(request=request, domain_validator=domain_validator),
         buttons=('submit', 'cancel'),
-    )
-
-
-class EditDomain(MappingSchema):
-    name = SchemaNode(
-        String(),
-        missing='',
-        widget=TextInputWidget(template='readonly/textinput'),
-    )
-    password_valid = SchemaNode(
-        Integer(),
-        title="Password valid",
-        description="Indicate the length of time, in minutes that a password "
-                    "should be valid (a negative value will use the system "
-                    "default)",
-    )
-
-
-def make_edit_domain_form(request):
-    schema = EditDomain()
-    return Form(
-        schema.bind(request=request),
-        buttons=('submit', 'cancel'),
+        bootstrap_form_style='form-vertical',
     )
 
 
