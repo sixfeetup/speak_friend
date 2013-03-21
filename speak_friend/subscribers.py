@@ -10,7 +10,6 @@ from pyramid_mailer.message import Message
 
 from speak_friend.api import TemplateAPI
 from speak_friend.forms.controlpanel import email_notification_schema
-from speak_friend.models import DBSession
 from speak_friend.models.reports import UserActivity
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
@@ -51,9 +50,8 @@ def log_user_activity(event):
     """Records all UserActivity events emitted to the user_activities
     table.
     """
-    session = DBSession()
     activity = UserActivity(**event.__dict__)
-    session.add(activity)
+    event.request.db_session.add(activity)
 
 def notify_account_created(event):
     """Notify site admins when an account is created.
@@ -123,9 +121,8 @@ def handle_openid_request(event):
 
 def increment_failed_login_count(event):
     event.user.login_attempts += 1
-    session = DBSession()
-    session.add(event.user)
     transaction.commit()
+    event.request.db_session.add(event.user)
 
 
 def email_change_notification(event):
