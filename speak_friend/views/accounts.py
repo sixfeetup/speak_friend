@@ -633,10 +633,6 @@ class LoginView(object):
         self.request.registry.notify(LoggedIn(self.request, user,
                                               came_from=appstruct['came_from']))
 
-        # Have to manually commit here, as HTTPFound will cause
-        # a transaction abort
-        transaction.commit()
-
         came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
 
