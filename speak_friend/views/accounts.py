@@ -619,6 +619,7 @@ class LoginView(object):
             # Don't just use += 1, as that is subject to race conditions
             # with concurrent updates
             user.login_attempts = UserProfile.login_attempts + 1
+            self.request.db_session.flush()
             if user.login_attempts >= self.max_attempts:
                 user.locked = True
                 self.request.registry.notify(AccountLocked(self.request, user))
