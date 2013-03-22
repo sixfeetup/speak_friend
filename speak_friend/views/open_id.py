@@ -1,25 +1,17 @@
-from datetime import datetime, timedelta
 import logging
 
 from openid.extensions import sreg
 from openid.server.server import Server
 from openid.consumer import discover
 
-from psycopg2.tz import FixedOffsetTimezone
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
-
-from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.models.open_id import SFOpenIDStore
-from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
-from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
-from speak_friend.views.accounts import logout
 
 
 logger = logging.getLogger('speak_friend.openid_provider')
@@ -47,35 +39,8 @@ class OpenIDProvider(object):
         else:
             self.auth_user = None
 
-    def checkPasswordTimeout(self, now=None):
-        """Verify the last login timestamp is still valid.
-        Expects datetime.utcnow()
-        """
-        domain_name = get_domain(self.request)
-        domain = self.request.db_session.query(DomainProfile).get(domain_name)
-        if domain:
-            pw_valid = timedelta(minutes=domain.get_password_valid())
-        else:
-            pw_valid = timedelta(minutes=MAX_PASSWORD_VALID)
-
-        if now is None:
-            now = datetime.utcnow()
-        utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
-        if self.request.user:
-            last_login = self.request.user.last_login(self.request.db_session)
-            return last_login.activity_ts + pw_valid > utc_now
-        else:
-            # Not enough info to apply policy
-            logger.debug('Password timeout passed, no user')
-            return True
-
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
-        if not self.checkPasswordTimeout():
-            logger.debug('Password timeout: %s', self.request.user)
-            return_to = self.request.route_url('home')
-            return logout(self.request, return_to)
-
         openid_request = self.openid_server.decodeRequest(request_params)
         logger.debug('Decoded request: %s', openid_request)
         if openid_request is None:

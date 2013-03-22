@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
 from logging import getLogger
+
+from psycopg2.tz import FixedOffsetTimezone
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
@@ -8,9 +11,14 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 from speak_friend.api import TemplateAPI
+from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models.reports import UserActivity
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
+from speak_friend.utils import get_domain
+from speak_friend.utils import get_referrer
+from speak_friend.views.accounts import logout
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.views.open_id import OpenIDProvider
 
@@ -187,3 +195,29 @@ def notify_account_locked(event):
                       recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def check_password_timeout(event):
+    """Verify the last login timestamp is still valid.
+    """
+    if not event.request.user:
+        return
+
+    domain_name = get_domain(event.request)
+    domain = event.request.db_session.query(DomainProfile).get(domain_name)
+    if domain:
+        pw_valid = timedelta(minutes=domain.get_password_valid())
+    else:
+        pw_valid = timedelta(minutes=MAX_PASSWORD_VALID)
+
+    now = datetime.utcnow()
+    utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
+    last_login = event.request.user.last_login(event.request.db_session)
+    if last_login.activity_ts + pw_valid > utc_now:
+        response = logout(event.request, get_referrer(event.request))
+        headers = [
+            (name, val)
+            for name, val in response.headerlist
+            if name.lower() == 'set-cookie'
+        ]
+        event.response.headerlist.extend(headers)

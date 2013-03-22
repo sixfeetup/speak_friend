@@ -43,6 +43,7 @@ from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.views import open_id
 from speak_friend.views import error
+from speak_friend.subscribers import check_password_timeout
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import email_change_notification
 from speak_friend.subscribers import email_profile_change_notification
@@ -80,6 +81,7 @@ def includeme(config):
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
+    config.add_subscriber(check_password_timeout, NewResponse)
     config.add_subscriber(handle_openid_request, NewResponse)
     config.add_subscriber(log_activity, UserActivity)
     config.add_subscriber(log_user_activity, UserActivity)
