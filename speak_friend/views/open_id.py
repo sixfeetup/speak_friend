@@ -63,7 +63,7 @@ class OpenIDProvider(object):
         utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
         if self.request.user:
             last_login = self.request.user.last_login(self.request.db_session)
-            return last_login + pw_valid > utc_now
+            return last_login.activity_ts + pw_valid > utc_now
         else:
             # Not enough info to apply policy
             logger.debug('Password timeout passed, no user')

@@ -81,6 +81,10 @@ class CreateProfile(object):
                                    queue='success')
 
         headers = remember(self.request, appstruct['username'])
+        logged_in = LoggedIn(self.request,
+                             profile,
+                             came_from=get_referrer(self.request))
+        self.request.registry.notify(logged_in)
         self.request.response.headerlist.extend(headers)
 
         came_from = appstruct.get('came_from', '')

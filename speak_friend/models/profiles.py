@@ -9,6 +9,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import SmallInteger
 from sqlalchemy import UnicodeText
+from sqlalchemy import desc
 from sqlalchemy import event
 from sqlalchemy import func
 from sqlalchemy import types
@@ -114,12 +115,31 @@ class UserProfile(Base):
             appstruct[attr] = getattr(self, attr)
         return appstruct
 
+    def activity_query(self, session, activity=None):
+        kwargs = {'username': self.username}
+        if activity:
+            kwargs['activity'] = activity
+        query = session.query(UserActivity)
+        return query.filter_by(**kwargs)
+
+    def last_activity(self, session, activity=None):
+        query = self.activity_query(session, activity)
+        return query.order_by(desc(UserActivity.activity_ts)).first()
+
+    def activity_count(self, session, activity=None):
+        query = self.activity_query(session, activity)
+        return query.count()
+
     def last_login(self, session):
         """Query UserActivity for last login."""
-        query = session.query(func.max(UserActivity.activity_ts))
-        query = query.filter(UserActivity.activity == u'login')
-        query = query.filter(UserActivity.username == self.username)
-        return query.scalar()
+        return self.last_activity(session, u'login')
+
+    def created(self, session):
+        """Query UserActivity for created."""
+        return self.last_activity(session, u'create_account')
+
+    def login_count(self, session):
+        return self.activity_count(session, u'login')
 
 
 FT_TRIGGER_FUNCTION = """
