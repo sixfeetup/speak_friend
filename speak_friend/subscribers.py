@@ -117,11 +117,6 @@ def handle_openid_request(event):
             event.response.body = openid_response
 
 
-def increment_failed_login_count(event):
-    event.user.login_attempts += 1
-    event.request.db_session.add(event.user)
-
-
 def email_change_notification(event):
     if ('old_address' not in event.activity_detail and
         'new_address' not in event.activity_detail):
@@ -171,5 +166,24 @@ def email_profile_change_notification(event):
     message = Message(subject=subject,
                       sender=settings['site_from'],
                       recipients=[event.user.email],
+                      html=response.unicode_body)
+    mailer.send(message)
+
+
+def notify_account_locked(event):
+    """Notify user when their account is locked.
+    """
+    logger = getLogger('speak_friend.user_activity')
+    path = 'speak_friend:templates/email/account_locked_notification.pt'
+    settings = event.request.registry.settings
+    subject = '%s: Account disabled' % settings['site_name']
+    mailer = get_mailer(event.request)
+    response = render_to_response(path,
+                                  {'profile': event.user},
+                                  event.request)
+
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)

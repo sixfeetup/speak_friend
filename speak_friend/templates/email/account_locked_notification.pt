@@ -1,0 +1,11 @@
+ <html xmlns="http://www.w3.org/1999/xhtml"
+       xmlns:tal="http://xml.zope.org/namespaces/tal"
+       xmlns:metal="http://xml.zope.org/namespaces/metal">
+    <div>
+        <p>Hello,</p>
+        <p>Your account at ${api.settings['site_name']} has been disabled due to several failed sign in attempts.</p>
+        <p>Please <a href="${request.route_url('request_password')}">request a new password</a> if you would like to reactivate your account.
+        <p>Thank you,</p>
+        <p>${api.settings['site_name']}</p>
+    </div>
+ </html>

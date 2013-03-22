@@ -22,12 +22,14 @@ from sqlalchemy import func
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountDisabled
 from speak_friend.events import AccountEnabled
+from speak_friend.events import AccountLocked
+from speak_friend.events import AccountUnlocked
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
 from speak_friend.events import ProfileChanged
-from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
+from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
@@ -431,6 +433,7 @@ class ResetPassword(object):
         self.request = request
         self.token_duration = None
         cp = ControlPanel(request)
+
         current = cp.saved_sections.get(authentication_schema.name)
         if current and current.panel_values:
             self.token_duration = current.panel_values['token_duration']
@@ -469,6 +472,9 @@ class ResetPassword(object):
                 ResetToken.username==reset_token.user.username).delete()
 
             reset_token.user.login_attempts = 0
+            reset_token.user.locked = False
+            self.request.registry.notify(AccountUnlocked(self.request,
+                                                         reset_token.user))
             headers = remember(self.request, reset_token.user.username)
             self.request.response.headerlist.extend(headers)
             self.notify(reset_token.user)
@@ -537,8 +543,10 @@ class LoginView(object):
     def __init__(self, request):
         self.request = request
         self.pass_ctx = request.registry.password_context
-        self.error_string = 'Username or password is invalid.'
-        query = self.request.GET.items() + self.request.POST.items()
+        self.invalid_error = 'Username or password is invalid.'
+        self.locked_error = 'Your account has been disabled. ' \
+                            'Check your email for instructions to reset your password.'
+        query = self.request.GET.items()
         action = request.current_route_url(_query=query)
         self.frm = make_login_form(action)
         cp = ControlPanel(request)
@@ -548,6 +556,7 @@ class LoginView(object):
             self.max_attempts = current.panel_values['max_attempts']
         else:
             self.max_attempts = MAX_DOMAIN_ATTEMPTS
+
 
     def verify_password(self, password, saved_hash, user):
         if not user:
@@ -574,9 +583,9 @@ class LoginView(object):
         return passes
 
     def get(self):
-        if ('password' in self.frm.cstruct
-            and self.frm.cstruct['password'] != ''):
-            self.frm.cstruct['password'] = ''
+        #if ('password' in self.frm.cstruct
+        #    and self.frm.cstruct['password'] != ''):
+        #    self.frm.cstruct['password'] = ''
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
@@ -587,7 +596,6 @@ class LoginView(object):
     def login_error(self, msg):
         self.request.session.flash(msg, queue='error')
         return self.get()
-
 
     def post(self):
         url = self.request.current_route_url()
@@ -603,7 +611,7 @@ class LoginView(object):
         try:
             appstruct = self.frm.validate(controls)
         except ValidationFailure:
-            return self.login_error(self.error_string)
+            return self.login_error(self.invalid_error)
 
         login = appstruct['login']
         password = appstruct['password']
@@ -618,15 +626,25 @@ class LoginView(object):
         else:
             return self.login_error(self.error_string)
 
-        if user.login_attempts >= self.max_attempts:
-            msg = 'Your account has been disabled due to too many failed attempts.'
-            return self.login_error(msg)
-
-        if not self.verify_password(password, saved_hash, user):
+        if user.locked:
+            return self.login_error(self.locked_error)
+        elif not self.verify_password(password, saved_hash, user):
             self.request.registry.notify(LoginFailed(self.request, user))
-            return self.login_error(self.error_string)
+            # Don't just use += 1, as that is subject to race conditions
+            # with concurrent updates
+            user.login_attempts = UserProfile.login_attempts + 1
+            if user.login_attempts >= self.max_attempts:
+                user.locked = True
+                self.request.registry.notify(AccountLocked(self.request, user))
+                return self.login_error(self.locked_error)
+            else:
+                return self.login_error(self.invalid_error)
 
-        user.login_attempts = 0
+        if user.login_attempts > 0:
+            user.login_attempts = 0
+            user.locked = False
+            self.request.registry.notify(AccountUnlocked(self.request, user))
+
         headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
 

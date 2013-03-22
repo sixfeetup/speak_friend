@@ -25,6 +25,7 @@ from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
+from speak_friend.events import AccountLocked
 from speak_friend.events import LoginFailed
 from speak_friend.events import ProfileChanged
 from speak_friend.events import UserActivity
@@ -46,10 +47,10 @@ from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import email_change_notification
 from speak_friend.subscribers import email_profile_change_notification
 from speak_friend.subscribers import handle_openid_request
-from speak_friend.subscribers import increment_failed_login_count
 from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
+from speak_friend.subscribers import notify_account_locked
 from speak_friend.subscribers import register_api
 
 
@@ -84,7 +85,7 @@ def includeme(config):
     config.add_subscriber(log_user_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
-    config.add_subscriber(increment_failed_login_count, LoginFailed)
+    config.add_subscriber(notify_account_locked, AccountLocked)
     config.add_subscriber(email_change_notification, ProfileChanged)
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
 

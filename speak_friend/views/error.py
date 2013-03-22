@@ -2,6 +2,8 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.security import authenticated_userid
 
+import transaction
+
 from speak_friend.views.accounts import LoginView
 
 def notfound(request):
@@ -21,6 +23,9 @@ def notallowed(request):
             # User is not logged in, render the login form
             view_method = login.get
         response = view_method()
+        # We need to commit the transaction, so that details about
+        # the forbidden view can be written to the database
+        transaction.commit()
         if isinstance(response, Response):
             return response
         else:

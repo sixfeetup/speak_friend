@@ -79,6 +79,7 @@ class UserProfile(Base):
     login_attempts = Column(Integer)
     admin_disabled = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
+    locked = Column(Boolean, default=False)
     searchable_text = Column(tsvector)
 
     def __init__(self, username, first_name, last_name, email,
