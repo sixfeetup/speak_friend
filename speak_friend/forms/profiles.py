@@ -365,6 +365,11 @@ class Login(MappingSchema):
         String(),
         widget=PasswordWidget(),
     )
+    remember_me = SchemaNode(
+        Bool(),
+        title="Remember me?",
+        required=False,
+    )
     came_from = SchemaNode(
         String(),
         widget=HiddenWidget(),

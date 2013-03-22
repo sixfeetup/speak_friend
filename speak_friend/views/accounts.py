@@ -632,7 +632,11 @@ class LoginView(object):
             user.locked = False
             self.request.registry.notify(AccountUnlocked(self.request, user))
 
-        headers = remember(self.request, user.username)
+        auth_kw = {}
+        if appstruct['remember_me']:
+            # default timeout for direct logins is 30 days
+            auth_kw = {'max_age': 60*60*24*30}
+        headers = remember(self.request, user.username, **auth_kw)
         self.request.response.headerlist.extend(headers)
 
         self.request.registry.notify(LoggedIn(self.request, user,
