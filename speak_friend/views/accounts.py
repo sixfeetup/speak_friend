@@ -610,7 +610,7 @@ class LoginView(object):
         if user:
             saved_hash = user.password_hash
         else:
-            return self.login_error(self.error_string)
+            return self.login_error(self.invalid_error)
 
         if user.locked:
             return self.login_error(self.locked_error)
