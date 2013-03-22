@@ -15,6 +15,7 @@ from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models.reports import UserActivity
 from speak_friend.models.profiles import DomainProfile
+from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
@@ -221,3 +222,24 @@ def check_password_timeout(event):
             if name.lower() == 'set-cookie'
         ]
         event.response.headerlist.extend(headers)
+
+
+def notify_password_request(event):
+    """Send password request token to user.
+    """
+    logger = getLogger('speak_friend.user_activity')
+    path = 'speak_friend:templates/email/password_reset_notification.pt'
+    settings = event.request.registry.settings
+    subject = '%s: Reset password' % settings['site_name']
+    mailer = get_mailer(event.request)
+    reset_token = ResetToken(event.user.username,
+                             event.activity_detail['came_from'])
+    event.request.db_session.add(reset_token)
+    response = render_to_response(path,
+                                  {'token': reset_token.token},
+                                  event.request)
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[event.user.full_email],
+                      html=response.unicode_body)
+    mailer.send(message)

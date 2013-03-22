@@ -264,3 +264,9 @@ class IProfileChanged(IUserActivity):
     """ An event that is emitted whenever a user's profile
     is changed.
     """
+
+
+class IPasswordRequested(IUserActivity):
+    """ An event that is emitted whenever a user requests
+    a password reset.
+    """

@@ -52,6 +52,7 @@ from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import notify_account_locked
+from speak_friend.subscribers import notify_password_request
 from speak_friend.subscribers import register_api
 
 
@@ -88,6 +89,7 @@ def includeme(config):
     config.add_subscriber(confirm_account_created, AccountCreated)
     config.add_subscriber(notify_account_created, AccountCreated)
     config.add_subscriber(notify_account_locked, AccountLocked)
+    config.add_subscriber(notify_password_request, PasswordRequested)
     config.add_subscriber(email_change_notification, ProfileChanged)
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
 

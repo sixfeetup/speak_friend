@@ -27,6 +27,7 @@ from speak_friend.events import AccountUnlocked
 from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
+from speak_friend.events import PasswordRequested
 from speak_friend.events import ProfileChanged
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.controlpanel import authentication_schema
@@ -378,10 +379,6 @@ class RequestPassword(object):
     def __init__(self, request):
         self.request = request
         self.frm = make_password_reset_request_form(request)
-        self.path = 'speak_friend:templates/email/password_reset_notification.pt'
-        settings = request.registry.settings
-        self.subject = "%s: Reset password" % settings['site_name']
-        self.sender = settings['site_from']
 
     def post(self):
         if self.request.method != "POST":
@@ -391,7 +388,14 @@ class RequestPassword(object):
         try:
             controls = self.request.POST.items()
             captured = self.frm.validate(controls)
-            self.notify(captured)
+            query = self.request.db_session.query(UserProfile)
+            query = query.filter(UserProfile.email==captured['email'])
+            profile = query.first()
+            self.request.registry.notify(PasswordRequested(self.request,
+                                                           profile,
+                                                           came_from=captured['came_from']))
+            self.request.session.flash('A link to reset your password has been sent to your email. Please check.',
+                                       queue='success')
             url = self.request.route_url('home')
             return HTTPFound(location=url)
         except ValidationFailure as e:
@@ -410,25 +414,6 @@ class RequestPassword(object):
                 'came_from': get_referrer(self.request),
             }),
         }
-
-    def notify(self, captured):
-        query = self.request.db_session.query(UserProfile)
-        query = query.filter(UserProfile.email==captured['email'])
-        profile = query.first()
-
-        mailer = get_mailer(self.request)
-        reset_token = ResetToken(profile.username, captured['came_from'])
-        response = render_to_response(self.path,
-                                      {'token': reset_token.token},
-                                      self.request)
-        self.request.db_session.add(reset_token)
-        message = Message(subject=self.subject,
-                          sender=self.sender,
-                          recipients=[profile.full_email],
-                          html=response.unicode_body)
-        mailer.send(message)
-        self.request.session.flash('A link to reset your password has been sent to your email. Please check.',
-                                   queue='success')
 
 
 @view_defaults(route_name='reset_password')
