@@ -23,7 +23,10 @@
               <td>${result.username}</td>
               <td>${result.first_name}</td>
               <td>${result.last_name}</td>
-              <td><a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a></td>
+              <td>
+                  <a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a> | 
+                  <a tal:attributes="href request.route_url('request_user_password', username=result.username)">Reset Password</a>
+              </td>
               <td>${result.email}</td>
             </tr>
           </table>

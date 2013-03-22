@@ -5,7 +5,12 @@ import transaction
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.renderers import render_to_response
 from pyramid.view import view_defaults
+
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
+
 from deform import ValidationFailure
 from deform import Form
 from sqlalchemy import select, func, desc
@@ -15,8 +20,10 @@ from speak_friend.forms.profiles import EditDomain as EditDomainSchema
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
+from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.controlpanel import ControlPanel
+from speak_friend.utils import get_domain, get_referrer
 
 
 @view_defaults(route_name="list_domains")
@@ -204,3 +211,45 @@ class UserSearch(object):
             'results': results,
             'ran_search': ran_search,
         }
+
+
+@view_defaults(route_name='request_user_password')
+class RequestUserPassword(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.path = 'speak_friend:templates/email/admin_password_reset_notification.pt'
+        settings = request.registry.settings
+        self.subject = "%s: Reset password" % settings['site_name']
+        self.sender = settings['site_from']
+        self.target_username = request.matchdict['username']
+
+    def get_target_user(self, username):
+        query = self.session.query(UserProfile)
+        query = query.filter(UserProfile.username==username)
+        user = query.first()
+        return user
+
+    def get(self):
+        target_user = self.get_target_user(self.target_username)
+        self.notify(target_user)
+
+        return HTTPFound(location=get_referrer(self.request))
+
+    def notify(self, user):
+
+        mailer = get_mailer(self.request)
+        came_from = get_domain(self.request)
+        reset_token = ResetToken(user.username, came_from)
+        response = render_to_response(self.path,
+                                      {'token': reset_token.token},
+                                      self.request)
+        self.session.add(reset_token)
+        message = Message(subject=self.subject,
+                          sender=self.sender,
+                          recipients=[user.full_email],
+                          html=response.unicode_body)
+        mailer.send(message)
+        flash_msg = "A link to reset %s's password has been sent to their email."
+        self.request.session.flash(flash_msg % user.username, queue='success')
+
