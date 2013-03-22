@@ -161,6 +161,12 @@ def includeme(config):
                     route_name='request_password',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/request_password.pt')
+    config.add_route('request_user_password', '/request_password/{username}')
+    config.add_view(admin.RequestUserPassword,
+                    route_name='request_user_password',
+                    permission='admin',
+                    attr='get', request_method='GET',
+                    renderer='templates/request_password.pt')
     config.add_route('reset_password', '/reset_password/{token}')
     config.add_view(accounts.ResetPassword,
                     attr="get", request_method='GET',
