@@ -223,20 +223,20 @@ class EditProfile(object):
                 self.request.registry.notify(
                     AccountDisabled(self.request,
                                     self.target_user,
-                                    activity_detail=activity_detail)
+                                    **activity_detail)
                 )
             else:
                 self.request.registry.notify(
                     AccountEnabled(self.request,
                                     self.target_user,
-                                    activity_detail=activity_detail)
+                                    **activity_detail)
                 )
 
         self.request.db_session.add(self.target_user)
         if not failed:
             self.request.registry.notify(ProfileChanged(self.request,
                                                         self.target_user,
-                                                        activity_detail=activity_detail))
+                                                        **activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
         if self.request.user.is_superuser:

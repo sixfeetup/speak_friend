@@ -37,7 +37,7 @@ class UserActivity(object):
     The list of activities can be found in:
     ``speak_friend.events.ACTIVITIES``."""
     def __init__(self, request, user, activity,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         if activity not in ACTIVITIES:
             raise ValueError(u'No such activity defined: %s' % activity)
         self.request = request
@@ -53,9 +53,9 @@ class AccountCreated(UserActivity):
     whenever a user's account is created. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(AccountCreated, self).__init__(request, user,
-              'create_account', actor, activity_detail)
+              u'create_account', actor, **activity_detail)
 
 
 @implementer(IAccountDisabled)
@@ -65,9 +65,9 @@ class AccountDisabled(UserActivity):
     See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(AccountDisabled, self).__init__(request, user,
-              'disable_account', actor, activity_detail)
+              u'disable_account', actor, **activity_detail)
 
 
 @implementer(IAccountEnabled)
@@ -77,9 +77,9 @@ class AccountEnabled(UserActivity):
     See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(AccountEnabled, self).__init__(request, user,
-              'enable_account', actor, activity_detail)
+              u'enable_account', actor, **activity_detail)
 
 
 @implementer(IAccountLocked)
@@ -88,9 +88,9 @@ class AccountLocked(UserActivity):
     whenever a user's account is locked. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(AccountLocked, self).__init__(request, user,
-              'lock_account', actor, activity_detail)
+              u'lock_account', actor, **activity_detail)
 
 
 @implementer(IAccountUnlocked)
@@ -99,9 +99,9 @@ class AccountUnlocked(UserActivity):
     whenever a user's account is unlocked. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(AccountUnlocked, self).__init__(request, user,
-              'unlock_account', actor, activity_detail)
+              u'unlock_account', actor, **activity_detail)
 
 
 @implementer(ILoggedIn)
@@ -111,10 +111,10 @@ class LoggedIn(UserActivity):
     """
     def __init__(self, request, user,
                  actor=None, **activity_detail):
-        if 'ip_address' not in activity_detail:
-            activity_detail['ip_address'] = request['REMOTE_ADDR']
+        if u'ip_address' not in activity_detail:
+            activity_detail[u'ip_address'] = request['REMOTE_ADDR']
         super(LoggedIn, self).__init__(request, user,
-              'login', actor, activity_detail)
+              u'login', actor, **activity_detail)
 
 
 @implementer(ILoggedOut)
@@ -123,9 +123,9 @@ class LoggedOut(UserActivity):
     whenever a user logs out. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(LoggedOut, self).__init__(request, user,
-              'logout', actor, activity_detail)
+              u'logout', actor, **activity_detail)
 
 
 @implementer(ILoginFailed)
@@ -134,9 +134,9 @@ class LoginFailed(UserActivity):
     whenever a user fails to log in. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(LoginFailed, self).__init__(request, user,
-              'fail_login', actor, activity_detail)
+              u'fail_login', actor, **activity_detail)
 
 
 @implementer(IPasswordChanged)
@@ -145,9 +145,9 @@ class PasswordChanged(UserActivity):
     whenever a user changes their password. See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(PasswordChanged, self).__init__(request, user,
-              'change_password', actor, activity_detail)
+              u'change_password', actor, **activity_detail)
 
 
 @implementer(IProfileChanged)
@@ -157,6 +157,6 @@ class ProfileChanged(UserActivity):
     See :class:`UserActivity`.
     """
     def __init__(self, request, user,
-                 actor=None, activity_detail=None):
+                 actor=None, **activity_detail):
         super(ProfileChanged, self).__init__(request, user,
-              'change_profile', actor, activity_detail)
+              u'change_profile', actor, **activity_detail)
