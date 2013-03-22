@@ -214,7 +214,7 @@ def check_password_timeout(event):
     now = datetime.utcnow()
     utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
     last_login = event.request.user.last_login(event.request.db_session)
-    if last_login.activity_ts + pw_valid < utc_now:
+    if last_login and last_login.activity_ts + pw_valid < utc_now:
         response = logout(event.request, get_referrer(event.request))
         headers = [
             (name, val)
