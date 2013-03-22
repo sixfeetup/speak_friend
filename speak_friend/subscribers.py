@@ -105,7 +105,7 @@ def confirm_account_created(event):
                                   event.request)
     message = Message(subject=subject,
                       sender=settings['site_from'],
-                      recipients=[event.user.email],
+                      recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
 
@@ -173,7 +173,7 @@ def email_profile_change_notification(event):
                                   event.request)
     message = Message(subject=subject,
                       sender=settings['site_from'],
-                      recipients=[event.user.email],
+                      recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
 
