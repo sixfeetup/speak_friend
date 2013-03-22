@@ -27,6 +27,8 @@ from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountLocked
 from speak_friend.events import LoginFailed
+from speak_friend.events import PasswordRequested
+from speak_friend.events import PasswordReset
 from speak_friend.events import ProfileChanged
 from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import authentication_schema
@@ -45,6 +47,7 @@ from speak_friend.views import open_id
 from speak_friend.views import error
 from speak_friend.subscribers import check_password_timeout
 from speak_friend.subscribers import confirm_account_created
+from speak_friend.subscribers import confirm_password_reset
 from speak_friend.subscribers import email_change_notification
 from speak_friend.subscribers import email_profile_change_notification
 from speak_friend.subscribers import handle_openid_request
@@ -90,6 +93,7 @@ def includeme(config):
     config.add_subscriber(notify_account_created, AccountCreated)
     config.add_subscriber(notify_account_locked, AccountLocked)
     config.add_subscriber(notify_password_request, PasswordRequested)
+    config.add_subscriber(confirm_password_reset, PasswordReset)
     config.add_subscriber(email_change_notification, ProfileChanged)
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
 

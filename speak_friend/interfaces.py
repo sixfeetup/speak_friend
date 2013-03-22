@@ -270,3 +270,9 @@ class IPasswordRequested(IUserActivity):
     """ An event that is emitted whenever a user requests
     a password reset.
     """
+
+
+class IPasswordReset(IUserActivity):
+    """ An event that is emitted whenever a user successfully
+    resets their password.
+    """

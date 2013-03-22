@@ -243,3 +243,21 @@ def notify_password_request(event):
                       recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def confirm_password_reset(event):
+    """Send confirmation email to user after their password is reset.
+    """
+    logger = getLogger('speak_friend.user_activity')
+    path = 'speak_friend:templates/email/password_reset_confirmation.pt'
+    settings = event.request.registry.settings
+    subject = '%s: Password reset' % settings['site_name']
+    mailer = get_mailer(event.request)
+    response = render_to_response(path,
+                                  {'profile': event.user},
+                                  event.request)
+    message = Message(subject=subject,
+                      sender=settings['site_from'],
+                      recipients=[event.user.full_email],
+                      html=response.unicode_body)
+    mailer.send(message)

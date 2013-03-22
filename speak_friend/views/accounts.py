@@ -28,6 +28,7 @@ from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
 from speak_friend.events import PasswordRequested
+from speak_friend.events import PasswordReset
 from speak_friend.events import ProfileChanged
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.controlpanel import authentication_schema
@@ -461,15 +462,16 @@ class ResetPassword(object):
                 ResetToken.username==reset_token.user.username).delete()
 
             reset_token.user.login_attempts = 0
-            reset_token.user.locked = False
-            self.request.registry.notify(AccountUnlocked(self.request,
-                                                         reset_token.user))
             headers = remember(self.request, reset_token.user.username)
             self.request.response.headerlist.extend(headers)
-            self.notify(reset_token.user)
             self.request.session.flash('Password successfully reset!',
                                        queue='success')
-            url = self.request.route_url('home')
+            if reset_token.user.locked:
+                reset_token.user.locked = False
+                self.request.registry.notify(AccountUnlocked(self.request,
+                                                             reset_token.user))
+            self.request.registry.notify(PasswordReset(self.request,
+                                                       reset_token.user))
             self.request.registry.notify(LoggedIn(self.request,
                                                   reset_token.user,
                                                   came_from=reset_token.came_from))
@@ -506,11 +508,6 @@ class ResetPassword(object):
             'forms': [password_reset_form],
             'rendered_form': password_reset_form.render(),
         }
-
-    def notify(self, user_profile):
-        """Notify interested parties that the user successfully reset their
-        pasword.
-        """
 
     def check_token(self, token):
         """Check UID token against database.
