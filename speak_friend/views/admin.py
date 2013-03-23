@@ -183,16 +183,16 @@ class DeleteDomain(object):
 class UserSearch(object):
     def __init__(self, request):
         self.request = request
+        self.frm = make_user_search_form()
 
     def get(self):
-        form = make_user_search_form()
         query = self.request.db_session.query(UserProfile)
         query = query.order_by(UserProfile.username.desc())
 
         results = query.all()
         return {
-            'forms': [form],
-            'rendered_form': form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
             'results': results,
             'ran_search': False
         }
@@ -202,16 +202,16 @@ class UserSearch(object):
         ran_search = False
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
-        if 'query' not in self.request.POST:
+        if 'query' not in self.request.POST or \
+           not self.request.POST['query']:
             return self.get()
 
-        myform = make_user_search_form(self.request)
         try:
             controls = self.request.POST.items()
-            appstruct = myform.validate(controls)
+            appstruct = self.frm.validate(controls)
         except ValidationFailure, e:
             return {
-                'forms': [myform],
+                'forms': [self.frm],
                 'rendered_form': e.render(),
                 'results': results,
                 'ran_search': ran_search,
@@ -233,8 +233,8 @@ class UserSearch(object):
         results = res.all()
         ran_search = True
         return {
-            'forms': [myform],
-            'rendered_form': myform.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
             'results': results,
             'ran_search': ran_search,
         }

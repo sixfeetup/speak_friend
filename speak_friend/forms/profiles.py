@@ -319,7 +319,7 @@ def make_domain_form(request, domain=None):
         for fld in schema:
             if fld.name == 'name':
                 fld.current_value = domain.name
-    
+
     return Form(
         schema.bind(request=request, domain_validator=domain_validator),
         buttons=('submit', 'cancel'),
@@ -456,6 +456,7 @@ def make_password_change_form(request=None):
 class UserSearch(MappingSchema):
     query = SchemaNode(
         String(),
+        missing='',
         description="Enter all or the start of a user's first name, last name, email address or username"
     )
 
