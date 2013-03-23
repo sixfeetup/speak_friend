@@ -638,6 +638,8 @@ class LoginView(object):
             auth_kw = {'max_age': 60*60*24*30}
         headers = remember(self.request, user.username, **auth_kw)
         self.request.response.headerlist.extend(headers)
+        self.request.session['auth_userid'] = user.username
+        self.request.session.save()
 
         self.request.registry.notify(LoggedIn(self.request, user,
                                               came_from=appstruct['came_from']))

@@ -14,6 +14,8 @@ from speak_friend.interfaces import IPasswordChanged
 from speak_friend.interfaces import IPasswordRequested
 from speak_friend.interfaces import IPasswordReset
 from speak_friend.interfaces import IProfileChanged
+from speak_friend.utils import get_domain
+from speak_friend.utils import get_referrer
 
 ACTIVITIES = [
     u'change_password',
@@ -48,6 +50,14 @@ class UserActivity(object):
         self.user = user
         self.activity = activity
         self.actor = actor
+        if 'came_from' in activity_detail:
+            self.came_from = activity_detail.pop('came_from')
+        else:
+            self.came_from = get_referrer(self.request)
+        if 'came_from_fqdn' in activity_detail:
+            self.came_from_fqdn = activity_detail.pop('came_from_fqdn')
+        else:
+            self.came_from_fqdn = get_domain(self.came_from)
         self.activity_detail = activity_detail
 
 

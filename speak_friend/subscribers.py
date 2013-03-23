@@ -13,17 +13,14 @@ from pyramid_mailer.message import Message
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from speak_friend.api import TemplateAPI
-from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models.reports import UserActivity
-from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 from speak_friend.views.accounts import logout
 from speak_friend.views.controlpanel import ControlPanel
-from speak_friend.views.open_id import OpenIDProvider
 
 
 def register_api(event):
@@ -48,7 +45,7 @@ def log_activity(event):
     args = [event.user.username, event.activity]
     if event.activity_detail:
         msg.append('detail "%s"')
-        args.append(event.activity)
+        args.append(event.activity_detail)
     if event.actor:
         msg.append('By %s')
         args.append(event.actor.username)
@@ -111,21 +108,6 @@ def confirm_account_created(event):
                       recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
-
-
-def handle_openid_request(event):
-    if 'openid.mode' in event.request.GET or \
-       'openid.mode' in event.request.POST:
-        provider = OpenIDProvider(event.request)
-        if event.request.method == 'POST':
-            openid_response = provider.post()
-        else:
-            openid_response = provider.get()
-        if event.response.status_code == 302:
-            response_url = openid_response.headers['Location']
-            event.response.headers['Location'] = response_url
-        if not isinstance(openid_response, HTTPFound):
-            event.response.body = openid_response
 
 
 def email_change_notification(event):
@@ -198,36 +180,6 @@ def notify_account_locked(event):
                       recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
-
-
-def check_password_timeout(event):
-    """Verify the last login timestamp is still valid.
-    """
-    if not event.request.user:
-        return
-
-    domain_name = get_domain(event.request)
-    domain = event.request.db_session.query(DomainProfile).get(domain_name)
-    if domain:
-        pw_valid = timedelta(minutes=domain.get_password_valid())
-    else:
-        pw_valid = timedelta(minutes=MAX_PASSWORD_VALID)
-
-    now = datetime.utcnow()
-    utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
-    try:
-        last_login = event.request.user.last_login(event.request.db_session)
-    except DetachedInstanceError:
-        event.request.db_session.add(event.request.user)
-        last_login = event.request.user.last_login(event.request.db_session)
-    if last_login and last_login.activity_ts + pw_valid < utc_now:
-        response = logout(event.request, get_referrer(event.request))
-        headers = [
-            (name, val)
-            for name, val in response.headerlist
-            if name.lower() == 'set-cookie'
-        ]
-        event.response.headerlist.extend(headers)
 
 
 def notify_password_request(event):

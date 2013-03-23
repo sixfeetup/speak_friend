@@ -28,6 +28,7 @@ requires = [
     'mailinglogger',
     'pyramid_mailer',
     'requests',
+    'pyramid_beaker',
     ]
 
 tests_require = requires + [

@@ -76,6 +76,13 @@ class UserActivity(Base):
         "UserProfile",
         primaryjoin="UserActivity.username==UserProfile.username",
     )
+    came_from = Column(
+        UnicodeText,
+    )
+    came_from_fqdn = Column(
+        UnicodeText,
+        index=True,
+    )
     activity_detail = Column(
         JSON,
     )
@@ -100,4 +107,5 @@ class UserActivity(Base):
 
 
     def __repr__(self):
-        return u"<UserActivity(%s, %s)>" % (self.username, self.activity)
+        return u"<UserActivity(%s, %s, %s)>" % (self.username, self.activity,
+                                                self.activity_ts)

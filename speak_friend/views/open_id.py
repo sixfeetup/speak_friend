@@ -32,7 +32,8 @@ class OpenIDProvider(object):
         self.request = request
         self.openid_server = Server(SFOpenIDStore(self.request.db_session),
                                     request.route_url('openid_provider'))
-        self.auth_userid = authenticated_userid(request)
+        userid = authenticated_userid(request)
+        self.auth_userid = userid or request.session.get('auth_userid')
         if self.auth_userid:
             query = self.request.db_session.query(UserProfile)
             self.auth_user = query.get(self.auth_userid)
@@ -41,6 +42,12 @@ class OpenIDProvider(object):
 
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
+        if not self.request.user and \
+           'openid_request' not in self.request.session:
+            self.request.session['openid_request'] = dict(request_params.items())
+            self.request.session.save()
+            return HTTPFound(location=self.request.route_url('login'))
+
         openid_request = self.openid_server.decodeRequest(request_params)
         logger.debug('Decoded request: %s', openid_request)
         if openid_request is None:

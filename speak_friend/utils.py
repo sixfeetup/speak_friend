@@ -1,3 +1,8 @@
+from urlparse import urlsplit
+
+from pyramid.interfaces import IRequest
+
+
 def get_referrer(request):
     came_from = request.referrer
     if not came_from:
@@ -6,12 +11,10 @@ def get_referrer(request):
 
 
 def get_domain(request):
-    referrer = get_referrer(request)
-    path = request['PATH_INFO']
-    if path == '/':
-        domain = path
+    if IRequest.providedBy(request):
+        referrer = get_referrer(request)
     else:
-        domain = ''
-    if referrer.endswith(path):
-        domain = referrer[:-len(path)]
-    return domain
+        referrer = request
+    if not referrer:
+        return ''
+    return urlsplit(referrer).netloc.split(':')[0]
