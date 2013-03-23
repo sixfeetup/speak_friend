@@ -79,15 +79,22 @@ class CreateProfile(object):
         )
         self.request.db_session.add(profile)
         self.request.registry.notify(AccountCreated(self.request, profile))
-        self.request.session.flash('Your account has been created successfully.',
-                                   queue='success')
 
-        headers = remember(self.request, appstruct['username'])
-        logged_in = LoggedIn(self.request,
-                             profile,
-                             came_from=get_referrer(self.request))
-        self.request.registry.notify(logged_in)
-        self.request.response.headerlist.extend(headers)
+        if self.request.user:
+            headers = []
+            self.request.session.flash('You successfully created an account for: %s.' % profile.full_name,
+                                       queue='success')
+        else:
+            self.request.session.flash('Your account has been created successfully.',
+                                       queue='success')
+            # Only take action if the user is not already logged in
+            # (i.e., an admin is creating a new account)
+            headers = remember(self.request, appstruct['username'])
+            logged_in = LoggedIn(self.request,
+                                 profile,
+                                 came_from=get_referrer(self.request))
+            self.request.registry.notify(logged_in)
+            self.request.response.headerlist.extend(headers)
 
         came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
