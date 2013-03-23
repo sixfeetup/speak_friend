@@ -245,6 +245,7 @@ def make_profile_form(request, edit=False):
     username_validator = dict(should_exist=False,
                               db_session=request.db_session)
     if edit:
+        email_validator['for_edit'] = True
         # We need to attach the current value of the user's email
         # so we know if they're trying to change it during validation
         schema = EditProfileSchema()
@@ -252,13 +253,18 @@ def make_profile_form(request, edit=False):
             if fld.name == 'email':
                 fld.current_value = user.email
         if request.user.is_superuser:
-            schema.add(SchemaNode(Bool(),
-                                  title='User disabled?',
-                                  name="user_disabled",
-                        )
+            is_superuser = SchemaNode(
+                Bool(),
+                title='Is this user an admin?',
             )
+            user_disabled = SchemaNode(
+                Bool(),
+                title='User disabled?',
+            )
+            schema['user_disabled'] = user_disabled
+            schema['is_superuser'] = is_superuser
         else:
-            schema.add(SchemaNode(
+            password = SchemaNode(
                 String(),
                 required=False,
                 missing=null,
@@ -266,7 +272,8 @@ def make_profile_form(request, edit=False):
                 widget=PasswordWidget(),
                 title='Password',
                 name='password',
-            ))
+            )
+            schema['password'] = password
     else:
         schema = Profile()
         if not request.user:
@@ -281,7 +288,14 @@ def make_profile_form(request, edit=False):
                 String(),
                 widget=deferred_recaptcha_widget,
             )
-            schema.children.extend([agree_to_policy, captcha])
+            schema['aggree_to_policy'] = agree_to_policy
+            schema['captcha'] = captcha
+        elif request.user.is_superuser:
+            is_superuser = SchemaNode(
+                Bool(),
+                title='Is this user an admin?',
+            )
+            schema['is_superuser'] = is_superuser
 
     form = Form(
         buttons=('submit', 'cancel'),

@@ -75,7 +75,8 @@ class CreateProfile(object):
                               hashed_pw,
                               None,
                               0,
-                              False
+                              False,
+                              appstruct.get('is_superuser', False),
         )
         self.request.db_session.add(profile)
         self.request.registry.notify(AccountCreated(self.request, profile))
@@ -219,12 +220,11 @@ class EditProfile(object):
                                       queue='error')
             failed = True
 
-        if self.target_user.first_name != appstruct['first_name']:
-            self.target_user.first_name = appstruct['first_name']
-            activity_detail['first_name'] = appstruct['first_name']
-        if self.target_user.last_name != appstruct['last_name']:
-            self.target_user.last_name = appstruct['last_name']
-            activity_detail['last_name'] = appstruct['last_name']
+        for fname in ('first_name', 'last_name', 'is_superuser'):
+            fval = appstruct.get(fname)
+            if getattr(self.target_user, fname) != fval:
+                setattr(self.target_user, fname, fval)
+                activity_detail[fname] = fval
 
         if self.request.user.is_superuser and 'user_disabled' in appstruct:
             self.target_user.admin_disabled = appstruct['user_disabled']
@@ -257,6 +257,7 @@ class EditProfile(object):
         appstruct = self.target_user.make_appstruct()
         if self.request.user.is_superuser:
             appstruct['user_disabled'] = self.target_user.admin_disabled
+            appstruct['is_superuser'] = self.target_user.is_superuser
 
         self.request.target_user = self.target_user
         form = make_profile_form(self.request, edit=True)
