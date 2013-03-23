@@ -9,7 +9,7 @@
                                super api.is_superuser">
                    <li tal:condition="not anon"
                        tal:attributes="class api.is_active_tab('home')">
-                       <a href="/">Home</a>
+                       <a tal:attributes="href request.route_url('home')">Home</a>
                    </li>
                    
                    <li tal:condition="anon"
@@ -24,11 +24,11 @@
                    
                    <li tal:condition="super"
                        tal:attributes="class api.is_active_tab('control_panel')">
-                       <a href="/control_panel">Settings</a>
+                       <a tal:attributes="href request.route_url('control_panel')">Settings</a>
                    </li>
                    
                    <li tal:condition="super">
-                       <a href="/create_profile">Admin</a>
+                       <a tal:attributes="href request.route_url('user_search')">Admin</a>
                    </li>
                    
                    <li tal:condition="not anon"
