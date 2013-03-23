@@ -202,16 +202,6 @@ class Profile(MappingSchema):
         description='* Minimum of 8 characters and must include one non-alpha character.',
         validator=create_password_validator,
     )
-    agree_to_policy = SchemaNode(
-        Bool(),
-        title='I agree to the site policy.',
-        validator=Function(usage_policy_validator,
-                           message='Agreement with the site policy is required.'),
-    )
-    captcha = SchemaNode(
-        String(),
-        widget=deferred_recaptcha_widget,
-    )
     came_from = SchemaNode(
         String(),
         widget=HiddenWidget(),
@@ -279,6 +269,19 @@ def make_profile_form(request, edit=False):
             ))
     else:
         schema = Profile()
+        if not request.user:
+            # Only include these if the user isn't logged in
+            agree_to_policy = SchemaNode(
+                Bool(),
+                title='I agree to the site policy.',
+                validator=Function(usage_policy_validator,
+                                   message='Agreement with the site policy is required.'),
+            )
+            captcha = SchemaNode(
+                String(),
+                widget=deferred_recaptcha_widget,
+            )
+            schema.children.extend([agree_to_policy, captcha])
 
     form = Form(
         buttons=('submit', 'cancel'),
