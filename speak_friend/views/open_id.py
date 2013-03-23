@@ -42,6 +42,12 @@ class OpenIDProvider(object):
 
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
+        if not self.request.user and \
+           'openid_request' not in self.request.session:
+            self.request.session['openid_request'] = dict(request_params.items())
+            self.request.session.save()
+            return HTTPFound(location=self.request.route_url('login'))
+
         openid_request = self.openid_server.decodeRequest(request_params)
         logger.debug('Decoded request: %s', openid_request)
         if openid_request is None:
