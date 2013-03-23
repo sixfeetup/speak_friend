@@ -273,7 +273,18 @@ See http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/assets.html#ov
 Sessions
 --------
 
-By default, `speak_friend` uses the stock `UnencryptedCookieSessionFactoryConfig` session factory.
-The secret should be defined in your INI file using the `speak_friend.session_secret` variable.
-If you would like to use a completely different session factory, specify the dotted-path to the class in the `speak_friend.session_factory` variable.
-This class needs to accept the secret specified above as its first argument.
+By default, `speak_friend` uses `Beaker` for session management. This means that you need to configure it in your `paster.ini`:
+
+http://docs.pylonsproject.org/projects/pyramid_beaker/en/latest/index.html#session-management
+
+The recommended values are:
+
+.. code-block:: ini
+    :linenos:
+    session.type = ext:database
+    session.url = postgresql+psycopg2://dbuser:dbpass@dbhost/dbname
+    session.lock_dir = %(here)s/sessions/lock
+    session.key = speak_friend
+    session.secret = SOME_SECRET
+    session.cookie_on_exception = true
+    session.secure = true

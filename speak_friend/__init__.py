@@ -12,10 +12,11 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
 from pyramid.events import NewResponse
-from pyramid.path import DottedNameResolver
 from pyramid.renderers import JSON
 from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+
+from pyramid_beaker import session_factory_from_settings
 
 from sqlalchemy import engine_from_config
 
@@ -72,12 +73,14 @@ def includeme(config):
     config.include('deform_bootstrap')
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
+    config.include('pyramid_beaker')
 
     # Authz/Authn
     authn_secret = config.registry.settings.get('speak_friend.authn_secret',
                                                 'this is bad')
     authn_policy = AuthTktAuthenticationPolicy(secret=authn_secret,
-                                               callback=groupfinder)
+                                               callback=groupfinder,
+                                               hashalg='sha512')
     authz_policy = ACLAuthorizationPolicy()
     config.set_authorization_policy(authz_policy)
     config.set_authentication_policy(authn_policy)
@@ -279,13 +282,7 @@ def includeme(config):
 
     # Session
     settings = config.registry.settings
-    session_secret = settings.setdefault('speak_friend.session_secret',
-                                         'itsaseekrit')
-    session_resolver = DottedNameResolver()
-    factory_name = settings.setdefault('speak_friend.session_factory',
-                                       'pyramid.session.UnencryptedCookieSessionFactoryConfig')
-    factory_class = session_resolver.resolve(factory_name)
-    session_factory = factory_class(session_secret)
+    session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
     config.add_request_method(get_db_session, 'db_session', reify=True)
     config.add_request_method(get_user, 'user', reify=True)
