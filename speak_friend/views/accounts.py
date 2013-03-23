@@ -634,6 +634,8 @@ class LoginView(object):
 
         headers = remember(self.request, user.username)
         self.request.response.headerlist.extend(headers)
+        self.request.session['auth_userid'] = user.username
+        self.request.session.save()
 
         self.request.registry.notify(LoggedIn(self.request, user,
                                               came_from=appstruct['came_from']))
