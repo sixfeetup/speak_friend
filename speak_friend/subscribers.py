@@ -48,7 +48,7 @@ def log_activity(event):
     args = [event.user.username, event.activity]
     if event.activity_detail:
         msg.append('detail "%s"')
-        args.append(event.activity)
+        args.append(event.activity_detail)
     if event.actor:
         msg.append('By %s')
         args.append(event.actor.username)
