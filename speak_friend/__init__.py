@@ -46,12 +46,10 @@ from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.views import open_id
 from speak_friend.views import error
-from speak_friend.subscribers import check_password_timeout
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import confirm_password_reset
 from speak_friend.subscribers import email_change_notification
 from speak_friend.subscribers import email_profile_change_notification
-from speak_friend.subscribers import handle_openid_request
 from speak_friend.subscribers import log_activity
 from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
@@ -88,8 +86,6 @@ def includeme(config):
 
     # Events
     config.add_subscriber(register_api, BeforeRender)
-    config.add_subscriber(check_password_timeout, NewResponse)
-    config.add_subscriber(handle_openid_request, NewResponse)
     config.add_subscriber(log_activity, UserActivity)
     config.add_subscriber(log_user_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
@@ -256,6 +252,11 @@ def includeme(config):
     # to the deform static directory if an asset is not found.
     config.override_asset(to_override='deform:static/',
                           override_with='speak_friend:static/')
+
+    # Tweens
+    config.add_tween('speak_friend.tweens.initial_login_factory')
+    config.add_tween('speak_friend.tweens.password_timeout_factory')
+    config.add_tween('speak_friend.tweens.openid_factory')
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
