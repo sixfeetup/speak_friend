@@ -288,7 +288,7 @@ def make_profile_form(request, edit=False):
                 String(),
                 widget=deferred_recaptcha_widget,
             )
-            schema['aggree_to_policy'] = agree_to_policy
+            schema['agree_to_policy'] = agree_to_policy
             schema['captcha'] = captcha
         elif request.user.is_superuser:
             is_superuser = SchemaNode(

@@ -84,3 +84,10 @@ class MockSession(object):
         if obj in self._store:
             self._store.remove(obj)
 
+
+class MockPasswordValidator(object):
+    def __init__(self, settings={}):
+        self.settings = settings
+
+    def __call__(self):
+        return True
