@@ -48,9 +48,9 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
         assoc2 = Association(server_url, 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1, assoc2])
@@ -64,7 +64,7 @@ class OpenIDStoreTest(TestCase):
         server_url = "http://test.net"
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
-        assoc = Association(server_url, 'asdf', 'aflasdkf', issued, lifetime, 'adsf')
+        assoc = Association(server_url, 'asdf', 'aflasdkf', issued, lifetime, 'HMAC-SHA1')
         session.query = MockQuery(store=[assoc])
 
         store = SFOpenIDStore(session)
@@ -85,9 +85,9 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association(server_url, 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
         assoc2 = Association(server_url, 'asdf1', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1, assoc2])
@@ -101,9 +101,9 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
         assoc2 = Association(server_url, 'asdf1', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1, assoc2])
@@ -120,7 +120,7 @@ class OpenIDStoreTest(TestCase):
         for i in xrange(0, 10):
             lifetime = day + i
             new_assoc = Association(server_url, 'asdf', 'afla', issued,
-                                    lifetime, 'adsf')
+                                    lifetime, 'HMAC-SHA1')
             storage.append(new_assoc)
 
         session = Mock()
@@ -135,9 +135,9 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
         assoc2 = Association(server_url, 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1, assoc2])
@@ -151,7 +151,7 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.net", 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1])
@@ -165,7 +165,7 @@ class OpenIDStoreTest(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
-                             issued, lifetime, 'adsf')
+                             issued, lifetime, 'HMAC-SHA1')
 
         session = Mock()
         session.query = MockQuery(store=[assoc1])
@@ -228,7 +228,7 @@ class AssociationTests(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime(2010, 1, 20).timetuple())
         assoc = Association('http://test.net', 'asdf', 'asdf',
-                            issued, lifetime, 'asdf')
+                            issued, lifetime, 'HMAC-SHA1')
         expired = assoc.is_expired()
         self.assertTrue(expired)
 
@@ -236,6 +236,6 @@ class AssociationTests(TestCase):
         lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc = Association('http://test.net', 'asdf', 'asdf',
-                            issued, lifetime, 'asdf')
+                            issued, lifetime, 'HMAC-SHA1')
         expired = assoc.is_expired()
         self.assertFalse(expired)
