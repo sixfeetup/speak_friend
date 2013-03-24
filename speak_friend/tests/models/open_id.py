@@ -37,10 +37,10 @@ class OpenIDStoreTest(TestCase):
     def test_storing_association(self):
         session = Mock()
         server_url = "http://test.net"
-        assoc = Mock()
+        raw_assoc = Mock()
         store = SFOpenIDStore(session)
-        store.storeAssociation(server_url, assoc)
-        self.assertEqual(session.commit.call_count, 1)
+        assoc = store.storeAssociation(server_url, raw_assoc)
+        self.assertEqual(session.add.call_count, 1)
         self.assertEqual(session.add.call_args, call(assoc))
 
     def test_filtering_association(self):
@@ -57,7 +57,10 @@ class OpenIDStoreTest(TestCase):
 
         store = SFOpenIDStore(session)
         returned = store.getAssociation(server_url)
-        self.assertEqual(returned, assoc2)
+        for attr in ('handle', 'secret',
+                     'issued', 'lifetime', 'assoc_type'):
+            self.assertEqual(getattr(returned, attr),
+                             getattr(assoc2, attr))
 
     def test_returning_association(self):
         session = Mock()
@@ -69,7 +72,10 @@ class OpenIDStoreTest(TestCase):
 
         store = SFOpenIDStore(session)
         returned = store.getAssociation(server_url)
-        self.assertEqual(assoc, returned)
+        for attr in ('handle', 'secret',
+                     'issued', 'lifetime', 'assoc_type'):
+            self.assertEqual(getattr(returned, attr),
+                             getattr(assoc, attr))
 
     def test_failed_assoc_lookup(self):
         session = Mock()
@@ -94,7 +100,10 @@ class OpenIDStoreTest(TestCase):
 
         store = SFOpenIDStore(session)
         returned = store.getAssociation(server_url, handle='asdf1')
-        self.assertEqual(returned, assoc2)
+        for attr in ('handle', 'secret',
+                     'issued', 'lifetime', 'assoc_type'):
+            self.assertEqual(getattr(returned, attr),
+                             getattr(assoc2, attr))
 
     def test_assoc_lookup_by_handle_server_url(self):
         server_url = "http://test.net"
@@ -110,7 +119,10 @@ class OpenIDStoreTest(TestCase):
 
         store = SFOpenIDStore(session)
         returned = store.getAssociation(server_url, handle='asdf1')
-        self.assertEqual(returned, assoc2)
+        for attr in ('handle', 'secret',
+                     'issued', 'lifetime', 'assoc_type'):
+            self.assertEqual(getattr(returned, attr),
+                             getattr(assoc2, attr))
 
     def test_expired_assoc_cleanup(self):
         server_url = "http://test.net"

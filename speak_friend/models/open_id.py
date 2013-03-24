@@ -86,6 +86,7 @@ class SFOpenIDStore(object):
         )
         self.logger.debug('Storing association: %s', association)
         self.session.add(association)
+        return association
 
     def getAssociation(self, server_url, handle=None):
         query_args = {'server_url': server_url}
