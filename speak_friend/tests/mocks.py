@@ -53,6 +53,12 @@ class MockQuery(object):
         else:
             return None
 
+    def get(self, primary_key_val):
+        if len(self._store) > 0:
+            return self._store[0]
+        else:
+            return None
+
     def delete(self, *args):
         # match the SQLAlchemy API
         num_deleted = len(self._store)
@@ -89,5 +95,5 @@ class MockPasswordValidator(object):
     def __init__(self, settings={}):
         self.settings = settings
 
-    def __call__(self):
+    def __call__(self, password):
         return True

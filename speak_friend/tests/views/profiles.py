@@ -22,28 +22,27 @@ class ViewTests(SFBaseCase):
         self.config.registry.password_context = DummyPasswordContext()
 
     def test_create_profile_view_get(self):
-        request = testing.DummyRequest()
-        request.referrer = '/'
-        view = CreateProfile(request)
+        self.request.referrer = '/'
+        view = CreateProfile(self.request)
         info = view.get()
         self.assertTrue('rendered_form' in info)
 
     def test_create_profile_view_get_on_post(self):
-        request = testing.DummyRequest()
-        request.referrer = '/'
-        view = CreateProfile(request)
+        self.request.referrer = '/'
+        view = CreateProfile(self.request)
         info = view.post()
         self.assertEqual(info.status_code, 405)
 
     def test_create_profile_view_post_no_args(self):
-        request = testing.DummyRequest(post={})
-        request.referrer = '/'
-        view = CreateProfile(request)
+        self.request.referrer = '/'
+        view = CreateProfile(self.request)
         info = view.post()
         self.assertTrue('rendered_form' in info)
 
     def test_create_profile_view_submit_empty_form(self):
         request = testing.DummyRequest(post={'submit': ''})
+        request.user = None
+        request.db_session = MockSession()
         view = CreateProfile(request)
         info = view.post()
         self.assertTrue('rendered_form' in info)
@@ -64,27 +63,26 @@ class ViewTests(SFBaseCase):
             ('password-confirm', u'aaaaaaaaaaa'),
             ('__end__', u'password:mapping'),
             ('agree_to_policy', u'true'),
+            ('__start__', u'captcha:mapping'),
             ('captcha', u'x5J780'),
+            ('__end__', u'captcha:mapping'),
             ('submit', u'submit'),
         ])
         request = testing.DummyRequest(post=data)
+        request.user = None
+        request.db_session = MockSession()
         view = CreateProfile(request)
-        with patch('speak_friend.forms.profiles.DBSession',
-                    new_callable=MockSession):
-            info = view.post()
+        info = view.post()
         self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
         request = testing.DummyRequest(path="/edit_profile/testuser")
         request.matchdict['username'] = 'testuser'
-        view = EditProfile(request)
         user = create_user('test')
+        request.db_session = MockSession(store=[user])
+        view = EditProfile(request)
         request.user = user
-        view.session = MockSession(store=[user])
         view.target_username = 'test'
         view.current_username = 'test'
-        with patch('speak_friend.forms.profiles.DBSession',
-                    new_callable=MockSession):
-            info = view.get()
-        print(info)
+        info = view.get()
         self.assertTrue('rendered_form' in info)
