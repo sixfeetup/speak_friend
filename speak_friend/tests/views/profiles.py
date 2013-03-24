@@ -35,6 +35,7 @@ class ViewTests(SFBaseCase):
 
     def test_create_profile_view_post_no_args(self):
         self.request.referrer = '/'
+        self.request.method = 'POST'
         view = CreateProfile(self.request)
         info = view.post()
         self.assertTrue('rendered_form' in info)
