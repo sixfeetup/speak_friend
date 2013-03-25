@@ -32,7 +32,8 @@ requires = [
     ]
 
 tests_require = requires + [
-    'nose'
+    'nose',
+    'coverage',
 ]
 
 setup(
@@ -56,7 +57,7 @@ setup(
       install_requires=requires,
       tests_require=tests_require,
       test_suite="nose.collector",
-      extras_require={'test': ['mock']},
+      extras_require={'test': ['coverage', 'mock']},
       entry_points="""\
       [paste.app_factory]
       main = speak_friend:main
