@@ -4,6 +4,7 @@ from speak_friend.views.accounts import CreateProfile, EditProfile
 
 from mock import patch
 
+from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.tests.common import SFBaseCase
 from speak_friend.tests.mocks import create_user, MockSession
 
@@ -77,11 +78,14 @@ class ViewTests(SFBaseCase):
         self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
-        request = testing.DummyRequest(path="/edit_profile/testuser")
-        request.matchdict['username'] = 'testuser'
-        user = create_user('test')
+        self.config.add_route('contact_us', '/contact_us')
+        self.config.add_route('login', '/login')
+        self.config.add_route('edit_profile', '/edit_profile/{username}/')
+        user = create_user('testuser')
+        request = testing.DummyRequest(path="/edit_profile/testuser/")
         request.db_session = MockSession(store=[user])
-        view = EditProfile(request)
+        request.matchdict['username'] = 'testuser'
+        view = EditProfile(request, MAX_DOMAIN_ATTEMPTS)
         request.user = user
         view.target_username = 'test'
         view.current_username = 'test'
