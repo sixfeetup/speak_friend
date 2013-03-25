@@ -29,6 +29,7 @@ requires = [
     'pyramid_mailer',
     'requests',
     'pyramid_beaker',
+    'pwgen',
     ]
 
 tests_require = requires + [
@@ -63,5 +64,6 @@ setup(
       main = speak_friend:main
       [console_scripts]
       initialize_speak_friend_db = speak_friend.scripts.initializedb:main
+      create_test_users = speak_friend.scripts.createusers:main
       """,
       )
