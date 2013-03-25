@@ -51,11 +51,9 @@ class UserActivity(object):
             raise ValueError(u'No such activity defined: %s' % activity)
         self.request = request
         self.user = user
-        if actor is None:
-            if request.user and user is not request.user:
-                self.actor = request.user
-        else:
-            self.actor = actor
+        self.actor = actor
+        if actor is None and request.user and user is not request.user:
+            self.actor = request.user
         if 'came_from' in activity_detail:
             self.came_from = activity_detail.pop('came_from')
         else:
