@@ -376,6 +376,7 @@ class ResetPassword(object):
         cp = ControlPanel(request)
         self.token_duration = cp.get_value(authentication_schema.name,
                                            'token_duration')
+        self.login = LoginView(request)
 
     def post(self):
         if self.request.method != "POST":
@@ -392,6 +393,11 @@ class ResetPassword(object):
         except (DataError, ValueError), err:
             url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
+
+        if reset_token.user.admin_disabled:
+            self.request.session.flash(self.login.disabled_error,
+                                       queue='error')
+            return self.get()
 
         password_reset_form = make_password_reset_form(self.request)
 
@@ -473,11 +479,14 @@ class LoginView(object):
     def __init__(self, request, max_attempts=None):
         self.request = request
         self.pass_ctx = request.registry.password_context
+        contact_url = request.route_url('contact_us')
+        contact_link = '<a href="%s">contact us</a>' % contact_url
+        self.disabled_error = "Your account has been disabled. Please %s if you'd like us to reactivate your account." % contact_link
         self.invalid_error = 'Username or password is invalid.'
         self.locked_error = 'Your account has been disabled. ' \
                             'Check your email for instructions to reset your password.'
         query = self.request.GET.items()
-        action = request.current_route_url(_query=query)
+        action = request.route_url('login', _query=query)
         self.frm = make_login_form(action)
         if max_attempts is None:
             cp = ControlPanel(request)
@@ -554,7 +563,9 @@ class LoginView(object):
         else:
             return self.login_error(self.invalid_error)
 
-        if user.locked:
+        if user.admin_disabled:
+            return self.login_error(self.disabled_error)
+        elif user.locked:
             return self.login_error(self.locked_error)
         elif not self.verify_password(password, saved_hash, user):
             self.request.registry.notify(LoginFailed(self.request, user))
