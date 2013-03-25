@@ -18,7 +18,7 @@ class IOpenIDStore(Interface):
         useNonce
     """
 
-    def storeAssociation(self, server_url, association):
+    def storeAssociation(server_url, association):
         """
         This method puts a C{L{Association
         <openid.association.Association>}} object into storage,
@@ -46,9 +46,8 @@ class IOpenIDStore(Interface):
 
         @rtype: C{NoneType}
         """
-        raise NotImplementedError
 
-    def getAssociation(self, server_url, handle=None):
+    def getAssociation(server_url, handle=None):
         """
         This method returns an C{L{Association
         <openid.association.Association>}} object from storage that
@@ -91,9 +90,8 @@ class IOpenIDStore(Interface):
         @rtype: C{L{Association <openid.association.Association>}} or
             C{NoneType}
         """
-        raise NotImplementedError
 
-    def removeAssociation(self, server_url, handle):
+    def removeAssociation(server_url, handle):
         """
         This method removes the matching association if it's found,
         and returns whether the association was removed or not.
@@ -121,9 +119,8 @@ class IOpenIDStore(Interface):
 
         @rtype: C{bool} or C{int}
         """
-        raise NotImplementedError
 
-    def useNonce(self, server_url, timestamp, salt):
+    def useNonce(server_url, timestamp, salt):
         """Called when using a nonce.
 
         This method should return C{True} if the nonce has not been
@@ -157,9 +154,8 @@ class IOpenIDStore(Interface):
 
         @rtype: C{bool}
         """
-        raise NotImplementedError
 
-    def cleanupNonces(self):
+    def cleanupNonces():
         """Remove expired nonces from the store.
 
         Discards any nonce from storage that is old enough that its
@@ -172,9 +168,8 @@ class IOpenIDStore(Interface):
         @return: the number of nonces expired.
         @returntype: int
         """
-        raise NotImplementedError
 
-    def cleanupAssociations(self):
+    def cleanupAssociations():
         """Remove expired associations from the store.
 
         This method is not called in the normal operation of the
@@ -184,16 +179,14 @@ class IOpenIDStore(Interface):
         @return: the number of associations expired.
         @returntype: int
         """
-        raise NotImplementedError
 
-    def cleanup(self):
+    def cleanup():
         """Shortcut for C{L{cleanupNonces}()}, C{L{cleanupAssociations}()}.
 
         This method is not called in the normal operation of the
         library.  It provides a way for store admins to keep
         their storage from filling up with expired data.
         """
-        return self.cleanupNonces(), self.cleanupAssociations()
 
 
 class IUserActivity(Interface):
