@@ -14,13 +14,7 @@ class ControlPanel(object):
     def __init__(self, request):
         self.request = request
         self.sections = self.request.registry.get('controlpanel', {})
-        query = self.request.db_session.query(ControlPanelSection)
-        qry_filter = ControlPanelSection.section.in_(self.sections.keys())
-        self.saved_sections = dict([
-            (cp_section.section, cp_section)
-            for cp_section in query.filter(qry_filter).all()
-        ])
-
+        self.saved_sections = self.get_sections()
         self.section_forms = OrderedDict()
         sorted_sections = sorted(self.sections.items(),
                                  key=lambda x:x[0].title,
@@ -86,6 +80,13 @@ class ControlPanel(object):
             cp_section.panel_values = captured
         self.request.db_session.merge(cp_section)
 
+    def get_sections(self):
+        query = self.request.db_session.query(ControlPanelSection)
+        qry_filter = ControlPanelSection.section.in_(self.sections.keys())
+        return dict([
+            (cp_section.section, cp_section)
+            for cp_section in query.filter(qry_filter).all()
+        ])
 
 def record_to_appstruct(self):
     if self is None:
