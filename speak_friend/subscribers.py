@@ -57,7 +57,10 @@ def log_user_activity(event):
     """Records all UserActivity events emitted to the user_activities
     table.
     """
-    activity = UserActivity(**event.__dict__)
+    kwargs = event.__dict__
+    if 'activity' not in kwargs:
+        kwargs['activity'] = event.activity
+    activity = UserActivity(**kwargs)
     event.request.db_session.add(activity)
 
 def notify_account_created(event):
