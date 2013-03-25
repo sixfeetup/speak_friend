@@ -331,7 +331,6 @@ class DisableUser(object):
         action = {True: 'disabled', False: 'enabled'}[user.admin_disabled]
 
         self.session.add(user)
-        transaction.commit()
         return {
             'status_msg': '%s was %s.' % (self.target_username, action),
             'action': action,
