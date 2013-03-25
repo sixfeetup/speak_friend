@@ -292,13 +292,22 @@ class DisableUser(object):
         self.form.action = request.route_url('disable_user',
                                              username=self.target_username)
 
+    def get_target_user(self, username):
+        user_query = self.session.query(UserProfile)
+        user_query = user_query.filter(UserProfile.username==self.target_username)
+        user = user_query.first()
+        return user
+
     def get(self):
         appstruct = {'username': self.target_username}
         rendered = self.form.render(appstruct)
+        user = self.get_target_user(self.target_username)
+        action = {True: 'enable', False: 'disable'}[user.admin_disabled]
         return {
             'forms': [self.form],
             'rendered_form': rendered,
             'username': self.target_username,
+            'action': action,
         }
 
     def post(self):
@@ -314,14 +323,16 @@ class DisableUser(object):
                 'username': self.target_username,
             }
             return data
-        user_query = self.session.query(UserProfile)
-        user_query = user_query.filter(UserProfile.username==self.target_username)
-        user = user_query.first()
 
-        user.admin_disabled = True
+        user = self.get_target_user(self.target_username)
+
+        user.admin_disabled = not user.admin_disabled
+
+        action = {True: 'disabled', False: 'enabled'}[user.admin_disabled]
 
         self.session.add(user)
         transaction.commit()
         return {
-            'status_msg': '%s was disabled.' % self.target_username
+            'status_msg': '%s was %s.' % (self.target_username, action),
+            'action': action,
         }

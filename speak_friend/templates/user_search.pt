@@ -33,7 +33,12 @@
                   <a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a> | 
                   <a tal:attributes="href request.route_url('request_user_password', username=result.username)">Reset Password</a> | 
                   <a tal:condition="not result.admin_disabled" tal:attributes="href request.route_url('disable_user', username=result.username);
+                  <a tal:condition="not result.admin_disabled"
+                     tal:attributes="href request.route_url('disable_user', username=result.username);
                       class string:overlay;">Disable User</a>
+                  <a tal:condition="result.admin_disabled"
+                     tal:attributes="href request.route_url('disable_user', username=result.username);
+                      class string:overlay;">Enable User</a>
               </td>
               <td>${result.email}</td>
             </tr>
