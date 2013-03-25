@@ -1,0 +1,9 @@
+<div id="disable-overlay">
+    <metal:status tal:condition="exists: status_msg">
+        ${status_msg}
+    </metal:status>
+    <metal:form tal:condition="not: exists: status_msg">
+        <h1>Do you want to ${action} the user '${username}'?</h1>
+        <div tal:content="structure: rendered_form">form</div>
+    </metal:form>
+</div>

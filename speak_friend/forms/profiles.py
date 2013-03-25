@@ -489,3 +489,26 @@ def make_user_search_form(request=None):
         buttons=(Button('submit', title='Search'), )
     )
     return user_search_form
+
+
+class DisableUser(MappingSchema):
+    username = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+    )
+
+
+def make_disable_user_form(request=None):
+    schema = DisableUser()
+    # This form will be on a page with multiple forms,
+    # so we have to set the formid attribute for the ajax
+    # stuff to work.
+    disable_user_form = Form(
+        schema,
+        buttons=(Button('submit', title='Yes'),
+                 Button('cancel', title='No')
+        ),
+        formid='disable-form',
+        use_ajax=True,
+    )
+    return disable_user_form

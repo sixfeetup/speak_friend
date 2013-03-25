@@ -17,6 +17,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
+from speak_friend.forms.profiles import make_disable_user_form
+from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -280,3 +282,56 @@ class RequestUserPassword(object):
         flash_msg = "A link to reset %s's password has been sent to their email."
         self.request.session.flash(flash_msg % user.username, queue='success')
 
+@view_defaults(route_name='disable_user')
+class DisableUser(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.target_username = request.matchdict['username']
+        self.form = make_disable_user_form()
+        self.form.action = request.route_url('disable_user',
+                                             username=self.target_username)
+
+    def get_target_user(self, username):
+        user_query = self.session.query(UserProfile)
+        user_query = user_query.filter(UserProfile.username==self.target_username)
+        user = user_query.first()
+        return user
+
+    def get(self):
+        appstruct = {'username': self.target_username}
+        rendered = self.form.render(appstruct)
+        user = self.get_target_user(self.target_username)
+        action = {True: 'enable', False: 'disable'}[user.admin_disabled]
+        return {
+            'forms': [self.form],
+            'rendered_form': rendered,
+            'username': self.target_username,
+            'action': action,
+        }
+
+    def post(self):
+        if 'submit' not in self.request.POST:
+            return self.get()
+        controls = self.request.POST.items()
+        try:
+            appstruct = self.form.validate(controls)
+        except ValidationFailure,e:
+            data = {
+                'forms': [self.form],
+                'rendered_form': e.render(),
+                'username': self.target_username,
+            }
+            return data
+
+        user = self.get_target_user(self.target_username)
+
+        user.admin_disabled = not user.admin_disabled
+
+        action = {True: 'disabled', False: 'enabled'}[user.admin_disabled]
+
+        self.session.add(user)
+        return {
+            'status_msg': '%s was %s.' % (self.target_username, action),
+            'action': action,
+        }
