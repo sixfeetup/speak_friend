@@ -241,7 +241,8 @@ def includeme(config):
                     route_name='login', permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
-    config.add_view(accounts.logout, route_name='logout', permission='view')
+    config.add_view(accounts.logout, route_name='logout', permission='view',
+                    request_method='POST')
     config.add_notfound_view(error.notfound, append_slash=True)
     config.add_forbidden_view(error.notallowed)
     config.add_static_view('speak_friend_static', 'speak_friend:static',

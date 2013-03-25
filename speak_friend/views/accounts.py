@@ -663,7 +663,6 @@ class LoginView(object):
 
 
 def logout(request, return_to=None):
-    # XXX This should really check permissions on the destination first.
     if return_to is None:
         referrer = get_referrer(request)
     else:
