@@ -7,12 +7,14 @@ from pyramid.renderers import render_to_response
 
 from sqlalchemy.orm.exc import DetachedInstanceError
 
+from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.reports import UserActivity
 from speak_friend.utils import get_domain
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.views.accounts import logout
+from speak_friend.views.accounts import LoginView
 from speak_friend.views.open_id import OpenIDProvider
 
 
@@ -106,3 +108,26 @@ def openid_factory(handler, registry):
         return response
 
     return openid_tween
+
+
+def user_disabled_factory(handler, registry):
+    def user_disabled_tween(request):
+        """Verify the user has not been disabled.
+        """
+        logger = logging.getLogger('speakfriend.user_disabled_tween')
+
+        if not request.user:
+            return handler(request)
+
+        if request.user.admin_disabled:
+            login = LoginView(request, MAX_DOMAIN_ATTEMPTS)
+            request.session.flash(login.disabled_error, queue='error')
+            logger.info('User logged out because of admin_disabled: %s',
+                        request.user)
+            response = logout(request)
+        else:
+            response = handler(request)
+
+        return response
+
+    return user_disabled_tween

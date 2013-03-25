@@ -263,6 +263,7 @@ def includeme(config):
     config.add_tween('speak_friend.tweens.initial_login_factory')
     config.add_tween('speak_friend.tweens.password_timeout_factory')
     config.add_tween('speak_friend.tweens.openid_factory')
+    config.add_tween('speak_friend.tweens.user_disabled_factory')
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
