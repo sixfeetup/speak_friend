@@ -49,7 +49,6 @@ def password_timeout_factory(handler, registry):
             request.session.flash(msg, queue='error')
             logger.info('Password validity time out: %r, %r, %s',
                        request.user, last_login, pw_valid)
-            # TODO: handle openid request data in session
             response = logout(request, request.route_url('home'))
 
         return response
@@ -84,7 +83,6 @@ def initial_login_factory(handler, registry):
             msg = 'You must log in again to be returned to: %s' % domain_name
             request.session.flash(msg, queue='error')
             request.session.changed()
-            # TODO: handle openid request data in session
             response = logout(request, request.route_url('home'))
 
         return response
