@@ -19,6 +19,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
 from speak_friend.models.reports import UserActivity
+from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import domain_defaults_schema
 
 
@@ -42,13 +43,9 @@ class DomainProfile(Base):
         """
         pw_valid = self.password_valid
         if pw_valid < 0:
-            current = cp.saved_sections.get(domain_defaults_schema.name)
-            if current and current.panel_values:
-                pw_valid = current.panel_values['password_valid']
-            else:
-                for child in domain_defaults_schema.children:
-                    if child.name == 'password_valid':
-                        pw_valid = child.default
+            pw_valid = cp.get_value(domain_defaults_schema,
+                                    'password_valid',
+                                    MAX_PASSWORD_VALID)
         return pw_valid
 
     def make_appstruct(self):

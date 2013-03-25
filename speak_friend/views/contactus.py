@@ -24,12 +24,8 @@ class ContactUs(object):
         self.subject = "Contact Us Form Submission: %s" % settings['site_name']
         self.sender = settings['site_from']
         cp = ControlPanel(request)
-
-        current = cp.saved_sections.get(email_notification_schema.name)
-        if current and current.panel_values:
-            self.recipients = current.panel_values['contact_us']
-        else:
-            self.recipients = []
+        self.recipients = cp.get_value(email_notification_schema.name,
+                                       'contact_us', [])
 
     def post(self):
         if self.request.method != "POST":

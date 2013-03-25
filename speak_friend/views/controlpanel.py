@@ -88,6 +88,17 @@ class ControlPanel(object):
             for cp_section in query.filter(qry_filter).all()
         ])
 
+    def get_value(self, section_name, setting, default=None):
+        current = self.saved_sections.get(section_name)
+        if current and current.panel_values:
+            return current.panel_values.get(setting, default)
+        elif current:
+            for child in current.schema.children:
+                if child.name == setting:
+                    return child.default
+        return default
+
+
 def record_to_appstruct(self):
     if self is None:
         return {}

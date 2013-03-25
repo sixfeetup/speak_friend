@@ -77,11 +77,8 @@ def notify_account_created(event):
                                   event.request)
     # Obtain list of emails to notify from the control panel
     cp = ControlPanel(event.request)
-    current = cp.saved_sections.get(email_notification_schema.name)
-    if current and current.panel_values:
-        recipients = current.panel_values['user_creation']
-    else:
-        recipients = []
+    current = cp.get_value(email_notification_schema.name,
+                           'user_creation', [])
     if not recipients:
         logger.info('No one to notify of account creation: %s.',
                     event.user)

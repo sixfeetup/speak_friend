@@ -359,14 +359,7 @@ class ChangePassword(object):
 
 def token_expired(request):
     cp = ControlPanel(request)
-    token_duration = None
-    current = cp.saved_sections.get(authentication_schema.name)
-    if current and current.panel_values:
-        token_duration = current.panel_values['token_duration']
-    else:
-        for child in authentication_schema.children:
-            if child.name == 'token_duration':
-                token_duration = child.default
+    token_duration = cp.get_value(authentication_schema.name, 'token_duration')
     request.response.status = "400 Bad Request"
     url = request.route_url('request_password')
     return {
@@ -429,17 +422,9 @@ class RequestPassword(object):
 class ResetPassword(object):
     def __init__(self, request):
         self.request = request
-        self.token_duration = None
         cp = ControlPanel(request)
-
-        current = cp.saved_sections.get(authentication_schema.name)
-        if current and current.panel_values:
-            self.token_duration = current.panel_values['token_duration']
-        else:
-            for child in authentication_schema.children:
-                if child.name == 'token_duration':
-                    self.token_duration = child.default
-
+        self.token_duration = cp.get_value(authentication_schema.name,
+                                           'token_duration')
 
     def post(self):
         if self.request.method != "POST":
@@ -543,13 +528,11 @@ class LoginView(object):
         query = self.request.GET.items()
         action = request.current_route_url(_query=query)
         self.frm = make_login_form(action)
-        cp = ControlPanel(request)
-        self.max_attempts = None
-        current = cp.saved_sections.get(authentication_schema.name)
-        if current and current.panel_values:
-            self.max_attempts = current.panel_values['max_attempts']
-        else:
-            self.max_attempts = MAX_DOMAIN_ATTEMPTS
+        if max_attempts is None:
+            cp = ControlPanel(request)
+            self.max_attempts = cp.get_value(authentication_schema.name,
+                                             'max_attempts',
+                                             MAX_DOMAIN_ATTEMPTS)
 
 
     def verify_password(self, password, saved_hash, user):
