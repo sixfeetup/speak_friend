@@ -191,7 +191,7 @@ def notify_password_request(event):
     subject = '%s: Reset password' % settings['site_name']
     mailer = get_mailer(event.request)
     reset_token = ResetToken(event.user.username,
-                             event.activity_detail['came_from'])
+                             event.came_from)
     event.request.db_session.add(reset_token)
     response = render_to_response(path,
                                   {'token': reset_token.token},
