@@ -9,6 +9,8 @@ body {
     padding: 20px;
     margin: 20px auto;
 }
+
+/* navigation */
 .navbar {
     margin-top: 20px;
 }
@@ -19,6 +21,22 @@ body {
 .subnav {
     margin-bottom: 20px;
 }
+.navbar .nav > li form {
+    margin: 0;
+}
+.navbar .nav > li input {
+    height: 39px;
+    padding: 9px 10px 12px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border: none;
+    background: transparent none;
+    color: #ffffff;
+    font-weight: bold;
+}
+#logout-form a {
+    display: none;
+}
+
 #footer {
     max-width: 1020px;
     margin: 0 auto;
