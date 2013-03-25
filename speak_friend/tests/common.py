@@ -17,7 +17,6 @@ class SFBaseCase(TestCase):
             'site_name': "Test",
         })
         self.config.add_route('yadis', '/yadis.xml')
-        #self.config.add_request_method(get_user, 'user', reify=True)
         self.request = testing.DummyRequest()
         self.request.user = create_user('sfupadmin')
         self.request.db_session = MockSession()
@@ -25,7 +24,3 @@ class SFBaseCase(TestCase):
 
     def tearDown(self):
         testing.tearDown()
-
-
-def get_user(request):
-    return create_user('sfupadmin')
