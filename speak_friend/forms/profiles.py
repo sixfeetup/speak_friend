@@ -500,11 +500,15 @@ class DisableUser(MappingSchema):
 
 def make_disable_user_form(request=None):
     schema = DisableUser()
+    # This form will be on a page with multiple forms,
+    # so we have to set the formid attribute for the ajax
+    # stuff to work.
     disable_user_form = Form(
         schema,
         buttons=(Button('submit', title='Yes'),
                  Button('cancel', title='No')
         ),
-        user_ajax=True,
+        formid='disable-form',
+        use_ajax=True,
     )
     return disable_user_form
