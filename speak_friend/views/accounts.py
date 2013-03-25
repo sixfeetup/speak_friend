@@ -168,8 +168,9 @@ class EditProfile(object):
                 data.update(ex_data)
             return data
 
-        same_user = self.request.user == self.target_user
+        same_user = self.request.user.username == self.target_user.username
 
+        valid_pass = False
         if same_user:
             password = appstruct.get('password', colander.null)
             if password == colander.null:
@@ -178,7 +179,7 @@ class EditProfile(object):
             valid_pass = self.login_view.verify_password(password,
                                                          self.target_user.password_hash,
                                                          self.target_user)
-        if not same_user and self.request.user.is_superuser:
+        if (not same_user) and self.request.user.is_superuser:
             # Let admins edit email addresses w/o a password check
             valid_pass = True
 
@@ -225,7 +226,7 @@ class EditProfile(object):
                                                         **activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser and not failed:
             return HTTPFound(self.request.route_url('user_search'))
         else:
             return self.get()

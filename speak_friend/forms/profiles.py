@@ -238,7 +238,8 @@ class EditProfileSchema(MappingSchema):
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
 def make_profile_form(request, edit=False):
-    user = getattr(request, 'target_user', request.user)
+    target_user = getattr(request, 'target_user', None)
+    user = target_user or request.user
     email_validator = dict(should_exist=False,
                            msg="Email address already in use.",
                            db_session=request.db_session)
@@ -263,7 +264,12 @@ def make_profile_form(request, edit=False):
             )
             schema['user_disabled'] = user_disabled
             schema['is_superuser'] = is_superuser
-        else:
+
+        # Can't compare SQLA objects here, so use the usernames.
+        # Admin users editing their own profile still need a password.
+        username = request.user.username
+        target_username = target_user.username
+        if username == target_username or not request.user.is_superuser:
             password = SchemaNode(
                 String(),
                 required=False,
