@@ -100,7 +100,9 @@ class CreateProfile(object):
         came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
 
-        if came_from and not local_request:
+        if self.request.user.is_superuser:
+            return HTTPFound(self.request.route_url('user_search'))
+        elif came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
