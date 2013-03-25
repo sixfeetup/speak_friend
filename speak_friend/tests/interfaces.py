@@ -30,7 +30,6 @@ class BaseInterface(TestCase):
         return cls(*arg, **kw)
 
     def test_implements(self):
-        from pyramid.interfaces import IResponse
         cls = self._getTargetClass()
         iface = self._getTargetInterface()
         self.assertTrue(iface.implementedBy(cls))
