@@ -120,7 +120,7 @@ def email_change_notification(event):
     logger.info('%s changed their email address' % event.user.username)
     path = 'speak_friend:templates/email/account_email_change_notification.pt'
     settings = event.request.registry.settings
-    subject = '%s: Email address changed' % settings['site_name']
+    subject = '%s: Email changed' % settings['site_name']
     mailer = get_mailer(event.request)
     response = render_to_response(path,
                                   {'profile': event.user,
