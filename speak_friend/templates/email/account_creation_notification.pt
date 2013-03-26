@@ -1,7 +1,7 @@
  <html xmlns="http://www.w3.org/1999/xhtml"
        xmlns:tal="http://xml.zope.org/namespaces/tal"
        xmlns:metal="http://xml.zope.org/namespaces/metal">
-    <div tal:define="profile_url python:request.route_url('user_profile', username=profile.username)">
+    <div tal:define="profile_url python:request.route_url('edit_profile', username=profile.username)">
         <p>Hello,</p>
         <p>A new user has been created on ${api.settings['site_name']}:</p>
         <p>Email: ${profile.email}</p>
