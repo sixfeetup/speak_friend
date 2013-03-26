@@ -91,13 +91,29 @@ input[type="color"],
 .modal-header h2 {
     margin: 0;
 }
-.modal-footer form {
+.modal-footer form,
+.modal-footer .form-actions {
     margin: 0;
 }
 
 .accounts-created {
     margin-top: 25px;
 }
+
+/* user table */
+.userList .super td {
+    background-color: #f5f4db !important;
+}
+.userList .super .username {
+    font-weight: bold;
+}
+.userList .disabled td {
+    color: #888888;
+}
+.userList .disabled a {
+    color: #6c7dc5;
+}
+
 /* display checkbox next to label */
 #profile-form #item-deformField6 label,
 #profile-form #item-deformField6 div {
