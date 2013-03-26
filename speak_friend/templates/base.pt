@@ -19,7 +19,6 @@
               href="${request.static_url('speak_friend:static/css/custom.css')}" />
 
         <script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
-        <script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
         <tal:resources repeat="js_path api.js_resources">
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
@@ -30,7 +29,7 @@
         <metal:extend-js define-slot="extend-js">
         </metal:extend-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
-        <script src="${request.static_url('speak_friend:static/js/speak_friend.js')}"></script>
+        <script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
 
         <!-- Fallback for consumers that don't support Yadis -->
         <link rel="openid.server" href="${request.route_url('openid_provider')}" />
@@ -88,7 +87,6 @@
         <metal:footer use-macro="api.macros['footer']" />
         <div id="overlay">
             <!--! A div for doing overlays on the page. -->
-            <a id="close-overlay">Close</a>
             <div id="overlay-container">
             </div>
         </div>

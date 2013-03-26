@@ -1,9 +1,28 @@
-<div id="disable-overlay">
-    <metal:status tal:condition="exists: status_msg">
-        ${status_msg}
-    </metal:status>
-    <metal:form tal:condition="not: exists: status_msg">
-        <h1>Do you want to ${action} the user '${username}'?</h1>
+<script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
+<tal:resources repeat="js_path api.js_resources">
+  <script type="text/javascript"
+          tal:attributes="src python: request.static_url(js_path)"></script>
+</tal:resources>
+<tal:deform-bootstrap-js condition="api.js_resources">
+    <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
+</tal:deform-bootstrap-js>
+<script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
+<script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
+
+<div id="disable-overlay" class="modal">
+    <div class="modal-header">
+        <button type="button" class="close">×</button>
+        <h3>Change user status?</h3>
+    </div>
+    <div class="modal-body">
+        <tal:status condition="exists: status_msg">
+            ${status_msg}
+        </tal:status>
+        <tal:form condition="not: exists: status_msg">
+            <p>Do you want to ${action} the user '${username}'?</p>
+        </tal:form>
+    </div>
+    <div class="modal-footer" tal:condition="not: exists: status_msg">
         <div tal:content="structure: rendered_form">form</div>
-    </metal:form>
+    </div>
 </div>
