@@ -188,6 +188,8 @@ class UserSearch(object):
         self.frm = make_user_search_form()
 
     def get(self):
+        if 'query' in self.request.GET:
+            return self.run_search()
         query = self.request.db_session.query(UserProfile)
         query = query.order_by(UserProfile.username.desc())
 
@@ -199,17 +201,12 @@ class UserSearch(object):
             'ran_search': False
         }
 
-    def post(self):
+    def run_search(self):
         results = []
         ran_search = False
-        if self.request.method != "POST":
-            return HTTPMethodNotAllowed()
-        if 'query' not in self.request.POST or \
-           not self.request.POST['query']:
-            return self.get()
 
         try:
-            controls = self.request.POST.items()
+            controls = self.request.GET.items()
             appstruct = self.frm.validate(controls)
         except ValidationFailure, e:
             return {

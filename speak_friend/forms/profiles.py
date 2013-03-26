@@ -490,7 +490,8 @@ def make_user_search_form(request=None):
         schema = UserSearch().bind(request=request)
     user_search_form = Form(
         schema,
-        # method="GET",
+        method="GET",
+        formid="usersearch",
         bootstrap_form_style='form-vertical',
         buttons=(Button('submit', title='Search'), )
     )
