@@ -1,7 +1,6 @@
-// Handle overlay loading
-$(document).ready(function () {
+(function($) { $(function() {
+    // Handle overlay loading
     $('a.overlay').click(function (event) {
-        event.preventDefault();
         var url = $(this).attr('href'),
             content_target = $('#overlay-container'),
             overlay = $('#overlay');
@@ -12,27 +11,27 @@ $(document).ready(function () {
                 overlay.show();
             }
         });
-
+        return false;
     });
-});
-
-// Handle overlay closing
-$(document).ready(function () {
     
-    $('#close-overlay').click(function (event) {
-        event.preventDefault();
-        var target = $('#overlay');
-        target.hide();
+    // Handle overlay closing
+    $('.modal .close').click(function() {
+        $('#overlay').hide();
     });
-})
-
-// Handle overlay form cancel
-$(document).ready(function () {
+    
+    // Handle overlay form cancel
     // Make sure we don't mess up forms outside of the overlay
-    var selector = '#overlay-container button#deformcancel';
-    $(document).on('click', selector, function (event) {
-        event.preventDefault();
-        var target = $('#overlay');
-        target.hide();
+    $('#overlay-container #disable-formcancel').click(function() {
+        $('#overlay').hide();
+        return false;
     });
-});
+    
+    
+    // logout button
+       $("#logout-form input").css("display","none");
+       $("#logout-link").css("display","block").click(function() {
+           $("#logout-btn").click();
+       });
+}); })(jQuery);
+
+
