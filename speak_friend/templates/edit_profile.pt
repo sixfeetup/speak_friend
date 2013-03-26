@@ -21,7 +21,8 @@
                  tal:condition="api.is_active_tab('change_password')">Modify Your Password</metal:title>
     
     <metal:content fill-slot="content">
-      <div tal:content="structure rendered_form">form</div>
+      <div id="edit-profile"
+           tal:content="structure rendered_form">form</div>
       <metal:extra-content define-slot="extra-content" />
     </metal:content>
     

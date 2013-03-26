@@ -115,10 +115,14 @@ input[type="color"],
 }
 
 /* display checkbox next to label */
-#profile-form #item-deformField6 label,
-#profile-form #item-deformField6 div,
 #login-form #item-deformField3 label,
-#login-form #item-deformField3 div {
+#login-form #item-deformField3 div,
+#profile-form #item-deformField7 label,
+#profile-form #item-deformField7 div,
+#edit-profile #item-deformField6 label,
+#edit-profile #item-deformField6 div,
+#edit-profile #item-deformField7 label,
+#edit-profile #item-deformField7 div {
     display: inline;
 }
 
