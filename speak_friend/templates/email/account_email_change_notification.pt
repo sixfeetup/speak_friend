@@ -2,13 +2,7 @@
        xmlns:tal="http://xml.zope.org/namespaces/tal"
        xmlns:metal="http://xml.zope.org/namespaces/metal">
     <div>
-        <p>Hello,</p>
-        <p>Your email address on ${api.settings['site_name']} has been changed.</p>
-        <p>Your new email address is: ${new_address} .</p>
-        <p>Your old email address was: ${old_address}.</p>
-        <p>If you wish to review your ${api.settings['site_name']} information and view a list of other foundation resources go to <a href="${request.route_url('home')}">${api.settings['site_name']}</a>.</p>
-        <p>Please do not reply to this message. Replies to this message are routed to an unmonitored mailbox. If you have questions please <a href="${request.route_url('contact_us')}">contact us</a>.</p>
-        <p>Thank you,</p>
-        <p>${api.settings['site_name']}</p>
+        <p>Your email has been changed on on ${api.settings['site_name']} from ${old_address} to ${new_address}.</p>
+        <p>Please <a href="${request.route_url('contact_us')}">contact us</a> if you did not make the updates.</p>
     </div>
  </html>
