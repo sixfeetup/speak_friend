@@ -116,7 +116,9 @@ input[type="color"],
 
 /* display checkbox next to label */
 #profile-form #item-deformField6 label,
-#profile-form #item-deformField6 div {
+#profile-form #item-deformField6 div,
+#login-form #item-deformField3 label,
+#login-form #item-deformField3 div {
     display: inline;
 }
 
