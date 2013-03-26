@@ -2,7 +2,8 @@
     
     <metal:nav fill-slot="subnav">
         <div id='edit-profile-nav' class="btn-group subnav"
-            tal:define='userid api.current_userid;'>
+            tal:define='userid api.current_userid;'
+            tal:condition="target_username == request.user.username">
             <a id='edit-profile-link'
                tal:define="activeClass api.is_active_tab('edit_profile')"
                tal:attributes="href request.route_url('edit_profile', username=userid);
