@@ -28,10 +28,17 @@
     
     
     // logout button
-       $("#logout-form input").css("display","none");
-       $("#logout-link").css("display","block").click(function() {
-           $("#logout-btn").click();
-       });
+    $("#logout-form input").css("display","none");
+    $("#logout-link").css("display","block").click(function() {
+        $("#logout-btn").click();
+    });
+    
+    // display single checkboxes next to their labels
+    var checks = $("input[type='checkbox']:only-child").length;
+    for(i = 0; i < checks; i++) {
+         $("input[type='checkbox']:only-child").eq(i).parent(".controls").css("display","inline");
+         $("input[type='checkbox']:only-child").eq(i).parent(".controls").siblings("label").css("display","inline");
+    }
 }); })(jQuery);
 
 
