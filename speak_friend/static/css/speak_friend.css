@@ -87,6 +87,14 @@ input[type="color"],
     padding: 0;
 }
 
+.modal-header h1,
+.modal-header h2 {
+    margin: 0;
+}
+.modal-footer form {
+    margin: 0;
+}
+
 .accounts-created {
     margin-top: 25px;
 }
