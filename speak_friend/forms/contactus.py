@@ -21,7 +21,9 @@ class ContactUs(MappingSchema):
     )
     came_from = SchemaNode(
         String(),
-        widget = HiddenWidget(),
+        widget=HiddenWidget(),
+        missing='/',
+        title="came_from",
     )
     title='Contact Us',
     description='Have a question or want to tell us something? Let us know.',
