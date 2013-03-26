@@ -17,7 +17,7 @@
             tal:define="item_label len(results) > 1 and 'users' or 'user'">
           <h2>Results</h2>
           <p tal:condition="ran_search">We found ${len(results)} ${item_label} matching your query:</p>
-          <table class="table table-striped table-bordered table-hover table-condensed">
+          <table class="table table-striped table-bordered table-hover table-condensed userList">
             <tr>
               <th>Username</th>
               <th>First Name</th>
@@ -25,22 +25,27 @@
               <th>Actions</th>
               <th>Email Address</th>
             </tr>
-            <tr tal:repeat="result results">
-              <td>${result.username}</td>
-              <td>${result.first_name}</td>
-              <td>${result.last_name}</td>
-              <td>
-                  <a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a> | 
-                  <a tal:attributes="href request.route_url('request_user_password', username=result.username)">Reset Password</a> | 
-                  <a tal:condition="not result.admin_disabled"
-                     tal:attributes="href request.route_url('disable_user', username=result.username);
-                      class string:overlay;">Disable User</a>
-                  <a tal:condition="result.admin_disabled"
-                     tal:attributes="href request.route_url('disable_user', username=result.username);
-                      class string:overlay;">Enable User</a>
-              </td>
-              <td>${result.email}</td>
-            </tr>
+            <tal:rows repeat="result results">
+                <tr tal:define="superClass result.is_superuser and 'super' or '';
+                                disabled result.admin_disabled;
+                                disabledClass disabled and 'disabled' or ''"
+                    tal:attributes="class string:${superClass} ${disabledClass}">
+                  <td class="username">${result.username}</td>
+                  <td>${result.first_name}</td>
+                  <td>${result.last_name}</td>
+                  <td>
+                      <a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a> | 
+                      <a tal:attributes="href request.route_url('request_user_password', username=result.username)">Reset Password</a> | 
+                      <a class="overlay"
+                         tal:condition="not disabled"
+                         tal:attributes="href request.route_url('disable_user', username=result.username);">Disable User</a>
+                      <a class="overlay"
+                         tal:condition="disabled"
+                         tal:attributes="href request.route_url('disable_user', username=result.username);">Enable User</a>
+                  </td>
+                  <td>${result.email}</td>
+                </tr>
+            </tal:rows>
           </table>
           </tal:has_results>
           <tal:no_results tal:condition="not results">
