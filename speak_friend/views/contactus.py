@@ -59,9 +59,9 @@ class ContactUs(object):
         if self.request.user:
             appstruct['contact_name'] = self.request.user.full_name
             appstruct['reply_email'] = self.request.user.email
-        for field in self.frm:
-            if field.name == 'contact_name' or field.name == 'reply_email':
-                field.widget = TextInputWidget(template='readonly/textinput')
+            for field in self.frm:
+                if field.name == 'contact_name' or field.name == 'reply_email':
+                    field.widget = TextInputWidget(template='readonly/textinput')
         rendered_form = self.frm.render(appstruct=appstruct)
         return {
             'forms': [self.frm],
