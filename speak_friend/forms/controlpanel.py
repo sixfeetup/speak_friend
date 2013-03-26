@@ -21,11 +21,12 @@ class EmailNotification(Schema):
     )
 
 MAX_DOMAIN_ATTEMPTS = 10
+TOKEN_DURATION = 60
 
 class Authentication(Schema):
     token_duration = SchemaNode(
         Integer(),
-        default=60,
+        default=TOKEN_DURATION,
         description=u'Duration (in minutes) password reset tokens are valid for.'
     )
     max_attempts = SchemaNode(

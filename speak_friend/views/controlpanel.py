@@ -96,6 +96,10 @@ class ControlPanel(object):
             for child in current.schema.children:
                 if child.name == setting:
                     return child.default
+        elif section_name in self.sections:
+            for child in self.sections[section_name].children:
+                if child.name == setting:
+                    return child.default
         return default
 
 
