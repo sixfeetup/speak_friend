@@ -6,7 +6,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.view import view_defaults
-
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
@@ -14,6 +13,7 @@ from deform import ValidationFailure
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
+from webhelpers import paginate
 
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
@@ -186,23 +186,28 @@ class UserSearch(object):
     def __init__(self, request):
         self.request = request
         self.frm = make_user_search_form()
+        self.page_size = 50
 
     def get(self):
         if 'query' in self.request.GET:
             return self.run_search()
         query = self.request.db_session.query(UserProfile)
-        query = query.order_by(UserProfile.username.desc())
+        query = query.order_by(UserProfile.username.asc())
 
         results = query.all()
+        paged = self.paginate_results(results)
+        pager = paged.pager()
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render(),
-            'results': results,
-            'ran_search': False
+            'results': paged,
+            'ran_search': False,
+            'pager': pager,
         }
 
     def run_search(self):
         results = []
+        pager = None
         ran_search = False
 
         try:
@@ -214,6 +219,7 @@ class UserSearch(object):
                 'rendered_form': e.render(),
                 'results': results,
                 'ran_search': ran_search,
+                'pager': None
             }
         #XXX: always default to treating the query as a prefix query??
         tsquery = func.to_tsquery("%s:*" % appstruct['query'])
@@ -230,13 +236,23 @@ class UserSearch(object):
         res = res.order_by(desc(orderby))
 
         results = res.all()
+        paged = self.paginate_results(results)
+        pager = paged.pager()
         ran_search = True
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render(),
-            'results': results,
+            'results': paged,
             'ran_search': ran_search,
+            'pager': pager
         }
+
+    def paginate_results(self, query):
+        current_page = int(self.request.params.get('page', 1))
+        page_url = paginate.PageURL_WebOb(self.request)
+        records = paginate.Page(query, current_page, url=page_url,
+                                items_per_page=self.page_size)
+        return records
 
 
 @view_defaults(route_name='request_user_password')
