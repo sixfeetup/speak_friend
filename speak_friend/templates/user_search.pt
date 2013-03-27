@@ -15,6 +15,9 @@
         <div tal:content="structure rendered_form">form</div>
           <tal:has_results tal:condition="results"
             tal:define="item_label results.item_count > 1 and 'users' or 'user'">
+          <a class="btn pull-right" href="#"
+             tal:condition="ran_search"
+             tal:attributes="href request.route_url('user_search')">Clear Search</a>
           <h2>Results</h2>
           <p tal:condition="ran_search">We found ${results.item_count} ${item_label} matching your query:</p>
           <table class="table table-striped table-bordered table-hover table-condensed userList">
