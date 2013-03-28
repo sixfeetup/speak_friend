@@ -1,7 +1,8 @@
+from cStringIO import StringIO
+import csv
 import logging
 import os
 import sys
-import transaction
 
 from pwgen import pwgen
 
@@ -9,8 +10,6 @@ from pyramid.config import Configurator
 from pyramid.paster import get_appsettings, setup_logging
 
 from sqlalchemy.exc import IntegrityError
-
-import transaction
 
 from speak_friend import init_sa
 from speak_friend.configuration import set_password_context
@@ -48,43 +47,45 @@ def main(argv=sys.argv):
     config.commit()
 
     pass_ctx = config.registry.password_context
-    users_created = []
     user_num = 1
-    while len(users_created) < num_users:
+    buf = StringIO()
+    cols = ['username', 'first_name', 'last_name', 'email', 'password_hash',
+            'password_salt', 'login_attempts', 'admin_disabled',
+            'is_superuser']
+    csv_file = csv.DictWriter(buf, cols, delimiter='\t', lineterminator='\n')
+    logger.info("Beginning to create %d users,", num_users)
+    cxn = DBSession.connection()
+    cur = cxn.connection.cursor()
+    user_num += 0
+    user_passwords = {}
+    while user_num <= num_users:
         first_name = u'Test'
-        last_name = u'User%d' % user_num
+        last_name = pwgen(num_pw=1, pw_length=10, no_numerals=True,
+                          no_symbols=True)
         username = u'%s.%s' % (first_name, last_name)
-        password = pwgen(num_pw=1, pw_length=20, numerals=True,
-                         capitalize=True, no_symbols=True)
-        email = u'%s@example.com' % username
-        pw_hash = pass_ctx.encrypt(password)
-
-        transaction.begin()
-
-        user = UserProfile(
-            username,
-            first_name,
-            last_name,
-            email,
-            pw_hash,
-            None,
-            0,
-            False,
-            is_superuser=False
-        )
+        password = pwgen(num_pw=1, pw_length=20)
+        user_passwords[username] = password
+        csv_file.writerow(dict(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=u'%s@example.com' % username,
+            password_hash=pass_ctx.encrypt(password),
+            password_salt='',
+            login_attempts=0,
+            admin_disabled=False,
+            is_superuser=False,
+        ))
+        logger.info("Created user %s, %04d/%04d.",
+                    username, user_num, num_users)
         user_num += 1
-        try:
-            DBSession.add(user)
-            transaction.commit()
-            logger.info("Created user %s", username)
-        except (IntegrityError,), err:
-            transaction.abort()
-            msg = err.message.split('\n')[1]
-            logger.warning('Unable to create user "%s", skipping: %s',
-                           username, msg)
-            continue
 
-        users_created.append((username, password))
+    logger.info("Committing...")
+    tname = '%s.%s' % (UserProfile.__table__.schema,
+                       UserProfile.__table__.name)
+    buf.seek(0)
+    cur.copy_from(buf, tname, columns=cols)
+    cxn.connection.commit()
 
-    for uname, pw in users_created:
+    for uname, pw in user_passwords.items():
         print uname, pw
