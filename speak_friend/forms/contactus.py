@@ -32,7 +32,7 @@ class ContactUs(MappingSchema):
 def make_contact_us_form():
     contact_us_form = Form(
         ContactUs(),
-        buttons=('submit', 'cancel'),
+        buttons=('submit',),
         bootstrap_form_style='form-vertical',
     )
     return contact_us_form
