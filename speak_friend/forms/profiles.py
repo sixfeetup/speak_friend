@@ -431,7 +431,6 @@ def make_password_reset_form(request=None):
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Reset Password'),
-            'cancel'
         ),
         resource_registry=password_registry,
         renderer=renderer
@@ -468,7 +467,6 @@ def make_password_change_form(request=None):
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
-            'cancel'
         ),
         resource_registry=password_registry,
         renderer=renderer
