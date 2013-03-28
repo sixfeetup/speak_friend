@@ -1,4 +1,3 @@
-<script src="${request.static_url('speak_friend:static/js/jquery.js')}"></script>
 <tal:resources repeat="js_path api.js_resources">
   <script type="text/javascript"
           tal:attributes="src python: request.static_url(js_path)"></script>
@@ -6,8 +5,6 @@
 <tal:deform-bootstrap-js condition="api.js_resources">
     <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
 </tal:deform-bootstrap-js>
-<script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
-<script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
 
 <div id="disable-overlay" class="modal">
     <div class="modal-header">

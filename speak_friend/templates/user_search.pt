@@ -1,10 +1,4 @@
 <metal:main use-macro="load: base.pt">
-    <metal:extend-js fill-slot="extend-js">
-    <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
-    <script>
-        deform.load()
-    </script>
-    </metal:extend-js>
     <metal:title fill-slot="page-title">Find Users</metal:title>
     
     <metal:sub fill-slot="subnav">
