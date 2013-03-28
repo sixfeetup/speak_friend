@@ -1,6 +1,6 @@
 (function($) { $(function() {
     // Handle overlay loading
-    $('a.overlay').click(function (event) {
+    $('a.overlay').on('click', function (event) {
         var url = $(this).attr('href'),
             content_target = $('#overlay-container'),
             overlay = $('#overlay');
@@ -15,21 +15,20 @@
     });
     
     // Handle overlay closing
-    $('.modal .close').click(function() {
+    $('#overlay').on('click', '.modal .close', function(event) {
         $('#overlay').hide();
     });
     
     // Handle overlay form cancel
     // Make sure we don't mess up forms outside of the overlay
-    $('#overlay-container #disable-formcancel').click(function() {
+    $('#overlay').on('click', '#overlay-container #disable-formcancel', function(event) {
         $('#overlay').hide();
-        return false;
     });
     
     
     // logout button
     $("#logout-form input").css("display","none");
-    $("#logout-link").css("display","block").click(function() {
+    $("#logout-link").css("display","block").on('click', function() {
         $("#logout-btn").click();
     });
     
