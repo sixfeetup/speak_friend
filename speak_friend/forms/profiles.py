@@ -304,7 +304,7 @@ def make_profile_form(request, edit=False):
             schema['is_superuser'] = is_superuser
 
     form = Form(
-        buttons=('submit', 'cancel'),
+        buttons=('submit',),
         resource_registry=password_registry,
         renderer=renderer,
         schema = schema.bind(request=request,
