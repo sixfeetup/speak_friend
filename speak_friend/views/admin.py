@@ -324,7 +324,7 @@ class DisableUser(object):
         }
 
     def post(self):
-        if 'submit' not in self.request.POST:
+        if 'submit' not in self.request.POST and not self.request.is_xhr:
             return self.get()
         controls = self.request.POST.items()
         try:

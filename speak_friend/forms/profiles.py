@@ -514,6 +514,5 @@ def make_disable_user_form(request=None):
                  Button('cancel', title='No')
         ),
         formid='disable-form',
-        use_ajax=True,
     )
     return disable_user_form

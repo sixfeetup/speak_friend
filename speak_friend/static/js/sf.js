@@ -19,12 +19,27 @@
         $('#overlay').hide();
     });
     
+    $('#overlay').on('click', '#overlay-container #disable-formsubmit', function(event) {
+        event.preventDefault();
+        var form_data = $('#disable-form').serialize(),
+            content_target = $('#overlay-container'),
+            url = $('#disable-form').attr('action');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form_data,
+            success: function(data) {
+                content_target.html(data);
+            }
+        });
+    });
+
     // Handle overlay form cancel
     // Make sure we don't mess up forms outside of the overlay
     $('#overlay').on('click', '#overlay-container #disable-formcancel', function(event) {
         $('#overlay').hide();
     });
-    
     
     // logout button
     $("#logout-form input").css("display","none");
