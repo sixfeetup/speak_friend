@@ -119,6 +119,7 @@ def includeme(config):
     config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     route_name='create_profile',
                     permission=NO_PERMISSION_REQUIRED,
+                    check_csrf=True,
                     renderer='templates/create_profile.pt')
     config.add_route('edit_profile', '/edit_profile/{username}/',
                      factory=EditProfileFactory)
@@ -129,6 +130,7 @@ def includeme(config):
     config.add_view(accounts.EditProfile, attr="post", request_method='POST',
                     route_name='edit_profile',
                     permission='edit',
+                    check_csrf=True,
                     renderer='templates/edit_profile.pt')
     config.add_route('change_password', '/change_password/{username}/',
                      factory=ChangePasswordFactory)
@@ -140,6 +142,7 @@ def includeme(config):
                     request_method='POST',
                     route_name='change_password',
                     permission='edit',
+                    check_csrf=True,
                     renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
@@ -159,6 +162,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='request_password',
                     permission=NO_PERMISSION_REQUIRED,
+                    check_csrf=True,
                     renderer='templates/request_password.pt')
     config.add_route('request_user_password', '/request_password/{username}')
     config.add_view(admin.RequestUserPassword,
@@ -176,6 +180,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
+                    check_csrf=True,
                     renderer='templates/reset_password.pt')
     config.add_route('list_domains', '/domains')
     config.add_view(admin.ListDomains, attr='get', request_method='GET',
@@ -190,6 +195,7 @@ def includeme(config):
     config.add_view(admin.CreateDomain, attr='post', request_method='POST',
                     route_name='create_domain',
                     permission='admin',
+                    check_csrf=True,
                     renderer='templates/create_domain.pt')
     config.add_route('edit_domain', '/edit_domain/{domain_name}/')
     config.add_view(admin.EditDomain, attr='get', request_method='GET',
@@ -199,10 +205,12 @@ def includeme(config):
     config.add_view(admin.EditDomain, attr='post', request_method='POST',
                     route_name='edit_domain',
                     permission='admin',
+                    check_csrf=True,
                     renderer='templates/edit_domain.pt')
     config.add_route('delete_domain', '/delete_domain')
     config.add_view(admin.DeleteDomain, attr='post', request_method='POST',
                     route_name='delete_domain',
+                    check_csrf=True,
                     permission='admin')
     config.add_route('user_search', '/user_search')
     config.add_view(admin.UserSearch, attr='get', request_method='GET',
@@ -228,6 +236,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='control_panel',
                     permission='admin',
+                    check_csrf=True,
                     renderer='templates/control_panel.pt')
     config.add_route('contact_us', '/contact_us')
     config.add_view(contactus.ContactUs,
@@ -237,6 +246,7 @@ def includeme(config):
     config.add_view(contactus.ContactUs,
                     attr="post", request_method='POST',
                     route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
+                    check_csrf=True,
                     renderer='templates/contact_us.pt')
     config.add_route('login', '/login')
     config.add_view(accounts.LoginView, attr='get', request_method='GET',
@@ -244,6 +254,7 @@ def includeme(config):
                     renderer='templates/login.pt')
     config.add_view(accounts.LoginView, attr='post', request_method='POST',
                     route_name='login', permission=NO_PERMISSION_REQUIRED,
+                    check_csrf=True,
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout', permission='view',

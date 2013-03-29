@@ -220,7 +220,13 @@ class EditProfile(object):
                                     **activity_detail)
                 )
 
+        if same_user:
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
+
         self.request.db_session.add(self.target_user)
+
         if not failed:
             self.request.registry.notify(ProfileChanged(self.request,
                                                         self.target_user,
@@ -258,15 +264,15 @@ class ChangePassword(object):
         self.target_username = request.matchdict['username']
         query = self.request.db_session.query(UserProfile)
         self.target_user = query.get(self.target_username)
-        self.login_view = LoginView(request, max_attempts)
         if self.target_user is None:
             raise HTTPNotFound()
+        self.login_view = LoginView(request, max_attempts)
+        self.frm = make_password_change_form(request)
 
     def get(self):
-        form = make_password_change_form()
         return {
-            'forms': [form],
-            'rendered_form': form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
             'target_username': self.target_username,
         }
 
@@ -277,17 +283,16 @@ class ChangePassword(object):
             return self.get()
 
         controls = self.request.POST.items()
-        form = make_password_change_form(request=self.request)
 
         try:
-            appstruct = form.validate(controls)  # call validate
+            appstruct = self.frm.validate(controls)  # call validate
         except ValidationFailure, e:
             # Don't leak hash information
-            if ('password' in form.cstruct
-                and form.cstruct['password'] != ''):
-                form.cstruct['password'] = ''
+            if ('password' in self.frm.cstruct
+                and self.frm.cstruct['password'] != ''):
+                self.frm.cstruct['password'] = ''
             return {
-                'forms': [form],
+                'forms': [self.frm],
                 'rendered_form': e.render(),
                 'target_username': self.target_username,
             }
@@ -307,6 +312,9 @@ class ChangePassword(object):
             self.request.db_session.add(self.target_user)
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
         else:
             self.request.session.flash('Incorrect password.',
                                        queue='error')
@@ -424,6 +432,9 @@ class ResetPassword(object):
                 reset_token.user.locked = False
                 self.request.registry.notify(AccountUnlocked(self.request,
                                                              reset_token.user))
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
             self.request.registry.notify(PasswordReset(self.request,
                                                        reset_token.user))
             self.request.registry.notify(LoggedIn(self.request,
@@ -491,7 +502,7 @@ class LoginView(object):
                             'Check your email for instructions to reset your password.'
         query = self.request.GET.items()
         action = request.route_url('login', _query=query)
-        self.frm = make_login_form(action)
+        self.frm = make_login_form(request, action)
         if max_attempts is None:
             cp = ControlPanel(request)
             self.max_attempts = cp.get_value(authentication_schema.name,
@@ -596,6 +607,8 @@ class LoginView(object):
         headers = remember(self.request, user.username, **auth_kw)
         self.request.response.headerlist.extend(headers)
         self.request.session['auth_userid'] = user.username
+        # Invalidate the current token
+        self.request.session.new_csrf_token()
         self.request.session.save()
 
         self.request.registry.notify(LoggedIn(self.request, user,
@@ -616,6 +629,9 @@ def logout(request, return_to=None):
         referrer = get_referrer(request)
     else:
         referrer = return_to
+    # Invalidate the current token
+    request.session.new_csrf_token()
+    request.session.save()
     request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)

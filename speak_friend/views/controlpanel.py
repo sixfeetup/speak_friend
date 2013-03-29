@@ -6,6 +6,7 @@ from deform import Form, ValidationFailure
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.view import view_defaults
 
+from speak_friend.forms.csrf import CSRFSchema
 from speak_friend.models.controlpanel import ControlPanelSection
 
 
@@ -20,6 +21,8 @@ class ControlPanel(object):
                                  key=lambda x:x[0].title,
                                  reverse=True)
         for section_name, section_schema in sorted_sections:
+            if 'csrf' not in section_schema:
+                section_schema['csrf'] = CSRFSchema().bind(request=request)
             section_form = Form(
                 section_schema,
                 buttons=('submit', 'cancel'),
@@ -70,6 +73,7 @@ class ControlPanel(object):
 
     def save_section(self, formid, captured):
         cp_section = self.saved_sections.get(formid, None)
+        captured.pop('csrf', None)
         if cp_section is None:
             cp_section = ControlPanelSection(
                 section=formid,

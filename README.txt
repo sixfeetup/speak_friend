@@ -288,3 +288,11 @@ The recommended values are:
     session.secret = SOME_SECRET
     session.cookie_on_exception = true
     session.secure = true
+
+
+Cross-Site Request Forgery
+--------------------------
+
+`speak_friend` uses Pyramid's built-in support for mitigating CSRF attacks by storing a token in the user's session.
+This token is included in forms, and the submitted value must match the current value in the session.
+If not, the request will be rejected.

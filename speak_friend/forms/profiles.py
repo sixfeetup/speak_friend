@@ -15,6 +15,8 @@ from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
 
+from speak_friend.forms.csrf import CSRFSchema
+
 
 # set a resource registry that contains resources for the password widget
 password_registry = ResourceRegistry()
@@ -181,7 +183,7 @@ def create_password_validator(node, kw):
     return Function(inner_password_validator)
 
 
-class Profile(MappingSchema):
+class Profile(CSRFSchema):
     username = SchemaNode(
         String(),
         validator=create_username_validator,
@@ -210,7 +212,7 @@ class Profile(MappingSchema):
     )
 
 
-class EditProfileSchema(MappingSchema):
+class EditProfileSchema(CSRFSchema):
     username = SchemaNode(
         String(),
         missing='',
@@ -315,7 +317,7 @@ def make_profile_form(request, edit=False):
     return form
 
 
-class Domain(MappingSchema):
+class Domain(CSRFSchema):
     name = SchemaNode(
         String(),
         title="Domain Name",
@@ -350,7 +352,7 @@ def make_domain_form(request, domain=None):
     )
 
 
-class PasswordResetRequest(MappingSchema):
+class PasswordResetRequest(CSRFSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
@@ -379,7 +381,7 @@ def make_password_reset_request_form(request):
     return password_reset_request_form
 
 
-class Login(MappingSchema):
+class Login(CSRFSchema):
     login = SchemaNode(
         String(),
         title='Username or Email',
@@ -401,9 +403,10 @@ class Login(MappingSchema):
     )
 
 
-def make_login_form(action=''):
+def make_login_form(request, action=''):
+    schema = Login()
     login_form = Form(
-        Login(),
+        schema=schema.bind(request=request),
         action=action,
         bootstrap_form_style='form-vertical',
         buttons=(
@@ -414,7 +417,7 @@ def make_login_form(action=''):
     return login_form
 
 
-class PasswordReset(MappingSchema):
+class PasswordReset(CSRFSchema):
     password = SchemaNode(
         String(),
         widget=StrengthValidatingPasswordWidget(),
@@ -422,7 +425,7 @@ class PasswordReset(MappingSchema):
     )
 
 
-def make_password_reset_form(request=None):
+def make_password_reset_form(request):
     schema = PasswordReset()
     if request:
         schema = PasswordReset().bind(request=request)
@@ -438,7 +441,7 @@ def make_password_reset_form(request=None):
     return password_reset_form
 
 
-class PasswordChange(MappingSchema):
+class PasswordChange(CSRFSchema):
     password = SchemaNode(
         String(),
         widget=PasswordWidget(),
@@ -458,12 +461,10 @@ class PasswordChange(MappingSchema):
     )
 
 
-def make_password_change_form(request=None):
+def make_password_change_form(request):
     schema = PasswordChange()
-    if request:
-        schema = PasswordChange().bind(request=request)
     password_reset_form = Form(
-        schema,
+        schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
@@ -474,7 +475,7 @@ def make_password_change_form(request=None):
     return password_reset_form
 
 
-class UserSearch(MappingSchema):
+class UserSearch(CSRFSchema):
     query = SchemaNode(
         String(),
         missing='',
@@ -482,14 +483,12 @@ class UserSearch(MappingSchema):
     )
 
 
-def make_user_search_form(request=None):
+def make_user_search_form(request):
     schema = UserSearch()
-    if request:
-        schema = UserSearch().bind(request=request)
     user_search_form = Form(
-        schema,
         method="GET",
         formid="usersearch",
+        schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
         buttons=(Button('submit', title='Search'), )
     )
@@ -503,13 +502,13 @@ class DisableUser(MappingSchema):
     )
 
 
-def make_disable_user_form(request=None):
+def make_disable_user_form(request):
     schema = DisableUser()
     # This form will be on a page with multiple forms,
     # so we have to set the formid attribute for the ajax
     # stuff to work.
     disable_user_form = Form(
-        schema,
+        schema=schema.bind(request=request),
         buttons=(Button('submit', title='Yes'),
                  Button('cancel', title='No')
         ),

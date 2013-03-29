@@ -62,7 +62,7 @@ def main(argv=sys.argv):
             'Admin',
             admin_email,
             pw_hash,
-            '',
+            None,
             0,
             False,
             is_superuser=True
