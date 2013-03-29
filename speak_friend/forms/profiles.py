@@ -481,6 +481,16 @@ class UserSearch(CSRFSchema):
         missing='',
         description="Enter all or the start of a user's first name, last name, email address or username"
     )
+    column = SchemaNode(
+        String(),
+        default='username',
+        widget=HiddenWidget()
+    )
+    order = SchemaNode(
+        String(),
+        default='asc',
+        widget=HiddenWidget()
+    )
 
 
 def make_user_search_form(request):
@@ -490,7 +500,7 @@ def make_user_search_form(request):
         formid="usersearch",
         schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
-        buttons=(Button('submit', title='Search'), )
+        buttons=(Button('search', title='Search'), )
     )
     return user_search_form
 

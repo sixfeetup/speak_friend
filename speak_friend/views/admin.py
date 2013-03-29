@@ -10,7 +10,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 from deform import ValidationFailure
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, asc
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
 from webhelpers import paginate
@@ -189,10 +189,11 @@ class UserSearch(object):
         self.frm = make_user_search_form(request)
 
     def get(self):
-        if 'query' in self.request.GET:
+        if 'query' in self.request.GET and self.request.GET['query']:
             return self.run_search()
         query = self.request.db_session.query(UserProfile)
-        query = query.order_by(UserProfile.username.asc())
+        orderby = self.get_order_by()
+        query = query.order_by(orderby)
 
         results = query.all()
         paged = self.paginate_results(results)
@@ -226,14 +227,12 @@ class UserSearch(object):
         # build the shared query bit
         query_select = select([tsquery.label('query')]).cte('query_select')
         # build the ordered-by clause, using the shared query
-        orderby = func.ts_rank_cd(UserProfile.searchable_text,
-                                  select([query_select.c.query]))
-
+        orderby = self.get_order_by(query_select)
         res = self.request.db_session.query(UserProfile)
         res = res.filter(
             UserProfile.searchable_text.op('@@')(
                 select([query_select.c.query])))
-        res = res.order_by(desc(orderby))
+        res = res.order_by(orderby)
 
         results = res.all()
         paged = self.paginate_results(results)
@@ -253,6 +252,19 @@ class UserSearch(object):
         records = paginate.Page(query, current_page, url=page_url,
                                 items_per_page=self.page_size)
         return records
+
+    def get_order_by(self, query_select=''):
+        column_name = self.request.GET.get('column', 'username')
+        order = self.request.GET.get('order', 'asc')
+        column = getattr(UserProfile, column_name, None)
+        if column is None:
+            column = func.ts_rank_cd(UserProfile.searchable_text,
+                                      select([query_select.c.query]))
+        try:
+            order_func = {'asc': asc, 'desc': desc}[order]
+        except KeyError:
+            order_func = asc
+        return order_func(column)
 
 
 @view_defaults(route_name='request_user_password')

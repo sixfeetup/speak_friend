@@ -46,7 +46,15 @@
     $("#logout-link").css("display","block").on('click', function() {
         $("#logout-btn").click();
     });
-    
+
+    $('.tableHeader').on('click', function(event) {
+        var column_name = $(this).attr('data-column'),
+            form = $('#usersearch'),
+            column_field = $('#usersearch input[name=column]');
+        column_field.val(column_name);
+        form.submit()
+    });
+
     // display single checkboxes next to their labels
     var checks = $("input[type='checkbox']:only-child").length;
     for(i = 0; i < checks; i++) {
