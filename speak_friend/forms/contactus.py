@@ -3,8 +3,10 @@ from deform import Form
 from deform.widget import HiddenWidget
 from deform.widget import TextAreaWidget
 
+from speak_friend.forms.csrf import CSRFSchema
 
-class ContactUs(MappingSchema):
+
+class ContactUs(CSRFSchema):
     contact_name = SchemaNode(
         String(),
         title='Name',

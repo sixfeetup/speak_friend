@@ -15,6 +15,8 @@ from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
 
+from speak_friend.forms.csrf import CSRFSchema
+
 
 # set a resource registry that contains resources for the password widget
 password_registry = ResourceRegistry()
@@ -181,7 +183,7 @@ def create_password_validator(node, kw):
     return Function(inner_password_validator)
 
 
-class Profile(MappingSchema):
+class Profile(CSRFSchema):
     username = SchemaNode(
         String(),
         validator=create_username_validator,
@@ -210,7 +212,7 @@ class Profile(MappingSchema):
     )
 
 
-class EditProfileSchema(MappingSchema):
+class EditProfileSchema(CSRFSchema):
     username = SchemaNode(
         String(),
         missing='',
@@ -315,7 +317,7 @@ def make_profile_form(request, edit=False):
     return form
 
 
-class Domain(MappingSchema):
+class Domain(CSRFSchema):
     name = SchemaNode(
         String(),
         title="Domain Name",
@@ -350,7 +352,7 @@ def make_domain_form(request, domain=None):
     )
 
 
-class PasswordResetRequest(MappingSchema):
+class PasswordResetRequest(CSRFSchema):
     email = SchemaNode(
         String(),
         title=u'Email Address',
@@ -379,7 +381,7 @@ def make_password_reset_request_form(request):
     return password_reset_request_form
 
 
-class Login(MappingSchema):
+class Login(CSRFSchema):
     login = SchemaNode(
         String(),
         title='Username or Email',
@@ -414,7 +416,7 @@ def make_login_form(action=''):
     return login_form
 
 
-class PasswordReset(MappingSchema):
+class PasswordReset(CSRFSchema):
     password = SchemaNode(
         String(),
         widget=StrengthValidatingPasswordWidget(),
@@ -438,7 +440,7 @@ def make_password_reset_form(request=None):
     return password_reset_form
 
 
-class PasswordChange(MappingSchema):
+class PasswordChange(CSRFSchema):
     password = SchemaNode(
         String(),
         widget=PasswordWidget(),
@@ -474,7 +476,7 @@ def make_password_change_form(request=None):
     return password_reset_form
 
 
-class UserSearch(MappingSchema):
+class UserSearch(CSRFSchema):
     query = SchemaNode(
         String(),
         missing='',
