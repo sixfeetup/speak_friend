@@ -67,6 +67,7 @@ class CreateDomain(object):
 
         try:
             appstruct = self.domain_form.validate(controls)  # call validate
+            appstruct.pop('csrf_token', None)
         except ValidationFailure, e:
             return {
                 'forms': [self.domain_form],
