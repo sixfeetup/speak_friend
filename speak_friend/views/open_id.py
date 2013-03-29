@@ -4,13 +4,16 @@ from openid.extensions import sreg
 from openid.server.server import Server
 from openid.consumer import discover
 
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
 from speak_friend.models.open_id import SFOpenIDStore
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
+from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 
 
@@ -39,6 +42,12 @@ class OpenIDProvider(object):
             self.auth_user = query.get(self.auth_userid)
         else:
             self.auth_user = None
+        domain_name = get_domain(request)
+        query = request.db_session.query(DomainProfile)
+        query = query.filter(DomainProfile.name == domain_name)
+        domain_count = query.count()
+        if domain_count == 0:
+            raise HTTPBadRequest('Invalid requesting domain: %s' % domain_name)
 
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
