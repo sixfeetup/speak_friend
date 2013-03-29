@@ -114,7 +114,15 @@ input[type="color"],
     color: #6c7dc5;
 }
 
-#profile-form #req-deformField8 {
+#profile-form #item-deformField8.error label,
+#profile-form #item-deformField8.error .controls {
+    display: inline;
+}
+#profile-form #item-deformField8.error .controls span {
+    display: block;
+    padding: 0;
+}
+#profile-form #req-deformField9 {
     display: none;
 }
 
