@@ -185,8 +185,8 @@ class DeleteDomain(object):
 class UserSearch(object):
     def __init__(self, request):
         self.request = request
-        self.frm = make_user_search_form()
         self.page_size = 50
+        self.frm = make_user_search_form(request)
 
     def get(self):
         if 'query' in self.request.GET:
@@ -301,7 +301,7 @@ class DisableUser(object):
         self.request = request
         self.session = DBSession()
         self.target_username = request.matchdict['username']
-        self.form = make_disable_user_form()
+        self.form = make_disable_user_form(request)
         self.form.action = request.route_url('disable_user',
                                              username=self.target_username)
 

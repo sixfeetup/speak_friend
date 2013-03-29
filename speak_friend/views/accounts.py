@@ -261,12 +261,12 @@ class ChangePassword(object):
         self.login_view = LoginView(request, max_attempts)
         if self.target_user is None:
             raise HTTPNotFound()
+        self.frm = make_password_change_form(request)
 
     def get(self):
-        form = make_password_change_form()
         return {
-            'forms': [form],
-            'rendered_form': form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
             'target_username': self.target_username,
         }
 
@@ -277,17 +277,16 @@ class ChangePassword(object):
             return self.get()
 
         controls = self.request.POST.items()
-        form = make_password_change_form(request=self.request)
 
         try:
-            appstruct = form.validate(controls)  # call validate
+            appstruct = self.frm.validate(controls)  # call validate
         except ValidationFailure, e:
             # Don't leak hash information
-            if ('password' in form.cstruct
-                and form.cstruct['password'] != ''):
-                form.cstruct['password'] = ''
+            if ('password' in self.frm.cstruct
+                and self.frm.cstruct['password'] != ''):
+                self.frm.cstruct['password'] = ''
             return {
-                'forms': [form],
+                'forms': [self.frm],
                 'rendered_form': e.render(),
                 'target_username': self.target_username,
             }
@@ -491,7 +490,7 @@ class LoginView(object):
                             'Check your email for instructions to reset your password.'
         query = self.request.GET.items()
         action = request.route_url('login', _query=query)
-        self.frm = make_login_form(action)
+        self.frm = make_login_form(request, action)
         if max_attempts is None:
             cp = ControlPanel(request)
             self.max_attempts = cp.get_value(authentication_schema.name,

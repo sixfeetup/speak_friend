@@ -403,9 +403,10 @@ class Login(CSRFSchema):
     )
 
 
-def make_login_form(action=''):
+def make_login_form(request, action=''):
+    schema = Login()
     login_form = Form(
-        Login(),
+        schema=schema.bind(request=request),
         action=action,
         bootstrap_form_style='form-vertical',
         buttons=(
@@ -424,7 +425,7 @@ class PasswordReset(CSRFSchema):
     )
 
 
-def make_password_reset_form(request=None):
+def make_password_reset_form(request):
     schema = PasswordReset()
     if request:
         schema = PasswordReset().bind(request=request)
@@ -460,12 +461,10 @@ class PasswordChange(CSRFSchema):
     )
 
 
-def make_password_change_form(request=None):
+def make_password_change_form(request):
     schema = PasswordChange()
-    if request:
-        schema = PasswordChange().bind(request=request)
     password_reset_form = Form(
-        schema,
+        schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
@@ -484,14 +483,12 @@ class UserSearch(CSRFSchema):
     )
 
 
-def make_user_search_form(request=None):
+def make_user_search_form(request):
     schema = UserSearch()
-    if request:
-        schema = UserSearch().bind(request=request)
     user_search_form = Form(
-        schema,
         method="GET",
         formid="usersearch",
+        schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
         buttons=(Button('submit', title='Search'), )
     )
@@ -505,13 +502,13 @@ class DisableUser(MappingSchema):
     )
 
 
-def make_disable_user_form(request=None):
+def make_disable_user_form(request):
     schema = DisableUser()
     # This form will be on a page with multiple forms,
     # so we have to set the formid attribute for the ajax
     # stuff to work.
     disable_user_form = Form(
-        schema,
+        schema=schema.bind(request=request),
         buttons=(Button('submit', title='Yes'),
                  Button('cancel', title='No')
         ),
