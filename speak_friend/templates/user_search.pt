@@ -8,28 +8,59 @@
     <metal:content metal:fill-slot="content">
         <div tal:content="structure rendered_form">form</div>
           <tal:has_results tal:condition="results"
-            tal:define="item_label len(results) > 1 and 'users' or 'user'">
+            tal:define="item_label results.item_count > 1 and 'users' or 'user'">
+          <a class="btn pull-right" href="#"
+             tal:condition="ran_search"
+             tal:attributes="href request.route_url('user_search')">Clear Search</a>
           <h2>Results</h2>
-          <p tal:condition="ran_search">We found ${len(results)} ${item_label} matching your query:</p>
-          <table class="table table-striped table-bordered table-hover table-condensed">
+          <p tal:condition="ran_search">We found ${results.item_count} ${item_label} matching your query:</p>
+          <table class="table table-striped table-bordered table-hover table-condensed userList">
             <tr>
               <th>Username</th>
               <th>First Name</th>
               <th>Last Name</th>
-              <th>Actions</th>
               <th>Email Address</th>
+              <th>Actions</th>
             </tr>
-            <tr tal:repeat="result results">
-              <td>${result.username}</td>
-              <td>${result.first_name}</td>
-              <td>${result.last_name}</td>
-              <td>
-                  <a tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a> | 
-                  <a tal:attributes="href request.route_url('request_user_password', username=result.username)">Reset Password</a>
-              </td>
-              <td>${result.email}</td>
-            </tr>
+            <tal:rows repeat="result results">
+                <tr tal:define="superClass result.is_superuser and 'super' or '';
+                                disabled result.admin_disabled;
+                                disabledClass disabled and 'disabled' or ''"
+                    tal:attributes="class string:${superClass} ${disabledClass}">
+                  <td class="username">${result.username}</td>
+                  <td>${result.first_name}</td>
+                  <td>${result.last_name}</td>
+                  <td>${result.email}</td>
+                  <td>
+                    <div class="btn-group">
+                      <a class="btn btn-small"
+                         tal:attributes="href request.route_url('edit_profile', username=result.username)">Edit Profile</a>
+                      <a class="btn btn-small dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="btn btn-mini"
+                             tal:attributes="href request.route_url('request_user_password', username=result.username)">
+                            Reset Password</a></li>
+                        <li>
+                          <a class="overlay btn btn-mini btn-warning"
+                             tal:condition="not disabled"
+                             tal:attributes="href request.route_url('disable_user', username=result.username);">
+                            Disable User</a></li>
+                        <li>
+                          <a class="overlay btn btn-mini btn-warning"
+                             tal:condition="disabled"
+                             tal:attributes="href request.route_url('disable_user', username=result.username);">
+                            Enable User</a></li>
+                      </ul>
+                      <!--  -->
+                    </div>
+                  </td>
+                </tr>
+            </tal:rows>
           </table>
+          <div class="pager" tal:condition="results.page_count > 1">
+            <tal:pager tal:replace="structure pager">[pager goes here]</tal:pager>
+          </div>
           </tal:has_results>
           <tal:no_results tal:condition="not results">
           <p>There were no results matching your search</p>

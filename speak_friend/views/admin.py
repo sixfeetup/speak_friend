@@ -6,7 +6,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.view import view_defaults
-
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
@@ -14,9 +13,12 @@ from deform import ValidationFailure
 from sqlalchemy import select, func, desc
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
+from webhelpers import paginate
 
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
+from speak_friend.forms.profiles import make_disable_user_form
+from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -184,30 +186,32 @@ class UserSearch(object):
     def __init__(self, request):
         self.request = request
         self.frm = make_user_search_form()
+        self.page_size = 50
 
     def get(self):
+        if 'query' in self.request.GET:
+            return self.run_search()
         query = self.request.db_session.query(UserProfile)
-        query = query.order_by(UserProfile.username.desc())
+        query = query.order_by(UserProfile.username.asc())
 
         results = query.all()
+        paged = self.paginate_results(results)
+        pager = paged.pager()
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render(),
-            'results': results,
-            'ran_search': False
+            'results': paged,
+            'ran_search': False,
+            'pager': pager,
         }
 
-    def post(self):
+    def run_search(self):
         results = []
+        pager = None
         ran_search = False
-        if self.request.method != "POST":
-            return HTTPMethodNotAllowed()
-        if 'query' not in self.request.POST or \
-           not self.request.POST['query']:
-            return self.get()
 
         try:
-            controls = self.request.POST.items()
+            controls = self.request.GET.items()
             appstruct = self.frm.validate(controls)
         except ValidationFailure, e:
             return {
@@ -215,6 +219,7 @@ class UserSearch(object):
                 'rendered_form': e.render(),
                 'results': results,
                 'ran_search': ran_search,
+                'pager': None
             }
         #XXX: always default to treating the query as a prefix query??
         tsquery = func.to_tsquery("%s:*" % appstruct['query'])
@@ -231,13 +236,23 @@ class UserSearch(object):
         res = res.order_by(desc(orderby))
 
         results = res.all()
+        paged = self.paginate_results(results)
+        pager = paged.pager()
         ran_search = True
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render(),
-            'results': results,
+            'results': paged,
             'ran_search': ran_search,
+            'pager': pager
         }
+
+    def paginate_results(self, query):
+        current_page = int(self.request.params.get('page', 1))
+        page_url = paginate.PageURL_WebOb(self.request)
+        records = paginate.Page(query, current_page, url=page_url,
+                                items_per_page=self.page_size)
+        return records
 
 
 @view_defaults(route_name='request_user_password')
@@ -280,3 +295,56 @@ class RequestUserPassword(object):
         flash_msg = "A link to reset %s's password has been sent to their email."
         self.request.session.flash(flash_msg % user.username, queue='success')
 
+@view_defaults(route_name='disable_user')
+class DisableUser(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = DBSession()
+        self.target_username = request.matchdict['username']
+        self.form = make_disable_user_form()
+        self.form.action = request.route_url('disable_user',
+                                             username=self.target_username)
+
+    def get_target_user(self, username):
+        user_query = self.session.query(UserProfile)
+        user_query = user_query.filter(UserProfile.username==self.target_username)
+        user = user_query.first()
+        return user
+
+    def get(self):
+        appstruct = {'username': self.target_username}
+        rendered = self.form.render(appstruct)
+        user = self.get_target_user(self.target_username)
+        action = {True: 'enable', False: 'disable'}[user.admin_disabled]
+        return {
+            'forms': [self.form],
+            'rendered_form': rendered,
+            'username': self.target_username,
+            'action': action,
+        }
+
+    def post(self):
+        if 'submit' not in self.request.POST:
+            return self.get()
+        controls = self.request.POST.items()
+        try:
+            appstruct = self.form.validate(controls)
+        except ValidationFailure,e:
+            data = {
+                'forms': [self.form],
+                'rendered_form': e.render(),
+                'username': self.target_username,
+            }
+            return data
+
+        user = self.get_target_user(self.target_username)
+
+        user.admin_disabled = not user.admin_disabled
+
+        action = {True: 'disabled', False: 'enabled'}[user.admin_disabled]
+
+        self.session.add(user)
+        return {
+            'status_msg': '%s was %s.' % (self.target_username, action),
+            'action': action,
+        }

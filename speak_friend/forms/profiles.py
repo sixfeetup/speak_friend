@@ -238,7 +238,8 @@ class EditProfileSchema(MappingSchema):
 # instantiate our form with custom registry and renderer to get extra
 # templates and resources
 def make_profile_form(request, edit=False):
-    user = getattr(request, 'target_user', request.user)
+    target_user = getattr(request, 'target_user', None)
+    user = target_user or request.user
     email_validator = dict(should_exist=False,
                            msg="Email address already in use.",
                            db_session=request.db_session)
@@ -263,7 +264,12 @@ def make_profile_form(request, edit=False):
             )
             schema['user_disabled'] = user_disabled
             schema['is_superuser'] = is_superuser
-        else:
+
+        # Can't compare SQLA objects here, so use the usernames.
+        # Admin users editing their own profile still need a password.
+        username = request.user.username
+        target_username = target_user.username
+        if username == target_username or not request.user.is_superuser:
             password = SchemaNode(
                 String(),
                 required=False,
@@ -298,7 +304,7 @@ def make_profile_form(request, edit=False):
             schema['is_superuser'] = is_superuser
 
     form = Form(
-        buttons=('submit', 'cancel'),
+        buttons=('submit',),
         resource_registry=password_registry,
         renderer=renderer,
         schema = schema.bind(request=request,
@@ -425,7 +431,6 @@ def make_password_reset_form(request=None):
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Reset Password'),
-            'cancel'
         ),
         resource_registry=password_registry,
         renderer=renderer
@@ -462,7 +467,6 @@ def make_password_change_form(request=None):
         bootstrap_form_style='form-vertical',
         buttons=(
             Button('submit', title='Change Password'),
-            'cancel'
         ),
         resource_registry=password_registry,
         renderer=renderer
@@ -484,8 +488,32 @@ def make_user_search_form(request=None):
         schema = UserSearch().bind(request=request)
     user_search_form = Form(
         schema,
-        # method="GET",
+        method="GET",
+        formid="usersearch",
         bootstrap_form_style='form-vertical',
         buttons=(Button('submit', title='Search'), )
     )
     return user_search_form
+
+
+class DisableUser(MappingSchema):
+    username = SchemaNode(
+        String(),
+        widget=HiddenWidget(),
+    )
+
+
+def make_disable_user_form(request=None):
+    schema = DisableUser()
+    # This form will be on a page with multiple forms,
+    # so we have to set the formid attribute for the ajax
+    # stuff to work.
+    disable_user_form = Form(
+        schema,
+        buttons=(Button('submit', title='Yes'),
+                 Button('cancel', title='No')
+        ),
+        formid='disable-form',
+        use_ajax=True,
+    )
+    return disable_user_form

@@ -1,0 +1,25 @@
+<tal:resources repeat="js_path api.js_resources">
+  <script type="text/javascript"
+          tal:attributes="src python: request.static_url(js_path)"></script>
+</tal:resources>
+<tal:deform-bootstrap-js condition="api.js_resources">
+    <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
+</tal:deform-bootstrap-js>
+
+<div id="disable-overlay" class="modal">
+    <div class="modal-header">
+        <button type="button" class="close">×</button>
+        <h3>Change user status?</h3>
+    </div>
+    <div class="modal-body">
+        <tal:status condition="exists: status_msg">
+            ${status_msg}
+        </tal:status>
+        <tal:form condition="not: exists: status_msg">
+            <p>Do you want to ${action} the user '${username}'?</p>
+        </tal:form>
+    </div>
+    <div class="modal-footer" tal:condition="not: exists: status_msg">
+        <div tal:content="structure: rendered_form">form</div>
+    </div>
+</div>

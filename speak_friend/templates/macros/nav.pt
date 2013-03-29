@@ -39,9 +39,10 @@
                    </li>
                        
                    <li tal:condition="not anon">
-                   <form action="${request.route_url('logout')}" method="POST">
-                       <input type="submit" id="logout-btn" value="Log Out" />
-                   </form>
+                       <a href="#" id="logout-link">Log Out</a>
+                       <form action="${request.route_url('logout')}" id="logout-form" method="POST">
+                           <input type="submit" id="logout-btn" value="Log Out" />
+                       </form>
                    </li>
                </ul>
            </div>

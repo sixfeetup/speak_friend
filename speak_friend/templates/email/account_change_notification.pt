@@ -2,17 +2,8 @@
        xmlns:tal="http://xml.zope.org/namespaces/tal"
        xmlns:metal="http://xml.zope.org/namespaces/metal">
     <div>
-        <p>Hello,</p>
-        <p>Your profile ${api.settings['site_name']} has been changed.</p>
-        <p tal:condition="first_name">
-        The first name on your account is now ${first_name}.
-        </p>
-        <p tal:condition="last_name">
-        The last name on your account is now ${last_name}.
-        </p>
+        <p>Your account on <a href="${request.route_url('home')}">${api.settings['site_name']}</a> has been updated.</p>
         <p>If you wish to review your ${api.settings['site_name']} information and view a list of other foundation resources go to <a href="${request.route_url('home')}">${api.settings['site_name']}</a>.</p>
-        <p>Please do not reply to this message. Replies to this message are routed to an unmonitored mailbox. If you have questions please <a href="${request.route_url('contact_us')}">contact us</a>.</p>
-        <p>Thank you,</p>
-        <p>${api.settings['site_name']}</p>
+        <p>Please <a href="${request.route_url('contact_us')}">contact us</a> if you did not make the update.</p>
     </div>
  </html>

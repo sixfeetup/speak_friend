@@ -21,7 +21,9 @@ class ContactUs(MappingSchema):
     )
     came_from = SchemaNode(
         String(),
-        widget = HiddenWidget(),
+        widget=HiddenWidget(),
+        missing='/',
+        title="came_from",
     )
     title='Contact Us',
     description='Have a question or want to tell us something? Let us know.',
@@ -30,7 +32,7 @@ class ContactUs(MappingSchema):
 def make_contact_us_form():
     contact_us_form = Form(
         ContactUs(),
-        buttons=('submit', 'cancel'),
+        buttons=('submit',),
         bootstrap_form_style='form-vertical',
     )
     return contact_us_form

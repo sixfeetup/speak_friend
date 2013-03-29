@@ -47,6 +47,7 @@ from speak_friend.utils import get_referrer
 class CreateProfile(object):
     def __init__(self, request):
         self.request = request
+        self.login_view = LoginView(request)
 
     def post(self):
         if self.request.method != "POST":
@@ -84,6 +85,8 @@ class CreateProfile(object):
             headers = []
             self.request.session.flash('You successfully created an account for: %s.' % profile.full_name,
                                        queue='success')
+            if self.request.user.is_superuser:
+                return HTTPFound(self.request.route_url('user_search'))
         else:
             self.request.session.flash('Your account has been created successfully.',
                                        queue='success')
@@ -99,9 +102,7 @@ class CreateProfile(object):
         came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
 
-        if self.request.user.is_superuser:
-            return HTTPFound(self.request.route_url('user_search'))
-        elif came_from and not local_request:
+        if came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
             url = self.request.route_url('home')
@@ -168,8 +169,9 @@ class EditProfile(object):
                 data.update(ex_data)
             return data
 
-        same_user = self.request.user == self.target_user
+        same_user = self.request.user.username == self.target_user.username
 
+        valid_pass = False
         if same_user:
             password = appstruct.get('password', colander.null)
             if password == colander.null:
@@ -178,7 +180,7 @@ class EditProfile(object):
             valid_pass = self.login_view.verify_password(password,
                                                          self.target_user.password_hash,
                                                          self.target_user)
-        if not same_user and self.request.user.is_superuser:
+        if (not same_user) and self.request.user.is_superuser:
             # Let admins edit email addresses w/o a password check
             valid_pass = True
 
@@ -225,7 +227,7 @@ class EditProfile(object):
                                                         **activity_detail))
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser and not failed:
             return HTTPFound(self.request.route_url('user_search'))
         else:
             return self.get()
@@ -378,7 +380,7 @@ class ResetPassword(object):
         cp = ControlPanel(request)
         self.token_duration = cp.get_value(authentication_schema.name,
                                            'token_duration')
-        self.login = LoginView(request)
+        self.login_view = LoginView(request)
 
     def post(self):
         if self.request.method != "POST":
@@ -397,7 +399,7 @@ class ResetPassword(object):
             return HTTPFound(location=url)
 
         if reset_token.user.admin_disabled:
-            self.request.session.flash(self.login.disabled_error,
+            self.request.session.flash(self.login_view.disabled_error,
                                        queue='error')
             return self.get()
 

@@ -21,6 +21,8 @@ class ViewTests(SFBaseCase):
     def setUp(self):
         super(ViewTests, self).setUp()
         self.config.registry.password_context = DummyPasswordContext()
+        self.config.add_route('contact_us', '/contact_us')
+        self.config.add_route('login', '/login')
 
     def test_create_profile_view_get(self):
         self.request.referrer = '/'
@@ -78,8 +80,6 @@ class ViewTests(SFBaseCase):
         self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
-        self.config.add_route('contact_us', '/contact_us')
-        self.config.add_route('login', '/login')
         self.config.add_route('edit_profile', '/edit_profile/{username}/')
         user = create_user('testuser')
         request = testing.DummyRequest(path="/edit_profile/testuser/")

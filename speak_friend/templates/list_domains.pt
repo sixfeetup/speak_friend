@@ -13,30 +13,34 @@
             <td tal:content="domain['name']">[DOMAIN NAME]</td>
             <td tal:content="string: ${domain['password_valid']} minutes">[MINS VALID]</td>
             <td>
-              <a href="#" class="btn"
-                 tal:attributes="href domain['edit_url']">Edit</a>
-              <a href="#" class="btn btn-danger" role="button" data-toggle="modal"
-                 tal:attributes="href string:#modal${repeat['domain'].number}">Delete</a>
-              <div class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true"
-                 tal:attributes="id string:modal${repeat['domain'].number};
-                                 aria-labelledby string:#deletelabel${repeat['domain'].number}">
-                <div class="modal-header">
-                  <h2 tal:attributes="id string:deletelabel${repeat['domain'].number}">
-                    Delete ${domain['name']}?</h2>
-                </div>
-                <div class="modal-body">
-                  <h3>Are you sure?</h3>
-                  <p>This action cannot be undone. The domain <em>${domain['name']}</em> 
-                     will be removed permanently.</p>
-                </div>
-                <div class="modal-footer">
-                  <form method="POST" action=""
-                     tal:attributes="action request.route_url('delete_domain')">
-                     <input type="hidden" name="name" value="${domain['name']}"/>
-                     <a role="button" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</a>
-                     <button class="btn btn-primary" type="submit" name="submit">
-                       Yes, delete this domain</button>
-                  </form>
+              <div class="btn-group">
+                <a href="#" class="btn btn-small"
+                   tal:attributes="href domain['edit_url']">
+                  Edit</a>
+                <a href="#" class="btn btn-small btn-danger" role="button" data-toggle="modal"
+                   tal:attributes="href string:#modal${repeat['domain'].number}">
+                  Delete</a>
+                <div class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true"
+                   tal:attributes="id string:modal${repeat['domain'].number};
+                                   aria-labelledby string:#deletelabel${repeat['domain'].number}">
+                  <div class="modal-header">
+                    <h2 tal:attributes="id string:deletelabel${repeat['domain'].number}">
+                      Delete ${domain['name']}?</h2>
+                  </div>
+                  <div class="modal-body">
+                    <h3>Are you sure?</h3>
+                    <p>This action cannot be undone. The domain <em>${domain['name']}</em> 
+                       will be removed permanently.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <form method="POST" action=""
+                       tal:attributes="action request.route_url('delete_domain')">
+                       <input type="hidden" name="name" value="${domain['name']}"/>
+                       <a role="button" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</a>
+                       <button class="btn btn-primary" type="submit" name="submit">
+                         Yes, delete this domain</button>
+                    </form>
+                  </div>
                 </div>
               </div>
             </td>

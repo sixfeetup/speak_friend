@@ -9,6 +9,8 @@ body {
     padding: 20px;
     margin: 20px auto;
 }
+
+/* navigation */
 .navbar {
     margin-top: 20px;
 }
@@ -19,6 +21,22 @@ body {
 .subnav {
     margin-bottom: 20px;
 }
+.navbar .nav > li form {
+    margin: 0;
+}
+.navbar .nav > li input {
+    height: 39px;
+    padding: 9px 10px 12px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border: none;
+    background: transparent none;
+    color: #ffffff;
+    font-weight: bold;
+}
+#logout-form a {
+    display: none;
+}
+
 #footer {
     max-width: 1020px;
     margin: 0 auto;
@@ -69,11 +87,37 @@ input[type="color"],
     padding: 0;
 }
 
+.modal-header h1,
+.modal-header h2 {
+    margin: 0;
+}
+.modal-footer form,
+.modal-footer .form-actions {
+    margin: 0;
+}
+
 .accounts-created {
     margin-top: 25px;
 }
-/* display checkbox next to label */
-#profile-form #item-deformField6 label,
-#profile-form #item-deformField6 div {
-    display: inline;
+
+/* user table */
+.userList .super td {
+    background-color: #f5f4db !important;
+}
+.userList .super .username {
+    font-weight: bold;
+}
+.userList .disabled td {
+    color: #888888;
+}
+.userList .disabled a {
+    color: #6c7dc5;
+}
+
+#profile-form #req-deformField8 {
+    display: none;
+}
+
+#overlay {
+    display: none;
 }

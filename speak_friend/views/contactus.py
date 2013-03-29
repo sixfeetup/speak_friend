@@ -33,6 +33,12 @@ class ContactUs(object):
         if 'submit' not in self.request.POST and \
            'cancel' not in self.request.POST:
             return self.get()
+
+        if 'contact_name' not in self.request.POST.keys() and self.request.user:
+            self.request.POST['contact_name'] = self.request.user.full_name
+        if 'reply_email' not in self.request.POST.keys() and self.request.user:
+            self.request.POST['reply_email'] = self.request.user.email
+
         try:
             controls = self.request.POST.items()
             captured = self.frm.validate(controls)
@@ -59,9 +65,9 @@ class ContactUs(object):
         if self.request.user:
             appstruct['contact_name'] = self.request.user.full_name
             appstruct['reply_email'] = self.request.user.email
-        for field in self.frm:
-            if field.name == 'contact_name' or field.name == 'reply_email':
-                field.widget = TextInputWidget(template='readonly/textinput')
+            for field in self.frm:
+                if field.name == 'contact_name' or field.name == 'reply_email':
+                    field.widget = TextInputWidget(template='readonly/textinput')
         rendered_form = self.frm.render(appstruct=appstruct)
         return {
             'forms': [self.frm],

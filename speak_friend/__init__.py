@@ -209,10 +209,15 @@ def includeme(config):
                     route_name='user_search',
                     permission='admin',
                     renderer='templates/user_search.pt')
-    config.add_view(admin.UserSearch, attr='post', request_method='POST',
-                    route_name='user_search',
+    config.add_route('disable_user', '/disable_user/{username}/')
+    config.add_view(admin.DisableUser, attr='get', request_method='GET',
+                    route_name='disable_user',
                     permission='admin',
-                    renderer='templates/user_search.pt')
+                    renderer='templates/disable_user.pt')
+    config.add_view(admin.DisableUser, attr='post', request_method='POST',
+                    route_name='disable_user',
+                    permission='admin',
+                    renderer='templates/disable_user.pt')
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.ControlPanel,
                     attr="get", request_method='GET',

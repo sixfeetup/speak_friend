@@ -26,7 +26,10 @@
         <tal:deform-bootstrap-js condition="api.js_resources">
             <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
         </tal:deform-bootstrap-js>
+        <metal:extend-js define-slot="extend-js">
+        </metal:extend-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
+        <script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
 
         <!-- Fallback for consumers that don't support Yadis -->
         <link rel="openid.server" href="${request.route_url('openid_provider')}" />
@@ -82,5 +85,10 @@
             </div>
         </div>
         <metal:footer use-macro="api.macros['footer']" />
+        <div id="overlay">
+            <!--! A div for doing overlays on the page. -->
+            <div id="overlay-container">
+            </div>
+        </div>
     </body>
 </html>
