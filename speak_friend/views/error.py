@@ -37,3 +37,9 @@ def notallowed(request):
         return render_to_response("speak_friend:templates/403_template.pt",
                                   {},
                                   request=request)
+
+
+def badrequest(request):
+    return render_to_response("speak_friend:templates/400_template.pt",
+                              {},
+                              request=request)

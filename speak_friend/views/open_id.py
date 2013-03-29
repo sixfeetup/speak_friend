@@ -4,14 +4,15 @@ from openid.extensions import sreg
 from openid.server.server import Server
 from openid.consumer import discover
 
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
 from speak_friend.models.open_id import SFOpenIDStore
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
-from speak_friend.utils import get_referrer
 
 
 logger = logging.getLogger('speak_friend.openid_provider')

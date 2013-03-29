@@ -326,6 +326,7 @@ class Domain(CSRFSchema):
     )
     password_valid = SchemaNode(
         Integer(),
+        default=-1,
         title="Password valid",
         description="Indicate the length of time, in minutes that a password "
                     "should be valid (a negative value will use the system "

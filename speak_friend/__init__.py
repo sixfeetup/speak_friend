@@ -12,6 +12,7 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
 from pyramid.events import NewResponse
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import JSON
 from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
@@ -261,6 +262,8 @@ def includeme(config):
                     request_method='POST')
     config.add_notfound_view(error.notfound, append_slash=True)
     config.add_forbidden_view(error.notallowed)
+    config.add_view(error.badrequest, context=HTTPBadRequest,
+                    renderer='templates/400_template.pt')
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
@@ -281,6 +284,7 @@ def includeme(config):
     config.add_tween('speak_friend.tweens.password_timeout_factory')
     config.add_tween('speak_friend.tweens.openid_factory')
     config.add_tween('speak_friend.tweens.user_disabled_factory')
+    config.add_tween('speak_friend.tweens.valid_referrer_factory')
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
