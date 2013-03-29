@@ -35,6 +35,7 @@
                   <div class="modal-footer">
                     <form method="POST" action=""
                        tal:attributes="action request.route_url('delete_domain')">
+                       <input type="hidden" name="csrf_token" value="${request.session.get_csrf_token()}"/>
                        <input type="hidden" name="name" value="${domain['name']}"/>
                        <a role="button" class="btn" data-dismiss="modal" aria-hidden="true">Cancel</a>
                        <button class="btn btn-primary" type="submit" name="submit">
