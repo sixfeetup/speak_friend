@@ -41,6 +41,12 @@
                    <li tal:condition="not anon">
                        <a href="#" id="logout-link">Log Out</a>
                        <form action="${request.route_url('logout')}" id="logout-form" method="POST">
+                           <tal:comment tal:replace="nothing">
+                           ***************************************************************
+                           NOTE: we intentionally do not put CSRF protection on this form,
+                           so that consuming sites can POST here to log the user out.
+                           ***************************************************************
+                           </tal:comment>
                            <input type="submit" id="logout-btn" value="Log Out" />
                        </form>
                    </li>
