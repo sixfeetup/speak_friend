@@ -220,7 +220,13 @@ class EditProfile(object):
                                     **activity_detail)
                 )
 
+        if same_user:
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
+
         self.request.db_session.add(self.target_user)
+
         if not failed:
             self.request.registry.notify(ProfileChanged(self.request,
                                                         self.target_user,
@@ -306,6 +312,9 @@ class ChangePassword(object):
             self.request.db_session.add(self.target_user)
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
         else:
             self.request.session.flash('Incorrect password.',
                                        queue='error')
@@ -423,6 +432,9 @@ class ResetPassword(object):
                 reset_token.user.locked = False
                 self.request.registry.notify(AccountUnlocked(self.request,
                                                              reset_token.user))
+            # Invalidate the current token
+            self.request.session.new_csrf_token()
+            self.request.session.save()
             self.request.registry.notify(PasswordReset(self.request,
                                                        reset_token.user))
             self.request.registry.notify(LoggedIn(self.request,
@@ -595,6 +607,8 @@ class LoginView(object):
         headers = remember(self.request, user.username, **auth_kw)
         self.request.response.headerlist.extend(headers)
         self.request.session['auth_userid'] = user.username
+        # Invalidate the current token
+        self.request.session.new_csrf_token()
         self.request.session.save()
 
         self.request.registry.notify(LoggedIn(self.request, user,
@@ -615,6 +629,9 @@ def logout(request, return_to=None):
         referrer = get_referrer(request)
     else:
         referrer = return_to
+    # Invalidate the current token
+    request.session.new_csrf_token()
+    request.session.save()
     request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)
