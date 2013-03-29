@@ -3,6 +3,7 @@ import logging
 
 from psycopg2.tz import FixedOffsetTimezone
 
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import render_to_response
 
 from sqlalchemy.orm.exc import DetachedInstanceError
@@ -15,6 +16,7 @@ from speak_friend.utils import get_domain
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.views.accounts import logout
 from speak_friend.views.accounts import LoginView
+from speak_friend.views.error import badrequest
 from speak_friend.views.open_id import OpenIDProvider
 
 
@@ -129,3 +131,24 @@ def user_disabled_factory(handler, registry):
         return response
 
     return user_disabled_tween
+
+
+def valid_referrer_factory(handler, registry):
+    def valid_referrer_tween(request):
+        """Verify the referring domain is valid.
+        """
+        logger = logging.getLogger('speakfriend.valid_referrer_tween')
+
+        response = handler(request)
+
+        if 'location' in response.headers:
+            domain_name = get_domain(response.headers['location'])
+            domain = request.db_session.query(DomainProfile).get(domain_name)
+            if domain is None:
+                exc = HTTPBadRequest('Invalid requesting domain: %s' % domain_name)
+                request.exception = exc
+                return badrequest(request)
+
+        return response
+
+    return valid_referrer_tween
