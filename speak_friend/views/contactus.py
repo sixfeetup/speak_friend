@@ -19,7 +19,7 @@ from speak_friend.views.controlpanel import ControlPanel
 class ContactUs(object):
     def __init__(self, request):
         self.request = request
-        self.frm = make_contact_us_form()
+        self.frm = make_contact_us_form(self.request)
         settings = request.registry.settings
         self.subject = "Contact Us Form Submission: %s" % settings['site_name']
         self.sender = settings['site_from']
