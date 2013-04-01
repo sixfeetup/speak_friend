@@ -1,9 +1,14 @@
  <html xmlns="http://www.w3.org/1999/xhtml"
        xmlns:tal="http://xml.zope.org/namespaces/tal"
        xmlns:metal="http://xml.zope.org/namespaces/metal">
+    <h2>Hello,</h2>
     <div>
         <p>Your account on <a href="${request.route_url('home')}">${api.settings['site_name']}</a> has been updated.</p>
-        <p>If you wish to review your ${api.settings['site_name']} information and view a list of other foundation resources go to <a href="${request.route_url('home')}">${api.settings['site_name']}</a>.</p>
         <p>Please <a href="${request.route_url('contact_us')}">contact us</a> if you did not make the update.</p>
     </div>
+    <p>
+    Thank you,
+    <br />
+    {SITE_NAME}
+    </p>
  </html>
