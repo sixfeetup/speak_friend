@@ -21,7 +21,7 @@
     
     // Handle overlay closing
     $('#overlay').on('click', '.modal .close', function(event) {
-        $('#overlay').hide();
+        $('.modal').hide();
         window.row = null;
     });
 
