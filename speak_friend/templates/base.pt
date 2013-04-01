@@ -9,10 +9,10 @@
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
         </tal:resources>
-        <link rel="stylesheet" type="text/css" media="screen"
-              href="${request.static_url('speak_friend:static/css/bootstrap.min.css')}" />
         <link rel="stylesheet" type="text/css" media="screen" charset="utf-8"
               href="${request.static_url('deform_bootstrap:static/deform_bootstrap.css')}" />
+        <link rel="stylesheet" type="text/css" media="screen"
+              href="${request.static_url('speak_friend:static/css/bootstrap.min.css')}" />
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/speak_friend.css')}" />
         <link rel="stylesheet" type="text/css" media="screen"
