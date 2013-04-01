@@ -107,56 +107,67 @@ def includeme(config):
     config.add_view(open_id.OpenIDProvider, attr="get", request_method='GET',
                     route_name='openid_provider',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='string')
     config.add_view(open_id.OpenIDProvider, attr="post", request_method='POST',
                     route_name='openid_provider',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='string')
     config.add_route('create_profile', '/create_profile')
     config.add_view(accounts.CreateProfile, attr="get", request_method='GET',
                     route_name='create_profile',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/create_profile.pt')
     config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     route_name='create_profile',
                     permission=NO_PERMISSION_REQUIRED,
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/create_profile.pt')
     config.add_route('edit_profile', '/edit_profile/{username}/',
                      factory=EditProfileFactory)
     config.add_view(accounts.EditProfile, attr="get", request_method='GET',
                     route_name='edit_profile',
                     permission='edit',
+                    http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_view(accounts.EditProfile, attr="post", request_method='POST',
                     route_name='edit_profile',
                     permission='edit',
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_route('change_password', '/change_password/{username}/',
                      factory=ChangePasswordFactory)
     config.add_view(accounts.ChangePassword, attr="get", request_method='GET',
                     route_name='change_password',
                     permission='edit',
+                    http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_view(accounts.ChangePassword, attr="post",
                     request_method='POST',
                     route_name='change_password',
                     permission='edit',
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/token_expired.pt')
     config.add_route('token_invalid', '/token_invalid')
     config.add_view(accounts.token_invalid, route_name='token_invalid',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/token_invalid.pt')
     config.add_route('request_password', '/request_password')
     config.add_view(accounts.RequestPassword,
                     route_name='request_password',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     attr="get", request_method='GET',
                     renderer='templates/request_password.pt')
     config.add_view(accounts.RequestPassword,
@@ -164,105 +175,126 @@ def includeme(config):
                     route_name='request_password',
                     permission=NO_PERMISSION_REQUIRED,
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/request_password.pt')
     config.add_route('request_user_password', '/request_password/{username}')
     config.add_view(admin.RequestUserPassword,
                     route_name='request_user_password',
                     permission='admin',
                     attr='get', request_method='GET',
+                    http_cache=0,
                     renderer='templates/request_password.pt')
     config.add_route('reset_password', '/reset_password/{token}')
     config.add_view(accounts.ResetPassword,
                     attr="get", request_method='GET',
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/reset_password.pt')
     config.add_view(accounts.ResetPassword,
                     attr="post", request_method='POST',
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/reset_password.pt')
     config.add_route('list_domains', '/domains')
     config.add_view(admin.ListDomains, attr='get', request_method='GET',
                     route_name='list_domains',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/list_domains.pt')
     config.add_route('create_domain', '/create_domain')
     config.add_view(admin.CreateDomain, attr='get', request_method='GET',
                     route_name='create_domain',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/create_domain.pt')
     config.add_view(admin.CreateDomain, attr='post', request_method='POST',
                     route_name='create_domain',
                     permission='admin',
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/create_domain.pt')
     config.add_route('edit_domain', '/edit_domain/{domain_name}/')
     config.add_view(admin.EditDomain, attr='get', request_method='GET',
                     route_name='edit_domain',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/edit_domain.pt')
     config.add_view(admin.EditDomain, attr='post', request_method='POST',
                     route_name='edit_domain',
                     permission='admin',
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/edit_domain.pt')
     config.add_route('delete_domain', '/delete_domain')
     config.add_view(admin.DeleteDomain, attr='post', request_method='POST',
                     route_name='delete_domain',
                     check_csrf=True,
+                    http_cache=0,
                     permission='admin')
     config.add_route('user_search', '/user_search')
     config.add_view(admin.UserSearch, attr='get', request_method='GET',
                     route_name='user_search',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/user_search.pt')
     config.add_route('disable_user', '/disable_user/{username}/')
     config.add_view(admin.DisableUser, attr='get', request_method='GET',
                     route_name='disable_user',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/disable_user.pt')
     config.add_view(admin.DisableUser, attr='post', request_method='POST',
                     route_name='disable_user',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/disable_user.pt')
     config.add_route('control_panel', '/control_panel')
     config.add_view(controlpanel.ControlPanel,
                     attr="get", request_method='GET',
                     route_name='control_panel',
                     permission='admin',
+                    http_cache=0,
                     renderer='templates/control_panel.pt')
     config.add_view(controlpanel.ControlPanel,
                     attr="post", request_method='POST',
                     route_name='control_panel',
                     permission='admin',
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/control_panel.pt')
     config.add_route('contact_us', '/contact_us')
     config.add_view(contactus.ContactUs,
                     attr="get", request_method='GET',
                     route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/contact_us.pt')
     config.add_view(contactus.ContactUs,
                     attr="post", request_method='POST',
                     route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/contact_us.pt')
     config.add_route('login', '/login')
     config.add_view(accounts.LoginView, attr='get', request_method='GET',
                     route_name='login', permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
                     renderer='templates/login.pt')
     config.add_view(accounts.LoginView, attr='post', request_method='POST',
                     route_name='login', permission=NO_PERMISSION_REQUIRED,
                     check_csrf=True,
+                    http_cache=0,
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
     config.add_view(accounts.logout, route_name='logout', permission='view',
+                    http_cache=0,
                     request_method='POST')
     config.add_notfound_view(error.notfound, append_slash=True)
     config.add_forbidden_view(error.notallowed)
     config.add_view(error.badrequest, context=HTTPBadRequest,
+                    http_cache=0,
                     renderer='templates/400_template.pt')
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
