@@ -96,13 +96,18 @@ def openid_factory(handler, registry):
         """Verify the user has logged into a referring site at least once.
         """
         response = handler(request)
+        # We need to detect when a user has completed a login and re-process
+        # the original OpenID consuming site request
         if 'openid_request' in request.session and \
+           request.session['openid_request'] and \
            'auth_userid' in request.session:
             provider = OpenIDProvider(request)
             openid_response = provider.process(request.session['openid_request'])
             response.location = openid_response.location
+            # Clean up after ourselves, so we don't accidentally loop
             del request.session['auth_userid']
             del request.session['openid_request']
+            request.session.save()
 
         return response
 
