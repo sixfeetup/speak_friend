@@ -394,7 +394,7 @@ class Login(CSRFSchema):
     remember_me = SchemaNode(
         Bool(),
         title="Remember me?",
-        required=False,
+        missing=False,
     )
     came_from = SchemaNode(
         String(),
