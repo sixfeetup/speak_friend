@@ -48,6 +48,7 @@ class CreateProfile(object):
     def __init__(self, request):
         self.request = request
         self.login_view = LoginView(request)
+        self.frm = make_profile_form(self.request)
 
     def post(self):
         if self.request.method != "POST":
@@ -56,13 +57,12 @@ class CreateProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
-        profile_form = make_profile_form(self.request)
 
         try:
-            appstruct = profile_form.validate(controls)  # call validate
+            appstruct = self.frm.validate(controls)  # call validate
         except ValidationFailure, e:
             return {
-                'forms': [profile_form],
+                'forms': [self.frm],
                 'rendered_form': e.render(),
             }
 
@@ -111,11 +111,10 @@ class CreateProfile(object):
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
-        profile_form = make_profile_form(self.request)
 
         return {
-            'forms': [profile_form],
-            'rendered_form': profile_form.render({
+            'forms': [self.frm],
+            'rendered_form': self.frm.render({
                 'came_from': get_referrer(self.request),
             }),
         }
@@ -132,6 +131,7 @@ class EditProfile(object):
         self.login_view = LoginView(request, max_attempts)
         if self.target_user is None:
             raise HTTPNotFound()
+        self.frm = make_profile_form(self.request, edit=True)
 
     def get_extended_data(self):
         """Provide a hook to extend the dict returned by the view.
@@ -148,19 +148,18 @@ class EditProfile(object):
 
         controls = self.request.POST.items()
         self.request.target_user = self.target_user
-        profile_form = make_profile_form(self.request, edit=True)
 
         activity_detail = {}
 
         try:
-            appstruct = profile_form.validate(controls)  # call validate
+            appstruct = self.frm.validate(controls)  # call validate
         except ValidationFailure, e:
             # Don't leak hash information
-            if ('password' in profile_form.cstruct
-                and profile_form.cstruct['password'] != ''):
-                profile_form.cstruct['password'] = ''
+            if ('password' in self.frm.cstruct
+                and self.frm.cstruct['password'] != ''):
+                self.frm.cstruct['password'] = ''
             data = {
-                'forms': [profile_form],
+                'forms': [self.frm],
                 'rendered_form': e.render(),
                 'target_username': self.target_username,
             }
@@ -245,10 +244,9 @@ class EditProfile(object):
             appstruct['is_superuser'] = self.target_user.is_superuser
 
         self.request.target_user = self.target_user
-        form = make_profile_form(self.request, edit=True)
         data = {
-            'forms': [form],
-            'rendered_form': form.render(appstruct),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(appstruct),
             'target_username': self.target_username,
         }
         extended_data = self.get_extended_data()
@@ -389,6 +387,7 @@ class ResetPassword(object):
         self.token_duration = cp.get_value(authentication_schema.name,
                                            'token_duration')
         self.login_view = LoginView(request)
+        self.frm = make_password_reset_form(self.request)
 
     def post(self):
         if self.request.method != "POST":
@@ -411,11 +410,10 @@ class ResetPassword(object):
                                        queue='error')
             return self.get()
 
-        password_reset_form = make_password_reset_form(self.request)
 
         try:
             controls = self.request.POST.items()
-            captured = password_reset_form.validate(controls)
+            captured = self.frm.validate(controls)
             pw = captured['password']
             pw_hash = self.request.registry.password_context.encrypt(pw)
             reset_token.user.password_hash = pw_hash
@@ -452,7 +450,7 @@ class ResetPassword(object):
             html = e.render()
 
         return {
-            'forms': [password_reset_form],
+            'forms': [self.frm],
             'rendered_form': html,
         }
 
@@ -467,11 +465,9 @@ class ResetPassword(object):
             url = self.request.route_url('token_invalid')
             return HTTPFound(location=url)
 
-        password_reset_form = make_password_reset_form()
-
         return {
-            'forms': [password_reset_form],
-            'rendered_form': password_reset_form.render(),
+            'forms': [self.frm],
+            'rendered_form': self.frm.render(),
         }
 
     def check_token(self, token):
