@@ -21,7 +21,7 @@
     
     // Handle overlay closing
     $('#overlay').on('click', '.modal .close', function(event) {
-        $('#overlay').hide();
+        $('.modal').hide();
         window.row = null;
     });
 
@@ -75,6 +75,7 @@
     // Handle overlay form cancel
     // Make sure we don't mess up forms outside of the overlay
     $('#overlay').on('click', '#overlay-container #disable-formcancel', function(event) {
+        event.preventDefault();
         $('#overlay').hide();
         window.row = null;
     });
