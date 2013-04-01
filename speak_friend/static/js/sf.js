@@ -75,6 +75,7 @@
     // Handle overlay form cancel
     // Make sure we don't mess up forms outside of the overlay
     $('#overlay').on('click', '#overlay-container #disable-formcancel', function(event) {
+        event.preventDefault();
         $('#overlay').hide();
         window.row = null;
     });
