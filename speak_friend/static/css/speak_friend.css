@@ -113,6 +113,9 @@ input[type="color"],
 .userList .disabled a {
     color: #6c7dc5;
 }
+.userActions {
+    min-width: 115px;
+}
 
 #profile-form #item-deformField8.error label,
 #profile-form #item-deformField8.error .controls {
