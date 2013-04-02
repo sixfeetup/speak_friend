@@ -57,8 +57,17 @@ input,
 textarea {
     width: 400px;
 }
+input[type="checkbox"] {
+    margin-top: 0;
+}
 .form-horizontal .control-label {
     padding-top: 4px;
+}
+.btn {
+    line-height: 16px;
+}
+.btn-small {
+    padding: 4px 8px;
 }
 .btn-primary {
     color: #ffffff !important;
@@ -87,6 +96,9 @@ input[type="color"],
     padding: 0;
 }
 
+.modal {
+    top: 50%;
+}
 .modal-header h1,
 .modal-header h2 {
     margin: 0;
@@ -101,6 +113,9 @@ input[type="color"],
 }
 
 /* user table */
+.userList th {
+    cursor: pointer;
+}
 .userList .super td {
     background-color: #f5f4db !important;
 }
