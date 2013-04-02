@@ -417,6 +417,7 @@ class ResetPassword(object):
             pw = captured['password']
             pw_hash = self.request.registry.password_context.encrypt(pw)
             reset_token.user.password_hash = pw_hash
+            reset_token.user.password_salt = None
             token_query = self.request.db_session.query(ResetToken)
             token_query.filter(
                 ResetToken.username==reset_token.user.username).delete()
