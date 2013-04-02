@@ -13,6 +13,7 @@
             url: url,
             success: function (data) {
                 content_target.html(data);
+                $("body").addClass("overlayVisible");
                 overlay.show();
             }
         });
@@ -22,6 +23,7 @@
     // Handle overlay closing
     $('#overlay').on('click', '.modal .close', function(event) {
         $('.modal').hide();
+        $("body").removeClass("overlayVisible");
         window.row = null;
     });
 
@@ -77,6 +79,7 @@
     $('#overlay').on('click', '#overlay-container #disable-formcancel', function(event) {
         event.preventDefault();
         $('#overlay').hide();
+        $("body").removeClass("overlayVisible");
         window.row = null;
     });
     
