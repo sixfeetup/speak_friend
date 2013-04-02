@@ -188,7 +188,7 @@ class EditProfile(object):
         if (self.target_user.email != appstruct['email'] and
             valid_pass):
             activity_detail['old_address'] = [field.current_value
-                        for field in profile_form.schema
+                        for field in self.frm.schema
                         if field.name == 'email'
             ][0]
             activity_detail['new_address'] = appstruct['email']
