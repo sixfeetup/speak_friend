@@ -148,7 +148,8 @@ def valid_referrer_factory(handler, registry):
         if 'location' in response.headers:
             domain_name = get_domain(response.headers['location'])
             domain = request.db_session.query(DomainProfile).get(domain_name)
-            if domain is None:
+            local_request = request.host.startswith(domain_name)
+            if not local_request and domain is None:
                 msg = 'Invalid requesting domain, not redirecting: %s' % domain_name
                 request.session.flash(msg, queue='error')
                 response.headers.pop('location')
