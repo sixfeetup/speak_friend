@@ -9,6 +9,6 @@
     <p>
     Thank you,
     <br />
-    {SITE_NAME}
+    ${api.settings['site_name']}
     </p>
  </html>
