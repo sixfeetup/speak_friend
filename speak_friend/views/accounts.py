@@ -128,6 +128,7 @@ class EditProfile(object):
         self.target_username = request.matchdict['username']
         query = self.request.db_session.query(UserProfile)
         self.target_user = query.get(self.target_username)
+        request.target_user = self.target_user
         self.login_view = LoginView(request, max_attempts)
         if self.target_user is None:
             raise HTTPNotFound()
