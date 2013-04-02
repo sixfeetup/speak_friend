@@ -89,7 +89,15 @@
     $('.tableHeader').on('click', function(event) {
         var column_name = $(this).attr('data-column'),
             form = $('#usersearch'),
-            column_field = $('#usersearch input[name=column]');
+            column_field = $('#usersearch input[name=column]'),
+            order_field = $('#usersearch input[name=order]');
+        if (column_field.val() === column_name) {
+            if (order_field.val() == 'asc') {
+                order_field.val('desc');
+            } else {
+                order_field.val('asc');
+            }
+        }
         column_field.val(column_name);
         form.submit()
     });

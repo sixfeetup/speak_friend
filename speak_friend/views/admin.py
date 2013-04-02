@@ -192,6 +192,15 @@ class UserSearch(object):
     def get(self):
         if 'query' in self.request.GET and self.request.GET['query']:
             return self.run_search()
+
+        column = self.request.GET.get('column', 'username')
+        order = self.request.GET.get('order', 'asc')
+
+        # Capture the form values for re-use
+        appstruct = {}
+        appstruct['column'] = column
+        appstruct['order'] = order
+
         query = self.request.db_session.query(UserProfile)
         orderby = self.get_order_by()
         query = query.order_by(orderby)
@@ -199,12 +208,17 @@ class UserSearch(object):
         results = query.all()
         paged = self.paginate_results(results)
         pager = paged.pager()
+        sort_class = 'icon-arrow-down'
+        if order == 'desc':
+            sort_class = 'icon-arrow-up'
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render(),
+            'rendered_form': self.frm.render(appstruct=appstruct),
             'results': paged,
             'ran_search': False,
             'pager': pager,
+            'column': column,
+            'sort_class': sort_class,
         }
 
     def run_search(self):
@@ -239,12 +253,17 @@ class UserSearch(object):
         paged = self.paginate_results(results)
         pager = paged.pager()
         ran_search = True
+        sort_class = 'icon-arrow-down'
+        if self.request.GET.get('order', '') == 'desc':
+            sort_class = 'icon-arrow-up'
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render(),
+            'rendered_form': self.frm.render(appstruct=appstruct),
             'results': paged,
             'ran_search': ran_search,
-            'pager': pager
+            'pager': pager,
+            'column': self.request.GET.get('column', 'username'),
+            'sort_class': sort_class,
         }
 
     def paginate_results(self, query):

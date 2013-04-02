@@ -16,10 +16,10 @@
           <p tal:condition="ran_search">We found ${results.item_count} ${item_label} matching your query:</p>
           <table class="table table-striped table-bordered table-hover table-condensed userList">
             <tr>
-              <th class="tableHeader" data-column="username">Username</th>
-              <th class="tableHeader" data-column="first_name">First Name</th>
-              <th class="tableHeader" data-column="last_name">Last Name</th>
-              <th class="tableHeader" data-column="email">Email Address</th>
+              <th class="tableHeader" data-column="username">Username <span tal:condition="column == 'username'" class="${sort_class}"></span></th>
+              <th class="tableHeader" data-column="first_name">First Name<span tal:condition="column == 'first_name'" class="${sort_class}"></span></th>
+              <th class="tableHeader" data-column="last_name">Last Name<span tal:condition="column == 'last_name'" class="${sort_class}"></span></th>
+              <th class="tableHeader" data-column="email">Email Address<span tal:condition="column == 'email'" class="${sort_class}"></span></th>
               <th>Actions</th>
             </tr>
             <tal:rows repeat="result results">
