@@ -8,9 +8,6 @@
     
     <metal:content metal:fill-slot="content">
         <div tal:content="structure rendered_form">form</div>
-        <a class="btn" href="#"
-             tal:condition="ran_search"
-             tal:attributes="href request.route_url('user_search')">Clear Search</a>
           <tal:has_results tal:condition="results"
             tal:define="item_label results.item_count > 1 and 'users' or 'user'">
           <h2>Results</h2>

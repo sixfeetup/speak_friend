@@ -190,7 +190,9 @@ class UserSearch(object):
         self.frm = make_user_search_form(request)
 
     def get(self):
-        if 'query' in self.request.GET and self.request.GET['query']:
+        if 'query' in self.request.GET and \
+           self.request.GET['query'] and \
+           'clear_search' not in self.request.GET:
             return self.run_search()
 
         column = self.request.GET.get('column', 'username')

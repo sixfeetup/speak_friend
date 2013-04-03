@@ -496,12 +496,18 @@ class UserSearch(CSRFSchema):
 
 def make_user_search_form(request):
     schema = UserSearch()
+    buttons = [Button('search', title='Search')]
+    if 'query' in request.GET:
+        buttons += [Button('clear_search', title='Clear Search',
+                           type='submit', css_class='btn'
+        )]
+
     user_search_form = Form(
         method="GET",
         formid="usersearch",
         schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',
-        buttons=(Button('search', title='Search'), )
+        buttons=buttons,
     )
     return user_search_form
 
