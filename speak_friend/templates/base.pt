@@ -65,11 +65,15 @@
             <div id="breadcrumbs" class="row-fluid">
                 <metal:content define-slot="breadcrumbs" />
             </div>
-            <div id="content" class="row-fluid">
-                <div class="span3">
+            <div id="content" class="row-fluid"
+                 tal:define="hasDisplay exists:pageDisplay;
+                             pageDisplay hasDisplay and pageDisplay or ''">
+                <div class="span3"
+                     tal:condition="pageDisplay != 'fullWidth'">
                     <metal:links use-macro="api.macros['quick_links']" />
                 </div>
-                <div class="span9">
+                <div class="span9"
+                     tal:attributes="class (pageDisplay == 'fullWidth') and 'span12' or 'span9'">
                     <metal:content define-slot="subnav" />
                     <h1><metal:content define-slot="page-title" /></h1>
                     <!--! Flash messages from specific queues -->
