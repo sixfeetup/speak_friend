@@ -96,7 +96,8 @@ input[type="color"],
     padding: 0;
 }
 
-.modal {
+.modal,
+.modal.fade.in {
     top: 50%;
 }
 .modal-header h1,
