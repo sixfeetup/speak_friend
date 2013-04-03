@@ -314,6 +314,8 @@ class ChangePassword(object):
             # Invalidate the current token
             self.request.session.new_csrf_token()
             self.request.session.save()
+            self.request.registry.notify(PasswordReset(self.request,
+                                                       self.target_user))
         else:
             self.request.session.flash('Incorrect password.',
                                        queue='error')
