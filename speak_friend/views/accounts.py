@@ -234,12 +234,18 @@ class EditProfile(object):
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
         if self.request.user.is_superuser and not failed:
-            return HTTPFound(self.request.route_url('user_search'))
+            if 'user_search' in appstruct['came_from']:
+                redirect = HTTPFound(appstruct['came_from'])
+            else:
+                redirect = HTTPFound(self.request.route_url('user_search'))
+            return redirect
         else:
             return self.get()
 
     def get(self):
         appstruct = self.target_user.make_appstruct()
+        if self.request.referer:
+            appstruct['came_from'] = self.request.referer
         if self.request.user.is_superuser:
             appstruct['user_disabled'] = self.target_user.admin_disabled
             appstruct['is_superuser'] = self.target_user.is_superuser
