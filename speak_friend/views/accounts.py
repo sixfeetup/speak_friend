@@ -542,14 +542,15 @@ class LoginView(object):
         return passes
 
     def get(self):
+        appstruct = {'came_from': get_referrer(self.request)}
+        if 'login' in self.request.params:
+            appstruct['login'] = self.request.params['login']
         #if ('password' in self.frm.cstruct
         #    and self.frm.cstruct['password'] != ''):
         #    self.frm.cstruct['password'] = ''
         return {
             'forms': [self.frm],
-            'rendered_form': self.frm.render({
-                'came_from': get_referrer(self.request),
-            }),
+            'rendered_form': self.frm.render(appstruct=appstruct),
         }
 
     def login_error(self, msg):
