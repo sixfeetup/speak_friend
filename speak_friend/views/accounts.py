@@ -449,7 +449,7 @@ class ResetPassword(object):
                                                   reset_token.user,
                                                   came_from=reset_token.came_from))
 
-            from_reset_url = reset_token.token not in reset_token.came_from
+            from_reset_url = unicode(reset_token.token) not in reset_token.came_from
             if reset_token.came_from and not from_reset_url:
                 return HTTPFound(location=reset_token.came_from,
                                  headers=headers)
