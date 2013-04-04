@@ -637,9 +637,8 @@ def logout(request, return_to=None):
         referrer = get_referrer(request)
     else:
         referrer = return_to
-    # Invalidate the current token
-    request.session.new_csrf_token()
-    request.session.save()
+    # Invalidate the current session
+    request.session.invalidate()
     request.registry.notify(LoggedOut(request, request.user))
     headers = forget(request)
     return HTTPFound(referrer, headers=headers)
