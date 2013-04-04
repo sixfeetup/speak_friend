@@ -3,7 +3,7 @@
        xmlns:metal="http://xml.zope.org/namespaces/metal">
     <h2>Hello,</h2>
     <div>
-        <p>Your email has been changed on on <a href="${request.route_url('home')">${api.settings['site_name']}</a> from ${old_address} to ${new_address}.</p>
+        <p>Your email has been changed on on <a href="${request.route_url('home')}">${api.settings['site_name']}</a> from ${old_address} to ${new_address}.</p>
         <p>Please <a href="${request.route_url('contact_us')}">contact us</a> if you did not make the updates.</p>
     </div>
     <p>
