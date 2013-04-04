@@ -43,25 +43,28 @@ class OpenIDProvider(object):
 
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
-        if not self.request.user and not self.auth_userid:
-            if 'openid_request' not in self.request.session:
-                # If the user has not logged in yet, stash the OpenID consuming
-                # site request (if there isn't one already) and send them
-                # to the login view. The openid_tween will take care of sending
-                # them back to the OpenID consuming site.
-                self.request.session['openid_request'] = dict(request_params.items())
-                self.request.session.save()
-            return HTTPFound(location=self.request.route_url('login'))
-
         openid_request = self.openid_server.decodeRequest(request_params)
         logger.debug('Decoded request: %s', openid_request)
+
         if openid_request is None:
             return ''
 
         if openid_request.mode in ["checkid_immediate", "checkid_setup"]:
-            openid_response = self.handleCheckIDRequest(openid_request)
+            if self.request.user or self.auth_userid:
+                openid_response = self.handleCheckIDRequest(openid_request)
+            else:
+                if 'openid_request' not in self.request.session:
+                    # If the user has not logged in yet, stash the OpenID
+                    # consuming site request (if there isn't one already) and
+                    # send them to the login view. The openid_tween will take
+                    # care of sending them back to the OpenID consuming site.
+                    rp_dict = dict(request_params.items())
+                    self.request.session['openid_request'] = rp_dict
+                    self.request.session.save()
+                return HTTPFound(location=self.request.route_url('login'))
         else:
             openid_response = self.openid_server.handleRequest(openid_request)
+
         logger.debug('Decoded response: %s', openid_response)
         encoded_response = self.openid_server.encodeResponse(openid_response)
 
