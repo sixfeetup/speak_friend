@@ -1,6 +1,6 @@
 <metal:main use-macro="load: base.pt">
   <metal:pagetitle metal:fill-slot="page-title">Apologies</metal:pagetitle>
   <metal:content metal:fill-slot="content">
-    <p>${request.exception.message}</p>
+    <p tal:content="structure request.exception.message"></p>
   </metal:content>
 </metal:main>

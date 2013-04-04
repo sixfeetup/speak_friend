@@ -24,6 +24,7 @@ from sqlalchemy import engine_from_config
 from speak_friend.configuration import add_controlpanel_section
 from speak_friend.configuration import get_db_session
 from speak_friend.configuration import get_user
+from speak_friend.configuration import require_csrf
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
@@ -123,7 +124,7 @@ def includeme(config):
     config.add_view(accounts.CreateProfile, attr="post", request_method='POST',
                     route_name='create_profile',
                     permission=NO_PERMISSION_REQUIRED,
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/create_profile.pt')
     config.add_route('edit_profile', '/edit_profile/{username}/',
@@ -136,7 +137,7 @@ def includeme(config):
     config.add_view(accounts.EditProfile, attr="post", request_method='POST',
                     route_name='edit_profile',
                     permission='edit',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_route('change_password', '/change_password/{username}/',
@@ -150,7 +151,7 @@ def includeme(config):
                     request_method='POST',
                     route_name='change_password',
                     permission='edit',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
@@ -174,7 +175,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='request_password',
                     permission=NO_PERMISSION_REQUIRED,
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/request_password.pt')
     config.add_route('request_user_password', '/request_password/{username}')
@@ -195,7 +196,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='reset_password',
                     permission=NO_PERMISSION_REQUIRED,
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/reset_password.pt')
     config.add_route('list_domains', '/domains')
@@ -213,7 +214,7 @@ def includeme(config):
     config.add_view(admin.CreateDomain, attr='post', request_method='POST',
                     route_name='create_domain',
                     permission='admin',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/create_domain.pt')
     config.add_route('edit_domain', '/edit_domain/{domain_name}/')
@@ -225,13 +226,13 @@ def includeme(config):
     config.add_view(admin.EditDomain, attr='post', request_method='POST',
                     route_name='edit_domain',
                     permission='admin',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/edit_domain.pt')
     config.add_route('delete_domain', '/delete_domain')
     config.add_view(admin.DeleteDomain, attr='post', request_method='POST',
                     route_name='delete_domain',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     permission='admin')
     config.add_route('user_search', '/user_search')
@@ -262,7 +263,7 @@ def includeme(config):
                     attr="post", request_method='POST',
                     route_name='control_panel',
                     permission='admin',
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/control_panel.pt')
     config.add_route('contact_us', '/contact_us')
@@ -274,7 +275,7 @@ def includeme(config):
     config.add_view(contactus.ContactUs,
                     attr="post", request_method='POST',
                     route_name='contact_us', permission=NO_PERMISSION_REQUIRED,
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/contact_us.pt')
     config.add_route('login', '/login')
@@ -284,7 +285,7 @@ def includeme(config):
                     renderer='templates/login.pt')
     config.add_view(accounts.LoginView, attr='post', request_method='POST',
                     route_name='login', permission=NO_PERMISSION_REQUIRED,
-                    check_csrf=True,
+                    decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/login.pt')
     config.add_route('logout', '/logout')
