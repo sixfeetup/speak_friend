@@ -85,8 +85,9 @@ class ViewTests(SFBaseCase):
         request = testing.DummyRequest(path="/edit_profile/testuser/")
         request.db_session = MockSession(store=[user])
         request.matchdict['username'] = 'testuser'
-        view = EditProfile(request, MAX_DOMAIN_ATTEMPTS)
         request.user = user
+        request.referer = '/'
+        view = EditProfile(request, MAX_DOMAIN_ATTEMPTS)
         view.target_username = 'test'
         view.current_username = 'test'
         info = view.get()
