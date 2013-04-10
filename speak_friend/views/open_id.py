@@ -126,10 +126,13 @@ class OpenIDProvider(object):
 
 @view_defaults(route_name='yadis')
 def generate_xrds(request):
-    auth_userid = authenticated_userid(request)
-    identity_url = request.route_url('user_profile', username=auth_userid)
+    if request.matchdict and 'username' in request.matchdict:
+        username = request.matchdict['username']
+    else:
+        username = authenticated_userid(request)
+    identity_url = request.route_url('user_profile', username=username)
     return {
-        'auth_userid': auth_userid,
+        'username': username,
         'identity_url': identity_url,
         'services': OpenIDProvider.openid_type_uris,
     }
