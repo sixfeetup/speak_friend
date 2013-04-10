@@ -1,12 +1,14 @@
 import logging
 
+from openid.consumer import discover
 from openid.extensions import sreg
 from openid.server.server import Server
-from openid.consumer import discover
+from openid.message import IDENTIFIER_SELECT
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
@@ -43,6 +45,17 @@ class OpenIDProvider(object):
 
     def process(self, request_params):
         logger.debug('Processing openid request: %s', request_params)
+        if request_params.get('openid.identity'):
+            home_url = self.request.route_url('home')
+            if request_params['openid.identity'] == request_params['openid.claimed_id'] and \
+               request_params['openid.identity'] == home_url:
+                username = self.request.user and self.request.user.username or \
+                           self.auth_userid
+                if username:
+                    user_url = self.request.route_url('user_profile',
+                                                      username=username)
+                    request_params['openid.identity'] = user_url
+                    request_params['openid.claimed_id'] = user_url
         openid_request = self.openid_server.decodeRequest(request_params)
         logger.debug('Decoded request: %s', openid_request)
 
@@ -53,14 +66,13 @@ class OpenIDProvider(object):
             if self.request.user or self.auth_userid:
                 openid_response = self.handleCheckIDRequest(openid_request)
             else:
-                if 'openid_request' not in self.request.session:
-                    # If the user has not logged in yet, stash the OpenID
-                    # consuming site request (if there isn't one already) and
-                    # send them to the login view. The openid_tween will take
-                    # care of sending them back to the OpenID consuming site.
-                    rp_dict = dict(request_params.items())
-                    self.request.session['openid_request'] = rp_dict
-                    self.request.session.save()
+                # If the user has not logged in yet, stash the OpenID
+                # consuming site request (if there isn't one already) and
+                # send them to the login view. The openid_tween will take
+                # care of sending them back to the OpenID consuming site.
+                rp_dict = dict(request_params.items())
+                self.request.session['openid_request'] = rp_dict
+                self.request.session.save()
                 return HTTPFound(location=self.request.route_url('login'))
         else:
             openid_response = self.openid_server.handleRequest(openid_request)
