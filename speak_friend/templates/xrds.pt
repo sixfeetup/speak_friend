@@ -4,21 +4,21 @@ xmlns:xrds="xri://$xrds"
 xmlns:tal="http://xml.zope.org/namespaces/tal"
 xmlns="xri://$xrd*($v*2.0)">
 <XRD>
-    <Service priority="0">
+    <Service priority="0" xmlns="xri://$xrd*($v*2.0)">
         <tal:resources repeat="service services">
             <Type>${service}</Type>
         </tal:resources>
         <URI>${request.route_url('openid_provider')}</URI>
-        <tal:localid condition="auth_userid">
+        <tal:localid condition="username">
             <LocalID>${identity_url}</LocalID>
         </tal:localid>
     </Service>
-    <Service priority="1">
+    <Service priority="1" xmlns="xri://$xrd*($v*2.0)">
         <Type>http://specs.openid.net/auth/2.0/return_to</Type>
         <URI>${request.route_url('openid_provider')}</URI>
         <URI>${request.route_url('login')}</URI>
         <URI>${request.route_url('home')}</URI>
-        <tal:localid condition="auth_userid">
+        <tal:localid condition="username">
             <LocalID>${identity_url}</LocalID>
         </tal:localid>
     </Service>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <meta http-equiv="X-XRDS-Location" content="${request.route_url('yadis')}" />
+        <meta http-equiv="X-XRDS-Location" content="${api.xrds_url}" />
         <metal:nav use-macro="api.macros['head_elements']" />
         <link rel="shortcut icon" href="${request.static_url('speak_friend:static/favicon.ico')}" />
         

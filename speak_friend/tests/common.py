@@ -16,7 +16,7 @@ class SFBaseCase(TestCase):
             'recaptcha_public_key': 'bar',
             'site_name': "Test",
         })
-        self.config.add_route('yadis', '/yadis.xml')
+        self.config.add_route('yadis', '/xrds.xml')
         self.request = testing.DummyRequest()
         self.request.user = create_user('sfupadmin')
         self.request.db_session = MockSession()

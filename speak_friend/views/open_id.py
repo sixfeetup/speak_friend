@@ -113,6 +113,16 @@ class OpenIDProvider(object):
         sreg_resp = sreg.SRegResponse.extractResponse(sreg_req, sreg_data)
         response.addExtension(sreg_resp)
 
+    def identity(self):
+        query = self.request.db_session.query(UserProfile)
+        target_username = self.request.matchdict['username']
+        target_user = query.get(target_username)
+        if target_user is None:
+            raise HTTPNotFound()
+        return {
+            'username': target_user.username,
+        }
+
 
 @view_defaults(route_name='yadis')
 def generate_xrds(request):

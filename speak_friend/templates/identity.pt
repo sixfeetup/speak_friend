@@ -1,0 +1,6 @@
+<metal:main use-macro="load: base.pt">
+    <metal:title fill-slot="page-title">Identity Page for ${username}</metal:title>
+    <metal:content fill-slot="content">
+        <p>This is the identity page for <strong>${username}</strong>.</p>
+    </metal:content>
+</metal:main>

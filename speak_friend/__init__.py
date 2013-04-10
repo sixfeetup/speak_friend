@@ -99,9 +99,14 @@ def includeme(config):
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
 
     # Routes
-    config.add_route('yadis', '/yadis.xml')
+    config.add_route('yadis', '/xrds.xml')
     config.add_view(open_id.generate_xrds, accept=YADIS_CONTENT_TYPE,
                     route_name='yadis',
+                    permission=NO_PERMISSION_REQUIRED,
+                    renderer='templates/xrds.pt')
+    config.add_route('yadis_id', '/{username}/xrds.xml')
+    config.add_view(open_id.generate_xrds, accept=YADIS_CONTENT_TYPE,
+                    route_name='yadis_id',
                     permission=NO_PERMISSION_REQUIRED,
                     renderer='templates/xrds.pt')
     config.add_route('openid_provider', '/server')
@@ -306,6 +311,12 @@ def includeme(config):
     )
     # Put last, so that app routes are not swallowed
     config.add_route('user_profile', '/{username}')
+    config.add_view(open_id.OpenIDProvider, attr="identity",
+                    request_method='GET',
+                    route_name='user_profile',
+                    permission=NO_PERMISSION_REQUIRED,
+                    http_cache=0,
+                    renderer='templates/identity.pt')
     # by providing this override, we create a search path for static assets
     # that first looks in the speak_friend static directory, and then moves
     # to the deform static directory if an asset is not found.
