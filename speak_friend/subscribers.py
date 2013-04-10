@@ -140,6 +140,11 @@ def email_profile_change_notification(event):
         'last_name' not in event.activity_detail):
         return
 
+    same_user = event.actor.username == event.user.username
+
+    if event.actor.is_superuser and not same_user:
+        return
+
     first_name = event.activity_detail.get('first_name', '')
     last_name = event.activity_detail.get('last_name', '')
 
