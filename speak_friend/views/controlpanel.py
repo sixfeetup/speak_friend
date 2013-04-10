@@ -21,8 +21,7 @@ class ControlPanel(object):
                                  key=lambda x:x[0].title,
                                  reverse=True)
         for section_name, section_schema in sorted_sections:
-            if 'csrf' not in section_schema:
-                section_schema['csrf'] = CSRFSchema().bind(request=request)
+            section_schema['csrf'] = CSRFSchema().bind(request=request)
             section_form = Form(
                 section_schema,
                 buttons=('submit', 'cancel'),
