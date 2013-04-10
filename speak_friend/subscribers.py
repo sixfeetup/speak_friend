@@ -114,6 +114,10 @@ def email_change_notification(event):
     if ('old_address' not in event.activity_detail and
         'new_address' not in event.activity_detail):
         return
+    same_user = event.actor.username == event.user.username
+
+    if event.actor.is_superuser and not same_user:
+        return
     old = event.activity_detail['old_address']
     new = event.activity_detail['new_address']
     logger = getLogger('speak_friend.user_activity')
