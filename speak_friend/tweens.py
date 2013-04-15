@@ -51,6 +51,10 @@ def password_timeout_factory(handler, registry):
             logger.info('Password validity time out: %r, %r, %s',
                        request.user, last_login, pw_valid)
             response = logout(request, request.route_url('home'))
+            if 'openid.mode' in request.params:
+                rp_dict = dict(request.params.items())
+                request.session['openid_request'] = rp_dict
+                request.session.save()
 
         return response
 
@@ -77,14 +81,18 @@ def initial_login_factory(handler, registry):
                                                 u'login')
         query = query.filter(UserActivity.came_from_fqdn == domain_name)
         domain_logins = query.count()
-        local_request = request.host.startswith(domain_name)
+        local_request = request.host == domain_name
         if domain_logins == 0 and not local_request:
             logger.info('User has not logged in from here yet: %r, %s',
                         request.user, domain_name)
+            response = logout(request, request.route_url('home'))
             msg = 'You must log in again to be returned to: %s' % domain_name
             request.session.flash(msg, queue='error')
+            if 'openid.mode' in request.params:
+                rp_dict = dict(request.params.items())
+                request.session['openid_request'] = rp_dict
+                request.session.save()
             request.session.changed()
-            response = logout(request, request.route_url('home'))
 
         return response
 
@@ -148,7 +156,7 @@ def valid_referrer_factory(handler, registry):
         if 'location' in response.headers:
             domain_name = get_domain(response.headers['location'])
             domain = request.db_session.query(DomainProfile).get(domain_name)
-            local_request = request.host.startswith(domain_name)
+            local_request = request.host == domain_name
             if not local_request and domain is None:
                 msg = 'Invalid requesting domain, not redirecting: %s' % domain_name
                 request.session.flash(msg, queue='error')

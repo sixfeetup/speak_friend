@@ -324,11 +324,15 @@ def includeme(config):
                           override_with='speak_friend:static/')
 
     # Tweens
-    config.add_tween('speak_friend.tweens.initial_login_factory')
-    config.add_tween('speak_friend.tweens.password_timeout_factory')
     config.add_tween('speak_friend.tweens.openid_factory')
-    config.add_tween('speak_friend.tweens.user_disabled_factory')
-    config.add_tween('speak_friend.tweens.valid_referrer_factory')
+    config.add_tween('speak_friend.tweens.initial_login_factory',
+                     over='speak_friend.tweens.openid_factory')
+    config.add_tween('speak_friend.tweens.password_timeout_factory',
+                     over='speak_friend.tweens.openid_factory')
+    config.add_tween('speak_friend.tweens.user_disabled_factory',
+                     over='speak_friend.tweens.openid_factory')
+    config.add_tween('speak_friend.tweens.valid_referrer_factory',
+                     over='speak_friend.tweens.openid_factory')
 
     # Control panel
     ## Necessary JSON adapters, to ensure the data submitted can be serialized
