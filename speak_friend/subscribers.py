@@ -114,7 +114,7 @@ def email_change_notification(event):
     if ('old_address' not in event.activity_detail and
         'new_address' not in event.activity_detail):
         return
-    same_user = event.actor.username == event.user.username
+    same_user = event.actor == event.user
 
     if event.actor.is_superuser and not same_user:
         return
@@ -144,7 +144,7 @@ def email_profile_change_notification(event):
         'last_name' not in event.activity_detail):
         return
 
-    same_user = event.actor.username == event.user.username
+    same_user = event.actor == event.user
 
     if event.actor.is_superuser and not same_user:
         return

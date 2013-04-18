@@ -169,7 +169,7 @@ class EditProfile(object):
                 data.update(ex_data)
             return data
 
-        same_user = self.request.user.username == self.target_user.username
+        same_user = self.request.user == self.target_user
 
         valid_pass = False
         if same_user:
