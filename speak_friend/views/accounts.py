@@ -224,6 +224,7 @@ class EditProfile(object):
             # Invalidate the current token
             self.request.session.new_csrf_token()
             self.request.session.save()
+            self.frm = make_profile_form(self.request, edit=True)
 
         self.request.db_session.add(self.target_user)
 
