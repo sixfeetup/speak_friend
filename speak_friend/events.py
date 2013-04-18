@@ -52,7 +52,7 @@ class UserActivity(object):
         self.request = request
         self.user = user
         self.actor = actor
-        if actor is None and request.user and user is not request.user:
+        if actor is None:
             self.actor = request.user
         if 'came_from' in activity_detail:
             self.came_from = activity_detail.pop('came_from')
