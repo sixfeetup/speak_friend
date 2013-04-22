@@ -27,7 +27,9 @@
                        <a tal:attributes="href request.route_url('control_panel')">Settings</a>
                    </li>
                    
-                   <li tal:condition="super">
+                   <li tal:condition="super"
+                   tal:attributes="class api.is_active_tab('user_search') or api.is_active_tab('accounts_created')
+                                         or api.is_active_tab('list_domains') or api.is_active_tab('create_profile')">
                        <a tal:attributes="href request.route_url('user_search')">Admin</a>
                    </li>
                    
