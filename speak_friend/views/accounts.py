@@ -321,6 +321,7 @@ class ChangePassword(object):
             # Invalidate the current token
             self.request.session.new_csrf_token()
             self.request.session.save()
+            self.frm = make_password_change_form(self.request)
             self.request.registry.notify(PasswordReset(self.request,
                                                        self.target_user))
         else:
