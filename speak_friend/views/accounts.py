@@ -41,7 +41,7 @@ from speak_friend.models.profiles import UserProfile
 from speak_friend.views.admin import UserSearch
 from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.utils import get_referrer
-from speak_friend.utils import remove_url_csrf
+from speak_friend.utils import replace_url_csrf
 
 
 @view_defaults(route_name='create_profile')
@@ -238,7 +238,8 @@ class EditProfile(object):
         if self.request.user.is_superuser and not failed:
             if 'user_search' in appstruct['came_from']:
                 # The search form is a GET, so strip the CSRF out.
-                url = remove_url_csrf(appstruct['came_from'])
+                url = replace_url_csrf(appstruct['came_from'],
+                                      self.request.session)
                 redirect = HTTPFound(url)
             else:
                 redirect = HTTPFound(self.request.route_url('user_search'))

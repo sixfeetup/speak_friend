@@ -20,11 +20,12 @@ def get_domain(request):
     return urlsplit(referrer).netloc.split(':')[0]
 
 
-def remove_url_csrf(url):
-    """Remove the CSRF token from a URL with GET parameters.
+def replace_url_csrf(url, session):
+    """Replace the CSRF used in a GET form.
     """
     token_ident = '&csrf_token='
     start_index = url.find(token_ident)
     end_index = start_index + 40 + len(token_ident)
     url = url[:start_index] + url[end_index:]
+    url = url + token_ident + session.get_csrf_token()
     return url
