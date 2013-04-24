@@ -1,4 +1,5 @@
-from urlparse import urlsplit
+from urllib import urlencode
+from urlparse import parse_qs, urlsplit, urlunsplit
 
 from pyramid.interfaces import IRequest
 
@@ -23,9 +24,16 @@ def get_domain(request):
 def replace_url_csrf(url, session):
     """Replace the CSRF used in a GET form.
     """
-    token_ident = '&csrf_token='
-    start_index = url.find(token_ident)
-    end_index = start_index + 40 + len(token_ident)
-    url = url[:start_index] + url[end_index:]
-    url = url + token_ident + session.get_csrf_token()
+    url_parts = urlsplit(url)
+    query = url_parts.query
+    query_dict = parse_qs(query)
+    del query_dict['csrf_token']
+    query_string = urlencode(query_dict)
+    url = urlunsplit([url_parts.scheme,
+                   url_parts.netloc,
+                   url_parts.path,
+                   query_string,
+                   url_parts.fragment]
+    )
+
     return url
