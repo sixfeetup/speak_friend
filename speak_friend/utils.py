@@ -1,5 +1,5 @@
 from urllib import urlencode
-from urlparse import parse_qs, urlsplit, urlunsplit
+from urlparse import parse_qsl, urlsplit, urlunsplit
 
 from pyramid.interfaces import IRequest
 
@@ -26,10 +26,7 @@ def replace_url_csrf(url, session):
     """
     url_parts = urlsplit(url)
     query = url_parts.query
-    query_dict = parse_qs(query)
-    for key, value in query_dict.items():
-        if isinstance(value, list):
-            query_dict[key] = value[0]
+    query_dict = dict(parse_qsl(query))
     query_dict['csrf_token'] = session.get_csrf_token()
     query_string = urlencode(query_dict)
     url = urlunsplit([url_parts.scheme,
