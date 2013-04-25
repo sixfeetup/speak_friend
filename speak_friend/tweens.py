@@ -101,7 +101,7 @@ def initial_login_factory(handler, registry):
 
 def openid_factory(handler, registry):
     def openid_tween(request):
-        """Verify the user has logged into a referring site at least once.
+        """Process any stored openid_request.
         """
         response = handler(request)
         # We need to detect when a user has completed a login and re-process
