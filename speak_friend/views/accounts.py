@@ -58,6 +58,7 @@ class CreateProfile(object):
             return self.get()
 
         controls = self.request.POST.items()
+        session = self.request.session
 
         try:
             appstruct = self.frm.validate(controls)  # call validate
@@ -81,26 +82,30 @@ class CreateProfile(object):
         )
         self.request.db_session.add(profile)
         self.request.registry.notify(AccountCreated(self.request, profile))
+        came_from = session.pop('came_from',
+                                appstruct.get('came_from',
+                                              get_referrer(self.request)))
 
         if self.request.user:
             headers = []
-            self.request.session.flash('You successfully created an account for: %s.' % profile.full_name,
-                                       queue='success')
+            session.flash('You successfully created an account for: %s.' % profile.full_name,
+                          queue='success')
             if self.request.user.is_superuser:
                 return HTTPFound(self.request.route_url('user_search'))
         else:
-            self.request.session.flash('Your account has been created successfully.',
-                                       queue='success')
             # Only take action if the user is not already logged in
             # (i.e., an admin is creating a new account)
+            session.flash('Your account has been created successfully.',
+                          queue='success')
+            # Trigger processing via openid_tween
+            session['auth_userid'] = profile.username
             headers = remember(self.request, appstruct['username'])
             logged_in = LoggedIn(self.request,
                                  profile,
-                                 came_from=get_referrer(self.request))
+                                 came_from=came_from)
             self.request.registry.notify(logged_in)
             self.request.response.headerlist.extend(headers)
 
-        came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
 
         if came_from and not local_request:
@@ -112,11 +117,13 @@ class CreateProfile(object):
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
+        came_from = self.request.session.get('came_from',
+                                             get_referrer(self.request))
 
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render({
-                'came_from': get_referrer(self.request),
+                'came_from': came_from,
             }),
         }
 
@@ -549,6 +556,7 @@ class LoginView(object):
 
     def get(self):
         appstruct = {'came_from': get_referrer(self.request)}
+        self.request.session['came_from'] = appstruct['came_from']
         if 'login' in self.request.params:
             appstruct['login'] = self.request.params['login']
         #if ('password' in self.frm.cstruct
@@ -621,15 +629,16 @@ class LoginView(object):
             auth_kw = {'max_age': 60*60*24*30}
         headers = remember(self.request, user.username, **auth_kw)
         self.request.response.headerlist.extend(headers)
+        # Trigger processing via openid_tween
         self.request.session['auth_userid'] = user.username
         # Invalidate the current token
         self.request.session.new_csrf_token()
         self.request.session.save()
 
-        self.request.registry.notify(LoggedIn(self.request, user,
-                                              came_from=appstruct['came_from']))
+        came_from = self.request.session.pop('came_from',
+                                             appstruct.get('came_from', ''))
+        self.request.registry.notify(LoggedIn(self.request, user, came_from))
 
-        came_from = appstruct.get('came_from', '')
         local_request = came_from.startswith(self.request.host_url)
 
         if came_from and not local_request:
