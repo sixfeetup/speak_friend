@@ -588,7 +588,6 @@ class LoginView(object):
             return self.login_error(self.invalid_error)
 
         login = appstruct['login']
-        login = login.lower()
         password = appstruct['password']
 
         query = self.request.db_session.query(UserProfile)
