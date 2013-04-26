@@ -636,7 +636,8 @@ class LoginView(object):
 
         came_from = self.request.session.pop('came_from',
                                              appstruct.get('came_from', ''))
-        self.request.registry.notify(LoggedIn(self.request, user, came_from))
+        self.request.registry.notify(LoggedIn(self.request, user,
+                                              came_from=came_from))
 
         local_request = came_from.startswith(self.request.host_url)
 
