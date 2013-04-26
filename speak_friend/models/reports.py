@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 
 from speak_friend.events import ACTIVITIES
 from speak_friend.models import Base
+from speak_friend.models.types import CIText
 from speak_friend.models.types import JSON
 
 
@@ -46,7 +47,7 @@ class UserActivity(Base):
         primary_key=True
     )
     username = Column(
-        UnicodeText,
+        CIText,
         ForeignKey("profiles.user_profiles.username"),
         nullable=False,
         index=True,
@@ -69,7 +70,7 @@ class UserActivity(Base):
         index=True,
     )
     actor_username = Column(
-        UnicodeText,
+        CIText,
         ForeignKey("profiles.user_profiles.username")
     )
     actor = relationship(

@@ -18,6 +18,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
 from speak_friend.models.reports import UserActivity
+from speak_friend.models.types import CIText
 from speak_friend.models.types import TSVector
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import domain_defaults_schema
@@ -60,10 +61,10 @@ class UserProfile(Base):
     __table_args__ = (
         {'schema': 'profiles'}
     )
-    username = Column(UnicodeText, primary_key=True)
+    username = Column(CIText, primary_key=True)
     first_name = Column(UnicodeText, nullable=False)
     last_name = Column(UnicodeText, nullable=False)
-    email = Column(UnicodeText, nullable=False, unique=True)
+    email = Column(CIText, nullable=False, unique=True)
     password_hash = Column(UnicodeText, nullable=False)
     password_salt = Column(UnicodeText)
     login_attempts = Column(Integer)
@@ -168,7 +169,7 @@ class ResetToken(Base):
         {'schema': 'profiles'}
     )
     username = Column(
-        UnicodeText,
+        CIText,
         ForeignKey(UserProfile.username),
         index=True,
         nullable=False,
