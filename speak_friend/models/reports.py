@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 
 from speak_friend.events import ACTIVITIES
 from speak_friend.models import Base
-from speak_friend.models.controlpanel import JSON
+from speak_friend.models.types import JSON
 
 
 class Activity(Base):

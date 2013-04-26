@@ -13,12 +13,12 @@ from sqlalchemy import desc
 from sqlalchemy import event
 from sqlalchemy import func
 from sqlalchemy import types
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
 from speak_friend.models import Base
 from speak_friend.models.reports import UserActivity
+from speak_friend.models.types import TSVector
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import domain_defaults_schema
 
@@ -55,14 +55,6 @@ class DomainProfile(Base):
         return appstruct
 
 
-class tsvector(types.TypeDecorator):
-    impl = types.UnicodeText
-
-
-@compiles(tsvector, 'postgresql')
-def compile_tsvector(element, compiler, **kw):
-    return 'tsvector'
-
 class UserProfile(Base):
     __tablename__ = 'user_profiles'
     __table_args__ = (
@@ -78,7 +70,7 @@ class UserProfile(Base):
     admin_disabled = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
     locked = Column(Boolean, default=False)
-    searchable_text = Column(tsvector)
+    searchable_text = Column(TSVector)
 
     def __init__(self, username, first_name, last_name, email,
                  password_hash, password_salt, login_attempts, admin_disabled,
