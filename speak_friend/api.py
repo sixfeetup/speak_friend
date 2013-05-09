@@ -1,8 +1,6 @@
 # The API that should be available to templates.
 import datetime
 
-from openid.yadis.constants import YADIS_HEADER_NAME
-
 from pyramid.renderers import get_renderer
 from pyramid.security import authenticated_userid
 
