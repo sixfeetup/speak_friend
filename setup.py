@@ -23,7 +23,6 @@ requires = [
     'transaction',
     'zope.sqlalchemy',
     'zope.interface',
-    'zope.component',
     'pyramid_exclog',
     'mailinglogger',
     'pyramid_mailer',
