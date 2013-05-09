@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from logging import getLogger
 
+from openid.yadis.constants import YADIS_HEADER_NAME
+
 from psycopg2.tz import FixedOffsetTimezone
 
 from pyramid.httpexceptions import HTTPFound
@@ -228,3 +230,17 @@ def confirm_password_reset(event):
                       recipients=[event.user.full_email],
                       html=response.unicode_body)
     mailer.send(message)
+
+
+def add_yadis_header(request):
+    """Adds a Yadis authentication header for processing OpenID requests
+    to all responses.
+    """
+    if request.matchdict and 'username' in request.matchdict:
+        username = request.matchdict['username']
+        xrds_url = request.route_url('yadis_id',
+                                               username=username)
+    else:
+        xrds_url = request.route_url('yadis')
+    if request is not None:
+        request.response.headers[YADIS_HEADER_NAME] = xrds_url

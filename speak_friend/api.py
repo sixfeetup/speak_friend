@@ -14,14 +14,6 @@ class TemplateAPI(object):
         self.request = request
         self.init_macros()
         self.init_forms(rendering_val)
-        if request.matchdict and 'username' in request.matchdict:
-            username = request.matchdict['username']
-            self.xrds_url = self.request.route_url('yadis_id',
-                                                   username=username)
-        else:
-            self.xrds_url = self.request.route_url('yadis')
-        if request is not None:
-            self.request.response.headers[YADIS_HEADER_NAME] = self.xrds_url
 
     @property
     def settings(self):

@@ -11,6 +11,7 @@ from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
 from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
+from pyramid.events import NewRequest
 from pyramid.events import NewResponse
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import JSON
@@ -48,6 +49,7 @@ from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.views import open_id
 from speak_friend.views import error
+from speak_friend.subscribers import add_yadis_header
 from speak_friend.subscribers import confirm_account_created
 from speak_friend.subscribers import confirm_password_reset
 from speak_friend.subscribers import email_change_notification
@@ -97,6 +99,7 @@ def includeme(config):
     config.add_subscriber(confirm_password_reset, PasswordReset)
     config.add_subscriber(email_change_notification, ProfileChanged)
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
+    config.add_subscriber(add_yadis_header, NewRequest)
 
     # Routes
     config.add_route('yadis', '/xrds.xml')
