@@ -45,7 +45,6 @@ from speak_friend.security import RootFactory
 from speak_friend.security import groupfinder
 from speak_friend.views import accounts
 from speak_friend.views import admin
-from speak_friend.views import controlpanel
 from speak_friend.views import contactus
 from speak_friend.views import open_id
 from speak_friend.views import error
@@ -260,20 +259,6 @@ def includeme(config):
                     permission='admin',
                     http_cache=0,
                     renderer='templates/disable_user.pt')
-    config.add_route('control_panel', '/control_panel')
-    config.add_view(controlpanel.ControlPanel,
-                    attr="get", request_method='GET',
-                    route_name='control_panel',
-                    permission='admin',
-                    http_cache=0,
-                    renderer='templates/control_panel.pt')
-    config.add_view(controlpanel.ControlPanel,
-                    attr="post", request_method='POST',
-                    route_name='control_panel',
-                    permission='admin',
-                    decorator=[require_csrf],
-                    http_cache=0,
-                    renderer='templates/control_panel.pt')
     config.add_route('contact_us', '/contact_us')
     config.add_view(contactus.ContactUs,
                     attr="get", request_method='GET',
@@ -345,7 +330,6 @@ def includeme(config):
     json_renderer.add_adapter(colander.null.__class__, null_adapter)
 
     ## Add custom directives
-    config.add_directive('add_controlpanel_section', add_controlpanel_section)
     config.add_directive('set_password_context', set_password_context)
     config.add_directive('set_password_validator', set_password_validator)
 

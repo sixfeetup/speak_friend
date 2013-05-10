@@ -13,15 +13,6 @@ from speak_friend.models import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
-def add_controlpanel_section(config, schema, override=False):
-    controlpanel = config.registry.setdefault('controlpanel', {})
-    if schema.name in controlpanel and not override:
-        msg = '%s section already implemented by: %s'
-        raise ConfigurationError(msg % (schema.name,
-                                        schema.path))
-    controlpanel[schema.name] = schema
-
-
 def set_password_context(config, context=None, ini_string='', ini_file=None,
                          context_dict={}):
     """
