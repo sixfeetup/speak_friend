@@ -17,7 +17,10 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from pyramid_controlpanel.views import ControlPanel
+
 from sqlalchemy import func
+
 
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountDisabled
@@ -39,7 +42,6 @@ from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.views.admin import UserSearch
-from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.utils import get_referrer
 from speak_friend.utils import replace_url_csrf
 

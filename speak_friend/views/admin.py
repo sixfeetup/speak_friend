@@ -15,6 +15,8 @@ from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
 from webhelpers import paginate
 
+from pyramid_controlpanel.views import ControlPanel
+
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.forms.profiles import make_disable_user_form
@@ -22,7 +24,6 @@ from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
-from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.utils import get_domain, get_referrer
 
 

@@ -76,6 +76,7 @@ def includeme(config):
     config.include('pyramid_mailer')
     config.include('pyramid_beaker')
     config.include('sixfeetup.bowab')
+    config.include('pyramid_controlpanel')
 
     # Authz/Authn
     authn_secret = config.registry.settings.get('speak_friend.authn_secret',

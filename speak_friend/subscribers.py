@@ -9,6 +9,8 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 from pyramid.response import Response
 
+from pyramid_controlpanel.views import ControlPanel
+
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
@@ -22,7 +24,6 @@ from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 from speak_friend.utils import get_xrds_url
 from speak_friend.views.accounts import logout
-from speak_friend.views.controlpanel import ControlPanel
 
 
 def log_activity(event):

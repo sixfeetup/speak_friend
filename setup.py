@@ -30,6 +30,7 @@ requires = [
     'pyramid_beaker',
     'pwgen',
     'sixfeetup.bowab',
+    'pyramid_controlpanel',
     ]
 
 tests_require = requires + [
@@ -63,7 +64,7 @@ setup(
       [paste.app_factory]
       main = speak_friend:main
       [console_scripts]
-      initialize_speak_friend_db = speak_friend.scripts.initializedb:main
       create_test_users = speak_friend.scripts.createusers:main
+      initialize_speak_friend_db = speak_friend.scripts.initializedb:main
       """,
       )

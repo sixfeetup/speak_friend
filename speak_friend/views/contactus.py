@@ -9,10 +9,10 @@ from pyramid.view import view_defaults
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from pyramid_controlpanel.views import ControlPanel
 
 from speak_friend.forms.contactus import make_contact_us_form
 from speak_friend.forms.controlpanel import email_notification_schema
-from speak_friend.views.controlpanel import ControlPanel
 
 
 @view_defaults(route_name='contact_us')

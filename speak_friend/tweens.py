@@ -6,6 +6,8 @@ from psycopg2.tz import FixedOffsetTimezone
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
 
+from pyramid_controlpanel.views import ControlPanel
+
 from sqlalchemy.orm.exc import DetachedInstanceError
 
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
@@ -13,7 +15,6 @@ from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.reports import UserActivity
 from speak_friend.utils import get_domain
-from speak_friend.views.controlpanel import ControlPanel
 from speak_friend.views.accounts import logout
 from speak_friend.views.accounts import LoginView
 from speak_friend.views.open_id import OpenIDProvider
