@@ -4,7 +4,8 @@ import time
 from unittest import TestCase
 from mock import Mock, call
 
-from speak_friend.tests.mocks import MockQuery
+from sixfeetup.bowab.tests.mocks import MockQuery
+
 from speak_friend.models.open_id import SFOpenIDStore, Association, Nonce
 
 

@@ -3,7 +3,7 @@ from unittest import TestCase
 from pyramid import testing
 
 from speak_friend.tests.mocks import MockPasswordValidator
-from speak_friend.tests.mocks import MockSession
+from sixfeetup.bowab.tests.mocks import MockSession
 from speak_friend.tests.mocks import create_user
 
 

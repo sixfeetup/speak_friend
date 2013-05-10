@@ -4,9 +4,11 @@ from speak_friend.views.accounts import CreateProfile, EditProfile
 
 from mock import patch
 
+from sixfeetup.bowab.tests.mocks import MockSession
+
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.tests.common import SFBaseCase
-from speak_friend.tests.mocks import create_user, MockSession
+from speak_friend.tests.mocks import create_user
 
 
 class DummyPasswordContext(object):
