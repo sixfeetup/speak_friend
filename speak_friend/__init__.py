@@ -59,7 +59,6 @@ from speak_friend.subscribers import log_user_activity
 from speak_friend.subscribers import notify_account_created
 from speak_friend.subscribers import notify_account_locked
 from speak_friend.subscribers import notify_password_request
-from speak_friend.subscribers import register_api
 
 
 def datetime_adapter(obj, request):
@@ -76,6 +75,7 @@ def includeme(config):
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
     config.include('pyramid_beaker')
+    config.include('sixfeetup.bowab')
 
     # Authz/Authn
     authn_secret = config.registry.settings.get('speak_friend.authn_secret',
@@ -89,7 +89,6 @@ def includeme(config):
     config.set_root_factory(RootFactory)
 
     # Events
-    config.add_subscriber(register_api, BeforeRender)
     config.add_subscriber(log_activity, UserActivity)
     config.add_subscriber(log_user_activity, UserActivity)
     config.add_subscriber(confirm_account_created, AccountCreated)
@@ -401,6 +400,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     includeme(config)
+    config.include('sixfeetup.bowab')
     config.scan()
 
     return config.make_wsgi_app()

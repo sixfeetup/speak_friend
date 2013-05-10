@@ -29,6 +29,7 @@ requires = [
     'requests',
     'pyramid_beaker',
     'pwgen',
+    'sixfeetup.bowab',
     ]
 
 tests_require = requires + [
