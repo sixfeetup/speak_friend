@@ -6,7 +6,6 @@ from passlib.context import CryptContext
 
 from speak_friend.passwords import PasswordValidator
 
-from sixfeetup.bowab.db.base import DBSession
 from speak_friend.models.profiles import UserProfile
 
 
@@ -82,15 +81,9 @@ def set_password_validator(config, validator_class=PasswordValidator):
     config.action('password_validator', initialize_validator)
 
 
-def get_db_session(request):
-    return DBSession()
-
-
 def get_user(request):
     userid = unauthenticated_userid(request)
     if userid is not None:
         # this should return None if the user doesn't exist
         # in the database
         return request.db_session.query(UserProfile).get(userid)
-
-

@@ -22,7 +22,6 @@ from pyramid_beaker import session_factory_from_settings
 
 from sixfeetup.bowab.configuration import require_csrf
 
-from speak_friend.configuration import get_db_session
 from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
@@ -349,11 +348,7 @@ def includeme(config):
     settings = config.registry.settings
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
-    config.add_request_method(get_db_session, 'db_session', reify=True)
     config.add_request_method(get_user, 'user', reify=True)
-
-
-
 
 
 def main(global_config, **settings):
