@@ -7,7 +7,6 @@ from openid.yadis.constants import YADIS_CONTENT_TYPE
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.config import aslist
 from pyramid.exceptions import ConfigurationError
 from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
@@ -20,12 +19,11 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from pyramid_beaker import session_factory_from_settings
 
-from sqlalchemy import engine_from_config
 
-from speak_friend.configuration import add_controlpanel_section
+from sixfeetup.bowab.configuration import require_csrf
+
 from speak_friend.configuration import get_db_session
 from speak_friend.configuration import get_user
-from speak_friend.configuration import require_csrf
 from speak_friend.configuration import set_password_context
 from speak_friend.configuration import set_password_validator
 from speak_friend.events import AccountCreated
@@ -304,11 +302,15 @@ def includeme(config):
                     permission=NO_PERMISSION_REQUIRED,
                     http_cache=0,
                     renderer='templates/identity.pt')
+
+    # Overrides
     # by providing this override, we create a search path for static assets
     # that first looks in the speak_friend static directory, and then moves
     # to the deform static directory if an asset is not found.
     config.override_asset(to_override='deform:static/',
                           override_with='speak_friend:static/')
+    config.override_asset('pyramid_controlpanel:templates/control_panel.pt',
+                          'speak_friend:templates/control_panel.pt')
 
     # Tweens
     config.add_tween('speak_friend.tweens.openid_factory')
