@@ -36,3 +36,13 @@ def replace_url_csrf(url, session):
                    url_parts.fragment]
     )
     return url
+
+
+def get_xrds_url(request):
+    if request.matchdict and 'username' in request.matchdict:
+        username = request.matchdict['username']
+        xrds_url = request.route_url('yadis_id',
+                                               username=username)
+    else:
+        xrds_url = request.route_url('yadis')
+    return xrds_url

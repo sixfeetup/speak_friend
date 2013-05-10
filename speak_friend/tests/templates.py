@@ -1,13 +1,13 @@
 from pyramid import testing
 
-from speak_friend.api import TemplateAPI
+from speak_friend.api import SFTemplateAPI
 from speak_friend.tests.common import SFBaseCase
 
 
-class TemplateAPITests(SFBaseCase):
+class SFTemplateAPITests(SFBaseCase):
     def setUp(self):
-        super(TemplateAPITests, self).setUp()
-        self.api = TemplateAPI(testing.DummyRequest(), {})
+        super(SFTemplateAPITests, self).setUp()
+        self.api = SFTemplateAPI(testing.DummyRequest(), {})
 
     def test_settings(self):
         self.assertTrue(hasattr(self.api, 'settings'))

@@ -14,29 +14,15 @@ from pyramid_mailer.message import Message
 
 from sqlalchemy.orm.exc import DetachedInstanceError
 
-from speak_friend.api import TemplateAPI
 from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models.reports import UserActivity
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
 from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
+from speak_friend.utils import get_xrds_url
 from speak_friend.views.accounts import logout
 from speak_friend.views.controlpanel import ControlPanel
-
-
-def register_api(event):
-    """Provides an 'api' variable to all templates.
-
-    This is intended to be registered with Pyramid's 'BeforeRender'
-    event so that it will be injected into the environment, without
-    having to explicily add it in each view function.
-    """
-    if isinstance(event.rendering_val, Response) or \
-       isinstance(event.rendering_val, basestring):
-        event['api'] = TemplateAPI(event['request'], {})
-    else:
-        event['api'] = TemplateAPI(event['request'], event.rendering_val)
 
 
 def log_activity(event):
@@ -232,15 +218,11 @@ def confirm_password_reset(event):
     mailer.send(message)
 
 
-def add_yadis_header(request):
+def add_yadis_header(event):
     """Adds a Yadis authentication header for processing OpenID requests
     to all responses.
     """
-    if request.matchdict and 'username' in request.matchdict:
-        username = request.matchdict['username']
-        xrds_url = request.route_url('yadis_id',
-                                               username=username)
-    else:
-        xrds_url = request.route_url('yadis')
+    request = event.request
     if request is not None:
+        xrds_url = get_xrds_url(request)
         request.response.headers[YADIS_HEADER_NAME] = xrds_url
