@@ -38,7 +38,6 @@ from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
 from speak_friend.forms.controlpanel import email_notification_schema
-from speak_friend.models import DBSession, Base
 from speak_friend.security import ChangePasswordFactory
 from speak_friend.security import EditProfileFactory
 from speak_friend.security import RootFactory
@@ -352,15 +351,7 @@ def includeme(config):
     config.add_request_method(get_user, 'user', reify=True)
 
 
-def init_sa(config):
-    settings = config.registry.settings
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    config.scan('speak_friend.models')
-    extra_model_paths = aslist(settings.get('speak_friend.extra_models', []))
-    for emp in extra_model_paths:
-        config.scan(emp)
-    return engine
+
 
 
 def main(global_config, **settings):

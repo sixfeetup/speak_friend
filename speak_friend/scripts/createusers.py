@@ -11,9 +11,9 @@ from pyramid.paster import get_appsettings, setup_logging
 
 from sqlalchemy.exc import IntegrityError
 
-from speak_friend import init_sa
+from sixfeetup.bowab.db.base import init_sa
+
 from speak_friend.configuration import set_password_context
-from speak_friend.models import Base, DBSession
 from speak_friend.models.profiles import UserProfile
 
 
@@ -35,7 +35,7 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri)
     config = Configurator(settings=settings)
     config.add_directive('set_password_context', set_password_context)
-    engine = init_sa(config)
+    db_session = init_sa(config)
     logger = logging.getLogger('speak_friend.createusers')
 
     if 'speak_friend.password_hasher' in settings:
@@ -54,7 +54,7 @@ def main(argv=sys.argv):
             'is_superuser']
     csv_file = csv.DictWriter(buf, cols, delimiter='\t', lineterminator='\n')
     logger.info("Beginning to create %d users,", num_users)
-    cxn = DBSession.connection()
+    cxn = db_session.connection()
     cur = cxn.connection.cursor()
     user_num += 0
     user_passwords = {}

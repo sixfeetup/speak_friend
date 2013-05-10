@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 
 from speak_friend.passwords import PasswordValidator
 
-from speak_friend.models import DBSession
+from sixfeetup.bowab.db.base import DBSession
 from speak_friend.models.profiles import UserProfile
 
 

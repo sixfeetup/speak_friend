@@ -1,13 +1,11 @@
 import os
 import sys
+
 import transaction
 
-from pyramid.config import Configurator
-from pyramid.paster import get_appsettings, setup_logging
+from sixfeetup.bowab.scripts.initializedb import main as bowab_main
 
-from speak_friend import init_sa
 from speak_friend.configuration import set_password_context
-from speak_friend.models import Base, DBSession
 from speak_friend.models.profiles import UserProfile
 
 
@@ -18,17 +16,10 @@ def usage(argv):
     sys.exit(1)
 
 def main(argv=sys.argv):
-    if len(argv) != 2:
-        usage(argv)
-    config_uri = argv[1]
-    setup_logging(config_uri)
-    settings = get_appsettings(config_uri)
-    config = Configurator(settings=settings)
+    config, db_session = bowab_main(argv)
+    settings = config.registry.settings
+
     config.add_directive('set_password_context', set_password_context)
-    engine = init_sa(config)
-
-    Base.metadata.create_all(engine)
-
     if 'speak_friend.admin_username' not in settings:
         print("No admin user name specified. Skipping.")
         sys.exit(0)
@@ -36,7 +27,7 @@ def main(argv=sys.argv):
     admin_username = settings['speak_friend.admin_username']
 
     # Don't overwrite the user's info if they're already there.
-    if DBSession.query(UserProfile).filter(
+    if db_session.query(UserProfile).filter(
         UserProfile.username == admin_username).first():
         print("Admin user already present, skipping creation.")
         sys.exit(0)
@@ -68,5 +59,5 @@ def main(argv=sys.argv):
             is_superuser=True
         )
 
-        DBSession.merge(model)
+        db_session.merge(model)
         print("Created admin user %s" % admin_username)

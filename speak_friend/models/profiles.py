@@ -1,6 +1,10 @@
 import datetime
 import uuid
 
+from sixfeetup.bowab.db.base import Base
+from sixfeetup.bowab.db.types import CIText
+from sixfeetup.bowab.db.types import TSVector
+
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -16,10 +20,7 @@ from sqlalchemy import types
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
-from speak_friend.models import Base
 from speak_friend.models.reports import UserActivity
-from speak_friend.models.types import CIText
-from speak_friend.models.types import TSVector
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
 from speak_friend.forms.controlpanel import domain_defaults_schema
 

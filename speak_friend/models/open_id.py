@@ -2,11 +2,11 @@ import datetime
 import logging
 import time
 
+from sixfeetup.bowab.db.base import Base
+
 from sqlalchemy import Column, Integer, UnicodeText
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import BYTEA
-
-from speak_friend.models import Base
 
 from openid.association import Association as OpenIDAssociation
 from openid.store.nonce import SKEW as NONCE_SKEW

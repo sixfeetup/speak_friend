@@ -1,3 +1,7 @@
+from sixfeetup.bowab.db.base import Base
+from sixfeetup.bowab.db.types import CIText
+from sixfeetup.bowab.db.types import JSON
+
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
@@ -7,11 +11,7 @@ from sqlalchemy import event
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 
-
 from speak_friend.events import ACTIVITIES
-from speak_friend.models import Base
-from speak_friend.models.types import CIText
-from speak_friend.models.types import JSON
 
 
 class Activity(Base):
