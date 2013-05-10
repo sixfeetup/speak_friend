@@ -20,7 +20,6 @@ from pyramid_controlpanel.views import ControlPanel
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.forms.profiles import make_disable_user_form
-from speak_friend.models import DBSession
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -294,7 +293,6 @@ class UserSearch(object):
 class RequestUserPassword(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.path = 'speak_friend:templates/email/admin_password_reset_notification.pt'
         settings = request.registry.settings
         self.subject = "%s: Reset password" % settings['site_name']
@@ -302,7 +300,7 @@ class RequestUserPassword(object):
         self.target_username = request.matchdict['username']
 
     def get_target_user(self, username):
-        query = self.session.query(UserProfile)
+        query = self.request.db_session.query(UserProfile)
         query = query.filter(UserProfile.username==username)
         user = query.first()
         return user
@@ -321,7 +319,7 @@ class RequestUserPassword(object):
         response = render_to_response(self.path,
                                       {'token': reset_token.token},
                                       self.request)
-        self.session.add(reset_token)
+        self.request.db_session.add(reset_token)
         message = Message(subject=self.subject,
                           sender=self.sender,
                           recipients=[user.full_email],
@@ -334,14 +332,13 @@ class RequestUserPassword(object):
 class DisableUser(object):
     def __init__(self, request):
         self.request = request
-        self.session = DBSession()
         self.target_username = request.matchdict['username']
         self.form = make_disable_user_form(request)
         self.form.action = request.route_url('disable_user',
                                              username=self.target_username)
 
     def get_target_user(self, username):
-        user_query = self.session.query(UserProfile)
+        user_query = self.request.db_session.query(UserProfile)
         user_query = user_query.filter(UserProfile.username==self.target_username)
         user = user_query.first()
         return user
@@ -378,7 +375,7 @@ class DisableUser(object):
 
         action = {True: 'disabled', False: 'enabled'}[user.admin_disabled]
 
-        self.session.add(user)
+        self.request.db_session.add(user)
         return {
             'status_msg': '%s was %s.' % (self.target_username, action),
             'action': action,
