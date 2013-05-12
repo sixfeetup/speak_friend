@@ -2,7 +2,7 @@ import datetime
 import logging
 import time
 
-from sixfeetup.bowab.db.base import Base
+from sixfeetup.bowab.db import Base
 
 from sqlalchemy import Column, Integer, UnicodeText
 from sqlalchemy import func

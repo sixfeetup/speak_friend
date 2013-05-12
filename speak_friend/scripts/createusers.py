@@ -11,7 +11,7 @@ from pyramid.paster import get_appsettings, setup_logging
 
 from sqlalchemy.exc import IntegrityError
 
-from sixfeetup.bowab.db.base import init_sa
+from sixfeetup.bowab.db import init_sa
 
 from speak_friend.configuration import set_password_context
 from speak_friend.models.profiles import UserProfile

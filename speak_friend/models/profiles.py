@@ -1,9 +1,9 @@
 import datetime
 import uuid
 
-from sixfeetup.bowab.db.base import Base
-from sixfeetup.bowab.db.types import CIText
-from sixfeetup.bowab.db.types import TSVector
+from sixfeetup.bowab.db import Base
+from sixfeetup.bowab.db import CIText
+from sixfeetup.bowab.db import TSVector
 
 from sqlalchemy import Boolean
 from sqlalchemy import Column
