@@ -11,9 +11,6 @@ class SFBaseCase(TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.add_settings({
-            'recaptcha_private_key': 'foo',
-            'recaptcha_options': '',
-            'recaptcha_public_key': 'bar',
             'site_name': "Test",
         })
         self.config.add_route('yadis', '/xrds.xml')
