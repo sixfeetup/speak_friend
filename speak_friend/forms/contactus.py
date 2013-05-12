@@ -3,7 +3,7 @@ from deform import Form
 from deform.widget import HiddenWidget
 from deform.widget import TextAreaWidget
 
-from speak_friend.forms.csrf import CSRFSchema
+from sixfeetup.bowab.forms.widgets import CSRFSchema
 
 
 class ContactUs(CSRFSchema):

@@ -11,11 +11,11 @@ from deform.widget import HiddenWidget
 from deform.widget import ResourceRegistry
 from deform.widget import TextInputWidget
 
+from sixfeetup.bowab.forms.widgets import CSRFSchema
+
 from speak_friend.forms.recaptcha import deferred_recaptcha_widget
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
-
-from speak_friend.forms.csrf import CSRFSchema
 
 
 # set a resource registry that contains resources for the password widget
