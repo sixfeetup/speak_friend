@@ -10,7 +10,6 @@ from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.exceptions import Forbidden
 from pyramid.events import BeforeRender
-from pyramid.events import NewRequest
 from pyramid.events import NewResponse
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import JSON
@@ -94,7 +93,7 @@ def includeme(config):
     config.add_subscriber(confirm_password_reset, PasswordReset)
     config.add_subscriber(email_change_notification, ProfileChanged)
     config.add_subscriber(email_profile_change_notification, ProfileChanged)
-    config.add_subscriber(add_yadis_header, NewRequest)
+    config.add_subscriber(add_yadis_header, NewResponse)
 
     # Routes
     config.add_route('yadis', '/xrds.xml')
