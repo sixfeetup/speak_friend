@@ -12,6 +12,9 @@ class SFBaseCase(TestCase):
         self.config = testing.setUp()
         self.config.add_settings({
             'site_name': "Test",
+            'bowab.recaptcha_options': '',
+            'bowab.recaptcha_private_key': 'foo',
+            'bowab.recaptcha_public_key': 'foo',
         })
         self.config.add_route('yadis', '/xrds.xml')
         self.request = testing.DummyRequest()
