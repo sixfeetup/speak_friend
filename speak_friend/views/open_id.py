@@ -3,9 +3,7 @@ import logging
 from openid.consumer import discover
 from openid.extensions import sreg
 from openid.server.server import Server
-from openid.message import IDENTIFIER_SELECT
 
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
@@ -13,11 +11,11 @@ from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
 from speak_friend.models.open_id import SFOpenIDStore
-from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import UserProfile
 
 
 logger = logging.getLogger('speak_friend.openid_provider')
+
 
 @view_defaults(route_name='openid_provider')
 class OpenIDProvider(object):
