@@ -50,6 +50,7 @@ class OpenIDProvider(object):
                 username = self.request.user and self.request.user.username or \
                            self.auth_userid
                 if username:
+                    username = username.lower()
                     user_url = self.request.route_url('user_profile',
                                                       username=username)
                     request_params['openid.identity'] = user_url
@@ -130,7 +131,7 @@ class OpenIDProvider(object):
         if target_user is None:
             raise HTTPNotFound()
         return {
-            'username': target_user.username,
+            'username': target_user.username.lower(),
         }
 
 
@@ -140,6 +141,7 @@ def generate_xrds(request):
         username = request.matchdict['username']
     else:
         username = authenticated_userid(request)
+    username = username and username.lower()
     identity_url = request.route_url('user_profile', username=username)
     return {
         'username': username,
