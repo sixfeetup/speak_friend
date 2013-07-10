@@ -4,7 +4,6 @@ import logging
 from psycopg2.tz import FixedOffsetTimezone
 
 from pyramid.httpexceptions import HTTPFound
-from pyramid.renderers import render_to_response
 
 from pyramid_controlpanel.views import ControlPanel
 
@@ -50,7 +49,7 @@ def password_timeout_factory(handler, registry):
             msg = 'You must log in again to be returned to: %s' % domain_name
             request.session.flash(msg, queue='error')
             logger.info('Password validity time out: %r, %r, %s',
-                       request.user, last_login, pw_valid)
+                        request.user, last_login, pw_valid)
             response = logout(request, request.route_url('home'))
             if 'openid.mode' in request.params:
                 rp_dict = dict(request.params.items())
