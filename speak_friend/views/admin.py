@@ -1,5 +1,7 @@
 # Views related to administrator actions. (deactivating accounts,
 # changing user passwords)
+import re
+
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
@@ -240,7 +242,7 @@ class UserSearch(object):
                 'pager': None
             }
         #XXX: always default to treating the query as a prefix query??
-        tsquery = func.to_tsquery("%s:*" % appstruct['query'])
+        tsquery = func.to_tsquery("'%s':*" % re.escape(appstruct['query']))
         # build the shared query bit
         query_select = select([tsquery.label('query')]).cte('query_select')
         # build the ordered-by clause, using the shared query
