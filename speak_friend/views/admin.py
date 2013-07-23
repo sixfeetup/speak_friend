@@ -193,7 +193,7 @@ class UserSearch(object):
 
     def get(self):
         if 'query' in self.request.GET and \
-           self.request.GET['query'] and \
+           self.request.GET['query'].strip() and \
            'clear_search' not in self.request.GET:
             return self.run_search()
 
