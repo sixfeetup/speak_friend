@@ -28,7 +28,7 @@ class DomainProfile(Base):
         {'schema': 'profiles'}
     )
     name = Column(UnicodeText, primary_key=True)
-    password_valid = Column(Integer, default=-1) # minutes
+    password_valid = Column(Integer, default=-1)  # minutes
 
     def __init__(self, name, password_valid):
         self.name = name
