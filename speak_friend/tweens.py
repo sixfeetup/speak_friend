@@ -111,6 +111,9 @@ def openid_factory(handler, registry):
            'auth_userid' in request.session:
             provider = OpenIDProvider(request)
             openid_response = provider.process(request.session['openid_request'])
+            if not openid_response:
+                # The provider couldn't extract a valid OpenID request
+                return response
             response.location = openid_response.location
             # Clean up after ourselves, so we don't accidentally loop
             del request.session['auth_userid']
