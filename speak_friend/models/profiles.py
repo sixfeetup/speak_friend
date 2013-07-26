@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 from sixfeetup.bowab.db import Base
@@ -11,12 +10,10 @@ from sqlalchemy import DateTime
 from sqlalchemy import FetchedValue
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
-from sqlalchemy import SmallInteger
 from sqlalchemy import UnicodeText
 from sqlalchemy import desc
 from sqlalchemy import event
 from sqlalchemy import func
-from sqlalchemy import types
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
