@@ -16,6 +16,7 @@ from sqlalchemy import event
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.expression import literal
 
 from speak_friend.models.reports import UserActivity
 from speak_friend.forms.controlpanel import MAX_PASSWORD_VALID
@@ -52,6 +53,19 @@ class DomainProfile(Base):
         for attr in ('name', 'password_valid'):
             appstruct[attr] = getattr(self, attr)
         return appstruct
+
+    @classmethod
+    def apply_wildcard(cls, session, domain_name):
+        qry = session.query(DomainProfile)
+        # Convert stored * to LIKE operator %
+        replace_percent = func.regexp_replace(DomainProfile.name,
+                                              '^\*', '%')
+        # Since the pattern is stored in the database,
+        # we swap the usual order of comparison
+        qry = qry.filter(literal(domain_name).ilike(replace_percent))
+        # Order by length, so that we return the most-specific name
+        qry = qry.order_by(func.length(DomainProfile.name))
+        return qry.first()
 
 
 class UserProfile(Base):

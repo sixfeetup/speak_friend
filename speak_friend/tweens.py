@@ -32,7 +32,8 @@ def password_timeout_factory(handler, registry):
 
         cp = ControlPanel(request)
         domain_name = get_domain(request)
-        domain = request.db_session.query(DomainProfile).get(domain_name)
+        domain = DomainProfile.apply_wildcard(request.db_session,
+                                              domain_name)
         if domain:
             pw_valid = timedelta(minutes=domain.get_password_valid(cp))
         else:
@@ -158,7 +159,8 @@ def valid_referrer_factory(handler, registry):
 
         if 'location' in response.headers:
             domain_name = get_domain(response.headers['location'])
-            domain = request.db_session.query(DomainProfile).get(domain_name)
+            domain = DomainProfile.apply_wildcard(request.db_session,
+                                                  domain_name)
             local_request = request.host == domain_name
             if not local_request and domain is None and domain_name:
                 msg = 'Invalid requesting domain, not redirecting: %s' % domain_name

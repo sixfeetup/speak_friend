@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import All, Email, Function, Regex, null, deferred
+from colander import All, Email, Function, null, deferred
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -41,20 +41,35 @@ class StrengthValidatingPasswordWidget(CheckedPasswordWidget):
     template = 'widgets/strength_validating_password'
 
 
-fqdn_re = re.compile(
-    r'(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)')
+segment_re = re.compile(r'[a-zA-Z0-9_\-\*]{0,63}')
 
 
-class FQDN(Regex):
-    """Validator for a Fully Qualified Domain Name
-
-    If ``msg`` is supplied, it will be the error message to be used when
-    raising `colander.Invalid`; otherwise, defaults to 'Invalid domain name'
+class FQDN(object):
+    """Validator for a Fully Qualified Domain Name:
+    * Allows a leading wildcard (i.e., *.example.com)
+    * Total length <= 255
+    * Each segment length <= 63
+    * Cannot begin or end with -
+    * Must be alphanumeric (including _ and -)
     """
-    def __init__(self, msg=None):
-        if msg is None:
-            msg = "Invalid domain name"
-        super(FQDN, self).__init__(fqdn_re, msg=msg)
+
+    def __call__(self, node, value):
+        # While technically legal, it will greatly increase complexity
+        # to support this feature of DNS
+        value = value.rstrip('.')
+        if len(value) > 255:
+            raise Invalid(node, 'Domain name is too long.')
+        for i, segment in enumerate(value.split('.')):
+            if len(segment) > 63:
+                raise Invalid(node, 'Segment is too long: %s.' % segment)
+            if i > 0 and '*' in segment:
+                raise Invalid(node, 'Wildcard only allowed in leading segment.')
+            elif i == 0 and segment.find('*') > 0:
+                raise Invalid(node, 'Wildcard must be first character in segment.')
+            if segment.startswith('-') or segment.endswith('-'):
+                raise Invalid(node, 'Names cannot begin or end with "-".')
+            if len(segment_re.findall(segment)[0]) != len(segment):
+                raise Invalid(node, 'Invalid segment: "%s".' % segment)
 
 
 class UserEmail(object):
