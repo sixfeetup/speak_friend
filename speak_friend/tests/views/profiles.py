@@ -74,12 +74,18 @@ class ViewTests(SFBaseCase):
             ('__end__', u'captcha:mapping'),
             ('submit', u'submit'),
         ])
-        request = testing.DummyRequest(post=data)
-        request.user = None
-        request.db_session = MockSession()
-        view = CreateProfile(request)
-        info = view.post()
-        self.assertTrue('form' not in info.keys())
+        # The next 4 lines silence silly SA optimization warnings
+        import warnings
+        from sqlalchemy import exc as sa_exc
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=sa_exc.SAWarning)
+
+            request = testing.DummyRequest(post=data)
+            request.user = None
+            request.db_session = MockSession()
+            view = CreateProfile(request)
+            info = view.post()
+            self.assertTrue('form' not in info.keys())
 
     def test_edit_profile_view(self):
         self.config.add_route('edit_profile', '/edit_profile/{username}/')
