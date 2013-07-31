@@ -87,3 +87,10 @@ def get_user(request):
         # this should return None if the user doesn't exist
         # in the database
         return request.db_session.query(UserProfile).get(userid)
+
+
+def set_username_validator(config, validator_class=None):
+    def initialize_validator():
+        config.registry.username_validator_class = validator_class
+
+    config.action('password_validator', initialize_validator)

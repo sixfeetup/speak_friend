@@ -66,6 +66,28 @@ scheme to another automatically (example is from the passlib documentation):
     else:
         reject_user_login()
 
+Username Validation
+-------------------
+
+This package provides a pluggable system for validating the format of user
+names. If you would like to provide a custom validator, 
+
+.. code-block:: python
+
+    from pyramid.config import Configurator
+    
+    from my_project.validators import NoBValidator
+    
+    def main(global_config, **settings):
+        config = Configurator(settings=settings)
+        
+        # registers the 'set_username_validator' directive
+        config.include('speak_friend')
+        
+        # replace the default with our own validator
+        config.set_username_validator(NoBValidator)
+
+
 Password Validation
 -------------------
 

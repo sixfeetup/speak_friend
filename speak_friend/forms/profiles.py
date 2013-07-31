@@ -179,8 +179,18 @@ class UserName(object):
 @deferred
 def create_username_validator(node, kw):
     username_validator = kw.get('username_validator')
-    validator = UserName(**username_validator)
+    request = kw.get('request')
+    if hasattr(request.registry, 'username_validator_class') and \
+       request.registry.username_validator_class:
+        custom_validator = request.registry.username_validator_class
+        validator = All(
+            UserName(**username_validator),
+            custom_validator(**username_validator),
+        )
+    else:
+        validator = UserName(**username_validator)
     return validator
+
 
 def usage_policy_validator(value):
     return value == True
