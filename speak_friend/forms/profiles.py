@@ -63,9 +63,11 @@ class FQDN(object):
             if len(segment) > 63:
                 raise Invalid(node, 'Segment is too long: %s.' % segment)
             if i > 0 and '*' in segment:
-                raise Invalid(node, 'Wildcard only allowed in leading segment.')
+                msg = 'Wildcard only allowed in leading segment.'
+                raise Invalid(node, msg)
             elif i == 0 and segment.find('*') > 0:
-                raise Invalid(node, 'Wildcard must be first character in segment.')
+                msg = 'Wildcard must be first character in segment.'
+                raise Invalid(node, msg)
             if segment.startswith('-') or segment.endswith('-'):
                 raise Invalid(node, 'Names cannot begin or end with "-".')
             if len(segment_re.findall(segment)[0]) != len(segment):
