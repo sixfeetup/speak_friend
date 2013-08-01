@@ -9,7 +9,6 @@ from sixfeetup.bowab.tests.mocks import MockQuery
 from speak_friend.models.open_id import SFOpenIDStore, Association, Nonce
 
 
-
 __all__ = [ 'OpenIDStoreTest', 'AssociationTests' ]
 
 
@@ -46,7 +45,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_filtering_association(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -66,9 +65,10 @@ class OpenIDStoreTest(TestCase):
     def test_returning_association(self):
         session = Mock()
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
-        assoc = Association(server_url, 'asdf', 'aflasdkf', issued, lifetime, 'HMAC-SHA1')
+        assoc = Association(server_url, 'asdf', 'aflasdkf', issued, lifetime,
+                            'HMAC-SHA1')
         session.query = MockQuery(store=[assoc])
 
         store = SFOpenIDStore(session)
@@ -89,7 +89,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_assoc_lookup_by_handle(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association(server_url, 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -108,7 +108,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_assoc_lookup_by_handle_server_url(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -145,7 +145,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_remove_association_success(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -161,7 +161,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_remove_association_fail_handle(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.net", 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -175,7 +175,7 @@ class OpenIDStoreTest(TestCase):
 
     def test_remove_association_fail_url(self):
         server_url = "http://test.net"
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime.now().timetuple())
         assoc1 = Association("http://test.com", 'asdf', 'aflasdkf',
                              issued, lifetime, 'HMAC-SHA1')
@@ -234,11 +234,10 @@ class OpenIDStoreTest(TestCase):
         self.assertEqual(use_nonce, True)
 
 
-
 class AssociationTests(TestCase):
 
     def test_is_expired_true(self):
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
+        lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
         issued = time.mktime(datetime.datetime(2010, 1, 20).timetuple())
         assoc = Association('http://test.net', 'asdf', 'asdf',
                             issued, lifetime, 'HMAC-SHA1')
@@ -246,9 +245,14 @@ class AssociationTests(TestCase):
         self.assertTrue(expired)
 
     def test_is_expired_false(self):
-        lifetime = 60 * 60 * 24 * 5 # 5 days in seconds
-        issued = time.mktime(datetime.datetime.now().timetuple())
-        assoc = Association('http://test.net', 'asdf', 'asdf',
-                            issued, lifetime, 'HMAC-SHA1')
-        expired = assoc.is_expired()
-        self.assertFalse(expired)
+        # The next 4 lines silence silly SA optimization warnings
+        import warnings
+        from sqlalchemy import exc as sa_exc
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=sa_exc.SAWarning)
+            lifetime = 60 * 60 * 24 * 5  # 5 days in seconds
+            issued = time.mktime(datetime.datetime.now().timetuple())
+            assoc = Association('http://test.net', 'asdf', 'asdf',
+                                issued, lifetime, 'HMAC-SHA1')
+            expired = assoc.is_expired()
+            self.assertFalse(expired)
