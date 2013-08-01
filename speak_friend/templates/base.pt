@@ -36,6 +36,10 @@
         <!-- Fallback for consumers that don't support Yadis -->
         <link rel="openid.server" href="${request.route_url('openid_provider')}" />
         <link rel="openid2.provider" href="${request.route_url('openid_provider')}" />
+        <!-- Google Analytics -->
+        <tal:gaq condition="api.gaq">
+            <tal:code replace="structure api.gaq.as_html()" />
+        </tal:gaq>
     </head>
     <body>
         <div id="flash-messages">
