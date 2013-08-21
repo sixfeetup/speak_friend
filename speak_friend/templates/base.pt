@@ -32,6 +32,7 @@
         </metal:extend-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>
         <script src="${request.static_url('speak_friend:static/js/sf.js')}"></script>
+        <metal:js define-slot="resources" />
 
         <!-- Fallback for consumers that don't support Yadis -->
         <link rel="openid.server" href="${request.route_url('openid_provider')}" />
