@@ -1,0 +1,42 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal">
+  <metal:nav define-macro="domain_css">
+       <style type="text/css"
+              tal:define="primary_default string:#3A4E9F;
+                          secondary_default string:#929292;
+                          primary_color primary_color|primary_default;
+                          secondary_color secondary_color|secondary_default;">
+                          
+            a, a:visited, 
+            h1,
+            h2 {
+              color: <tal:color replace="primary_color" />;
+            }
+            .navbar .nav > li > a:hover,
+            .navbar .nav > li.active > a,
+            .navbar .nav > li.active > a:hover,
+            .navbar .nav > li input:hover,
+            .btn-group > .btn.active,
+            .btn-primary,
+            .btn-primary:hover,
+            .btn-primary:active,
+            .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
+              background-color: <tal:color replace="primary_color" />;
+              background-image: none;
+            }
+            .headUsername {
+                color: <tal:color replace="secondary_color" />;
+            }
+            body,
+            .navbar .navbar-inner,
+            .navbar .nav > li > a {
+              background-color: <tal:color replace="secondary_color" />;
+            }
+            #quick-links {
+                border-color: <tal:color replace="secondary_color" />;
+            }
+           
+       </style>
+  </metal:nav>
+</html>

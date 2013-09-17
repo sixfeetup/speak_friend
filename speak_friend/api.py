@@ -11,7 +11,8 @@ class SFTemplateAPI(TemplateAPI):
         self.init_macros()
 
     def init_macros(self):
-        macro_names = ['footer', 'quick_links', 'nav', 'logo', 'head_elements', 'admin_nav']
+        macro_names = ['footer', 'quick_links', 'nav',
+                       'logo', 'head_elements', 'admin_nav', 'domain_css']
         self.macros = {}
         for mname in macro_names:
             renderer = get_renderer('templates/macros/%s#%s.pt' % (mname, mname))
