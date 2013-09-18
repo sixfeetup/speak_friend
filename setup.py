@@ -31,6 +31,7 @@ requires = [
     'pwgen',
     'sixfeetup.bowab',
     'pyramid_controlpanel',
+    'alembic',
     ]
 
 tests_require = requires + [
