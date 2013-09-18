@@ -30,6 +30,8 @@ class DomainProfile(Base):
     )
     name = Column(UnicodeText, primary_key=True)
     password_valid = Column(Integer, default=-1)  # minutes
+    primary_color = Column(UnicodeText, nullable=True)
+    secondary_color = Column(UnicodeText, nullable=True)
 
     def __init__(self, name, password_valid):
         self.name = name
