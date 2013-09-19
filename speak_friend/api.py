@@ -37,10 +37,10 @@ class SFTemplateAPI(TemplateAPI):
     def domain(self):
         if not hasattr(self, '_domain'):
             name = get_domain(self.request)
-            query = self.request.db_session.query(DomainProfile)
             domain = None
             if name:
-                domain = query.get(name)
+                domain = DomainProfile.apply_wildcard(
+                    self.request.db_session, name)
             if domain:
                 self._domain = domain
         return getattr(self, '_domain', None)
