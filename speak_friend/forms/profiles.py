@@ -362,16 +362,16 @@ class Domain(CSRFSchema):
     primary_color = SchemaNode(
         String(),
         title="Primary Color",
-        description="If left empty, the site default value will be used",
+        description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
         required=False,
-        missing=null,
+        missing='',
     )
     secondary_color = SchemaNode(
         String(),
         title="Secondary Color",
-        description="If left empty, the site default value will be used",
+        description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
         required=False,
-        missing=null,
+        missing='',
     )
 
 
