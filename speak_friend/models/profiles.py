@@ -33,9 +33,12 @@ class DomainProfile(Base):
     primary_color = Column(UnicodeText, nullable=True)
     secondary_color = Column(UnicodeText, nullable=True)
 
-    def __init__(self, name, password_valid):
+    def __init__(self, name, password_valid,
+                 primary_color=None, secondary_color=None):
         self.name = name
         self.password_valid = password_valid
+        self.primary_color = primary_color
+        self.secondary_color = secondary_color
 
     def __repr__(self):
         return u'<DomainProfile(%s)>' % self.name
@@ -52,7 +55,8 @@ class DomainProfile(Base):
 
     def make_appstruct(self):
         appstruct = {}
-        for attr in ('name', 'password_valid'):
+        for attr in ('name', 'password_valid', 'primary_color',
+                     'secondary_color'):
             appstruct[attr] = getattr(self, attr)
         return appstruct
 
