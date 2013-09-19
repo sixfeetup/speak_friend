@@ -359,6 +359,20 @@ class Domain(CSRFSchema):
                     "should be valid (a negative value will use the system "
                     "default)",
     )
+    primary_color = SchemaNode(
+        String(),
+        title="Primary Color",
+        description="If left empty, the site default value will be used",
+        required=False,
+        missing=null,
+    )
+    secondary_color = SchemaNode(
+        String(),
+        title="Secondary Color",
+        description="If left empty, the site default value will be used",
+        required=False,
+        missing=null,
+    )
 
 
 def make_domain_form(request, domain=None):
@@ -372,6 +386,10 @@ def make_domain_form(request, domain=None):
         for fld in schema:
             if fld.name == 'name':
                 fld.current_value = domain.name
+            if fld.name in ['primary_color', 'secondary_color']:
+                val = getattr(domain, fld.name, None)
+                if val is not None:
+                    fld.current_value = val
 
     return Form(
         schema.bind(request=request, domain_validator=domain_validator),
