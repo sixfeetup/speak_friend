@@ -60,7 +60,6 @@ class CreateDomain(object):
         self.domain_form = make_domain_form(request)
 
     def post(self):
-        import pdb; pdb.set_trace( )
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST:
