@@ -1,7 +1,14 @@
 from pyramid.renderers import get_renderer
 from sixfeetup.bowab.api import TemplateAPI
 
+from speak_friend.models.profiles import DomainProfile
+
 from speak_friend.utils import get_xrds_url
+from speak_friend.utils import get_domain
+
+
+DEFAULT_PRIMARY_COLOR = '#3A4E9F'
+DEFAULT_SECONDARY_COLOR = '#929292'
 
 
 class SFTemplateAPI(TemplateAPI):
@@ -25,3 +32,31 @@ class SFTemplateAPI(TemplateAPI):
     @property
     def xrds_url(self):
         return get_xrds_url(self.request)
+
+    @property
+    def domain(self):
+        if not hasattr(self, '_domain'):
+            name = get_domain(self.request)
+            query = self.request.db_session.query(DomainProfile)
+            domain = None
+            if name:
+                domain = query.get(name)
+            if domain:
+                self._domain = domain
+        return getattr(self, '_domain', None)
+
+    @property
+    def primary_color(self):
+        pc = getattr(self.domain, 'primary_color', None)
+        if not pc:
+            pc = self.request.registry.settings.get(
+                'speak_friend.primary_color', DEFAULT_PRIMARY_COLOR)
+        return pc
+
+    @property
+    def secondary_color(self):
+        sc = getattr(self.domain, 'secondary_color', None)
+        if not sc:
+            sc = self.request.registry.settings.get(
+                'speak_friend.secondary_color', DEFAULT_SECONDARY_COLOR)
+        return sc
