@@ -85,7 +85,6 @@ class CreateDomain(object):
         return HTTPFound(location=url)
 
     def get(self, success=False):
-        import pdb; pdb.set_trace( )
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
         return {
@@ -108,7 +107,6 @@ class EditDomain(object):
         self.return_url = self.request.route_url('list_domains')
 
     def get(self):
-        import pdb; pdb.set_trace( )
         appstruct = self.target_domain.make_appstruct()
         data = {
             'forms': [self.domain_form],
@@ -118,7 +116,6 @@ class EditDomain(object):
         return data
 
     def post(self):
-        import pdb; pdb.set_trace( )
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'cancel' in self.request.POST:
