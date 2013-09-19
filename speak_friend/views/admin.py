@@ -60,6 +60,7 @@ class CreateDomain(object):
         self.domain_form = make_domain_form(request)
 
     def post(self):
+        import pdb; pdb.set_trace( )
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'submit' not in self.request.POST:
@@ -85,6 +86,7 @@ class CreateDomain(object):
         return HTTPFound(location=url)
 
     def get(self, success=False):
+        import pdb; pdb.set_trace( )
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
         return {
@@ -107,6 +109,7 @@ class EditDomain(object):
         self.return_url = self.request.route_url('list_domains')
 
     def get(self):
+        import pdb; pdb.set_trace( )
         appstruct = self.target_domain.make_appstruct()
         data = {
             'forms': [self.domain_form],
@@ -116,6 +119,7 @@ class EditDomain(object):
         return data
 
     def post(self):
+        import pdb; pdb.set_trace( )
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
         if 'cancel' in self.request.POST:
@@ -136,8 +140,9 @@ class EditDomain(object):
                 'target_domainname': self.target_domainname
             }
 
-        if self.target_domain.name != appstruct['name']:
-            self.target_domain.name = appstruct['name']
+        for attr in ['name','primary_color', 'secondary_color']:
+            if getattr(self.target_domain, attr, None) != appstruct[attr]:
+                setattr(self.target_domain, attr, appstruct[attr])
         if self.target_domain.password_valid != appstruct['password_valid']:
             self.target_domain.password_valid = appstruct['password_valid']
         self.request.db_session.add(self.target_domain)
