@@ -293,6 +293,8 @@ def includeme(config):
         'deform_bootstrap_static', 'deform_bootstrap:static',
         cache_max_age=3600
     )
+    config.add_static_view('bowab_static', 'sixfeetup.bowab:static')
+
     # Put last, so that app routes are not swallowed
     config.add_route('user_profile', '/{username}')
     config.add_view(open_id.OpenIDProvider, attr="identity",
