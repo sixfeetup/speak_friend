@@ -13,10 +13,15 @@ from deform.widget import TextInputWidget
 
 from sixfeetup.bowab.forms.widgets import CSRFSchema
 from sixfeetup.bowab.forms.widgets import deferred_recaptcha_widget
+from sixfeetup.bowab.forms.widgets import build_color_widget
+from sixfeetup.bowab.forms.widgets import colorpicker_registry
 
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
-
+from speak_friend.api import (
+    DEFAULT_PRIMARY_COLOR,
+    DEFAULT_SECONDARY_COLOR
+    )
 
 # set a resource registry that contains resources for the password widget
 password_registry = ResourceRegistry()
@@ -39,6 +44,22 @@ class StrengthValidatingPasswordWidget(CheckedPasswordWidget):
     requirements = (('jquery.maskedinput', None),
                     ('password', None), )
     template = 'widgets/strength_validating_password'
+
+
+# we need to create two separate deferred widgets, one for each color in the
+# domain profile.
+@deferred
+def deferred_primary_color_widget(node, kw):
+    color = kw['primary_color']
+    default = kw['default_primary_color']
+    return build_color_widget(color, default)
+
+
+@deferred
+def deferred_secondary_color_widget(node, kw):
+    color = kw['secondary_color']
+    default = kw['default_secondary_color']
+    return build_color_widget(color, default)
 
 
 segment_re = re.compile(r'[a-zA-Z0-9_\-\*]{0,63}')
@@ -365,6 +386,7 @@ class Domain(CSRFSchema):
         description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
         required=False,
         missing='',
+        widget=deferred_primary_color_widget,
     )
     secondary_color = SchemaNode(
         String(),
@@ -372,13 +394,24 @@ class Domain(CSRFSchema):
         description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
         required=False,
         missing='',
+        widget=deferred_secondary_color_widget,
     )
 
 
 def make_domain_form(request, domain=None):
     edit=False
+    primary_color = default_primary_color = request.registry.settings.get(
+        'speak_friend.primary_color', DEFAULT_PRIMARY_COLOR)
+    secondary_color = default_secondary_color = request.registry.settings.get(
+        'speak_friend.secondary_color', DEFAULT_SECONDARY_COLOR)
+
     if domain is not None:
         edit=True
+        if domain.primary_color:
+            primary_color = domain.primary_color
+        if domain.secondary_color:
+            secondary_color = domain.secondary_color
+
     domain_validator = dict(for_edit=edit,
                             db_session=request.db_session)
     schema = Domain()
@@ -392,9 +425,17 @@ def make_domain_form(request, domain=None):
                     fld.current_value = val
 
     return Form(
-        schema.bind(request=request, domain_validator=domain_validator),
+        schema.bind(
+            request=request,
+            domain_validator=domain_validator,
+            primary_color=primary_color,
+            default_primary_color=default_primary_color,
+            secondary_color=secondary_color,
+            default_secondary_color=default_secondary_color),
         buttons=('submit', 'cancel'),
         bootstrap_form_style='form-vertical',
+        renderer=renderer,
+        resource_registry=colorpicker_registry,
     )
 
 
