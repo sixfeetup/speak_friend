@@ -6,9 +6,11 @@
               tal:define="primary_color api.primary_color;
                           secondary_color api.secondary_color;">
                           
-            a, a:visited, 
+            a, a:visited,
             h1,
-            h2 {
+            h2,
+            #footer,
+            #footer a {
               color: <tal:color replace="primary_color" />;
             }
             .navbar .nav > li > a:hover,
@@ -34,7 +36,6 @@
             #quick-links {
                 border-color: <tal:color replace="secondary_color" />;
             }
-           
        </style>
   </metal:nav>
 </html>
