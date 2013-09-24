@@ -114,8 +114,7 @@ class CreateProfile(object):
     def get(self, success=False):
         if success:
             return {'forms': [], 'rendered_form': '', 'success': True}
-        came_from = self.request.session.get('came_from',
-                                             get_referrer(self.request))
+        came_from = get_referrer(self.request)
 
         return {
             'forms': [self.frm],
@@ -452,6 +451,7 @@ class ResetPassword(object):
                                                              reset_token.user))
             # Invalidate the current token
             self.request.session.new_csrf_token()
+            self.request.session['came_from'] = reset_token.came_from
             self.request.session.save()
             self.request.registry.notify(PasswordReset(self.request,
                                                        reset_token.user))
@@ -487,6 +487,7 @@ class ResetPassword(object):
             return HTTPFound(location=url)
 
         return {
+            'came_from': reset_token.came_from,
             'forms': [self.frm],
             'rendered_form': self.frm.render(),
         }
@@ -525,7 +526,6 @@ class LoginView(object):
             self.max_attempts = cp.get_value(authentication_schema.name,
                                              'max_attempts',
                                              MAX_DOMAIN_ATTEMPTS)
-
 
     def verify_password(self, password, saved_hash, user):
         if not user:

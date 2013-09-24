@@ -36,7 +36,8 @@ class SFTemplateAPI(TemplateAPI):
     @property
     def domain(self):
         if not hasattr(self, '_domain'):
-            name = get_domain(self.request)
+            came_from = self.rendering_val.get('came_from', self.request)
+            name = get_domain(came_from)
             domain = None
             if name:
                 domain = DomainProfile.apply_wildcard(
