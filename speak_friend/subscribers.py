@@ -1,29 +1,18 @@
-from datetime import datetime, timedelta
 from logging import getLogger
 
 from openid.yadis.constants import YADIS_HEADER_NAME
 
-from psycopg2.tz import FixedOffsetTimezone
-
-from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
-from pyramid.response import Response
 
 from pyramid_controlpanel.views import ControlPanel
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from sqlalchemy.orm.exc import DetachedInstanceError
-
 from speak_friend.forms.controlpanel import email_notification_schema
 from speak_friend.models.reports import UserActivity
 from speak_friend.models.profiles import ResetToken
-from speak_friend.models.profiles import UserProfile
-from speak_friend.utils import get_domain
-from speak_friend.utils import get_referrer
 from speak_friend.utils import get_xrds_url
-from speak_friend.views.accounts import logout
 
 
 def log_activity(event):
@@ -51,6 +40,7 @@ def log_user_activity(event):
         kwargs['activity'] = event.activity
     activity = UserActivity(**kwargs)
     event.request.db_session.add(activity)
+
 
 def notify_account_created(event):
     """Notify site admins when an account is created.

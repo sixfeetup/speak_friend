@@ -10,12 +10,8 @@ from psycopg2 import DataError
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.renderers import render_to_response
 from pyramid.security import forget, remember
 from pyramid.view import view_defaults
-
-from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
 
 from pyramid_controlpanel.views import ControlPanel
 
@@ -41,7 +37,6 @@ from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
-from speak_friend.views.admin import UserSearch
 from speak_friend.utils import get_referrer
 from speak_friend.utils import replace_url_csrf
 
@@ -561,9 +556,6 @@ class LoginView(object):
         self.request.session['came_from'] = appstruct['came_from']
         if 'login' in self.request.params:
             appstruct['login'] = self.request.params['login']
-        #if ('password' in self.frm.cstruct
-        #    and self.frm.cstruct['password'] != ''):
-        #    self.frm.cstruct['password'] = ''
         return {
             'forms': [self.frm],
             'rendered_form': self.frm.render(appstruct=appstruct),
