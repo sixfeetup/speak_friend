@@ -350,6 +350,7 @@ def includeme(config):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    settings['global_config'] = global_config
     config = Configurator(settings=settings)
     init_sa(config)
 
