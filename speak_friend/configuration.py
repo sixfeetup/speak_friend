@@ -1,4 +1,3 @@
-
 from pyramid.exceptions import ConfigurationError
 from pyramid.security import unauthenticated_userid
 
@@ -94,3 +93,10 @@ def set_username_validator(config, validator_class=None):
         config.registry.username_validator_class = validator_class
 
     config.action('password_validator', initialize_validator)
+
+
+def includeme(config):
+    config.add_directive('set_password_context', set_password_context)
+    config.add_directive('set_password_validator', set_password_validator)
+    config.add_directive('set_username_validator', set_username_validator)
+    config.set_password_context(ini_file=config.registry.settings['__file__'])

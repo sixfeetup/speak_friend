@@ -22,9 +22,6 @@ from pyramid_beaker import session_factory_from_settings
 from sixfeetup.bowab.configuration import require_csrf
 
 from speak_friend.configuration import get_user
-from speak_friend.configuration import set_password_context
-from speak_friend.configuration import set_password_validator
-from speak_friend.configuration import set_username_validator
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountLocked
 from speak_friend.events import LoginFailed
@@ -330,9 +327,7 @@ def includeme(config):
     json_renderer.add_adapter(colander.null.__class__, null_adapter)
 
     ## Add custom directives
-    config.add_directive('set_password_context', set_password_context)
-    config.add_directive('set_password_validator', set_password_validator)
-    config.add_directive('set_username_validator', set_username_validator)
+    config.include('speak_friend.configuration')
 
     # Call custom directives
     ## Core control panel sections
