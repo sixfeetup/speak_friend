@@ -352,10 +352,10 @@ def main(global_config, **settings):
     """
     settings['global_config'] = global_config
     config = Configurator(settings=settings)
-    init_sa(config)
 
     # Includes for any packages that hook into configuration.
     config.include('pyramid_tm')
+    config.include('sixfeetup.bowab')
 
     # Extending an existing package allows you to override
     # view mappings and other configuration details.
@@ -370,7 +370,6 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     includeme(config)
-    config.include('sixfeetup.bowab')
     config.scan()
 
     return config.make_wsgi_app()
