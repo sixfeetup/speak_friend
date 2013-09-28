@@ -6,14 +6,7 @@ import sys
 
 from pwgen import pwgen
 
-from pyramid.config import Configurator
-from pyramid.paster import get_appsettings, setup_logging
-
-from sqlalchemy.exc import IntegrityError
-
-from sixfeetup.bowab.db import init_sa
-
-from speak_friend.configuration import set_password_context
+from sixfeetup.bowab.scripts.common import bootstrap_script
 from speak_friend.models.profiles import UserProfile
 
 
@@ -23,6 +16,7 @@ def usage(argv):
           '(example: "%s development.ini 4000")' % (cmd, cmd))
     sys.exit(1)
 
+
 def main(argv=sys.argv):
     if len(argv) != 3:
         usage(argv)
@@ -31,22 +25,12 @@ def main(argv=sys.argv):
         num_users = int(argv[2])
     except ValueError:
         usage(argv)
-    setup_logging(config_uri)
-    settings = get_appsettings(config_uri)
-    config = Configurator(settings=settings)
-    config.add_directive('set_password_context', set_password_context)
-    db_session = init_sa(config)
+    env = bootstrap_script(config_uri)
+    db_session = env['registry']['bowab.db_session']
+
     logger = logging.getLogger('speak_friend.createusers')
 
-    if 'speak_friend.password_hasher' in settings:
-        config.include(settings['speak_friend.password_hasher'])
-    else:
-        from passlib.apps import ldap_context
-        config.set_password_context(context=ldap_context)
-    # makes the password_context available on the registry
-    config.commit()
-
-    pass_ctx = config.registry.password_context
+    pass_ctx = env['registry'].password_context
     user_num = 1
     buf = StringIO()
     cols = ['username', 'first_name', 'last_name', 'email', 'password_hash',
@@ -56,7 +40,6 @@ def main(argv=sys.argv):
     logger.info("Beginning to create %d users,", num_users)
     cxn = db_session.connection()
     cur = cxn.connection.cursor()
-    user_num += 0
     user_passwords = {}
     while user_num <= num_users:
         first_name = u'Test'
