@@ -5,7 +5,9 @@ from pyramid.interfaces import IRequest
 
 
 def get_referrer(request):
-    came_from = request.session.get('came_from', request.referrer)
+    came_from = request.referrer
+    if not came_from:
+        came_from = request.session.get('came_from')
     if not came_from:
         came_from = '/'
     return came_from

@@ -628,7 +628,7 @@ class LoginView(object):
         self.request.session.new_csrf_token()
         self.request.session.save()
 
-        came_from = self.request.session.pop('came_from',
+        came_from = self.request.session.get('came_from',
                                              appstruct.get('came_from', ''))
         self.request.registry.notify(LoggedIn(self.request, user,
                                               came_from=came_from))
