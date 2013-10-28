@@ -106,7 +106,22 @@ class UserActivity(Base):
             if attr in self.__table__.columns:
                 setattr(self, attr, value)
 
-
     def __repr__(self):
         return u"<UserActivity(%s, %s, %s)>" % (self.username, self.activity,
                                                 self.activity_ts)
+
+    @classmethod
+    def last_user_activity(cls, session, user,
+                           *activities,
+                           **extra_filters):
+        qry = session.query(UserActivity)
+        qry = qry.filter(UserActivity.user == user,
+                         UserActivity.activity.in_(activities))
+        qry = qry.filter_by(**extra_filters)
+        qry = qry.order_by(UserActivity.activity_ts.desc())
+        return qry.first()
+
+    @classmethod
+    def last_checkid(cls, session, user):
+        return cls.last_user_activity(session, user,
+                                      u'authorize_checkid', u'login')

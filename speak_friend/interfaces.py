@@ -230,6 +230,12 @@ class IAccountUnlocked(IUserActivity):
     """
 
 
+class ICheckIDAuthorized(IUserActivity):
+    """ An event that is emitted whenever a CheckID request is
+    authorized.
+    """
+
+
 class ILoggedIn(IUserActivity):
     """ An event type that is emitted whenever a user successfully
     logs in.

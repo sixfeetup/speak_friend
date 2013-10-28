@@ -10,6 +10,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import authenticated_userid
 from pyramid.view import view_defaults
 
+from speak_friend.events import CheckIDAuthorized
 from speak_friend.models.open_id import SFOpenIDStore
 from speak_friend.models.profiles import UserProfile
 
@@ -108,6 +109,8 @@ class OpenIDProvider(object):
         if not self.auth_userid:
             return False
 
+        self.request.registry.notify(CheckIDAuthorized(self.request,
+                                                       self.auth_user))
         # TODO: prompt user for authorization
         return True
 

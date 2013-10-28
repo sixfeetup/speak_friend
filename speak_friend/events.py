@@ -7,6 +7,7 @@ from speak_friend.interfaces import IAccountDisabled
 from speak_friend.interfaces import IAccountEnabled
 from speak_friend.interfaces import IAccountLocked
 from speak_friend.interfaces import IAccountUnlocked
+from speak_friend.interfaces import ICheckIDAuthorized
 from speak_friend.interfaces import ILoggedIn
 from speak_friend.interfaces import ILoginFailed
 from speak_friend.interfaces import ILoggedOut
@@ -18,6 +19,7 @@ from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 
 ACTIVITIES = [
+    u'authorize_checkid',
     u'change_password',
     u'create_account',
     u'disable_account',
@@ -48,7 +50,7 @@ class UserActivity(object):
     def __init__(self, request, user,
                  actor=None, **activity_detail):
         if self.activity not in ACTIVITIES:
-            raise ValueError(u'No such activity defined: %s' % activity)
+            raise ValueError(u'No such activity defined: %s' % self.activity)
         self.request = request
         self.user = user
         self.actor = actor
@@ -134,6 +136,20 @@ class AccountUnlocked(UserActivity):
     def __init__(self, request, user,
                  actor=None, **activity_detail):
         super(AccountUnlocked, self).__init__(request, user,
+              actor, **activity_detail)
+
+
+@implementer(ICheckIDAuthorized)
+class CheckIDAuthorized(UserActivity):
+    """ An instance of this class is emitted as an :term:`event`
+    whenever a CheckID request is authorized. See :class:`UserActivity`.
+    """
+
+    activity = u'authorize_checkid'
+
+    def __init__(self, request, user,
+                 actor=None, **activity_detail):
+        super(CheckIDAuthorized, self).__init__(request, user,
               actor, **activity_detail)
 
 
