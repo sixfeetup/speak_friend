@@ -37,6 +37,7 @@ from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.profiles import make_profile_form, make_login_form
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
+from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 from speak_friend.utils import replace_url_csrf
 
@@ -553,7 +554,10 @@ class LoginView(object):
 
     def get(self):
         appstruct = {'came_from': get_referrer(self.request)}
-        self.request.session['came_from'] = appstruct['came_from']
+        domain_name = get_domain(self.request)
+        local_request = self.request.host == domain_name
+        if not local_request:
+            self.request.session['came_from'] = appstruct['came_from']
         if 'login' in self.request.params:
             appstruct['login'] = self.request.params['login']
         return {
