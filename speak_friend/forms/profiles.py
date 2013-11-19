@@ -16,12 +16,11 @@ from sixfeetup.bowab.forms.widgets import deferred_recaptcha_widget
 from sixfeetup.bowab.forms.widgets import build_color_widget
 from sixfeetup.bowab.forms.widgets import colorpicker_registry
 
+from speak_friend.api import DEFAULT_PRIMARY_COLOR
+from speak_friend.api import DEFAULT_SECONDARY_COLOR
 from speak_friend.models.profiles import UserProfile
 from speak_friend.models.profiles import DomainProfile
-from speak_friend.api import (
-    DEFAULT_PRIMARY_COLOR,
-    DEFAULT_SECONDARY_COLOR
-    )
+
 
 # set a resource registry that contains resources for the password widget
 password_registry = ResourceRegistry()
