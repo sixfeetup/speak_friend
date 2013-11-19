@@ -534,7 +534,6 @@ class PasswordChange(CSRFSchema):
     )
     new_password = SchemaNode(
         String(),
-        missing=null,
         widget=StrengthValidatingPasswordWidget(),
         description='* Minimum of 8 characters and must include one non-alpha character.',
         validator=create_password_validator
