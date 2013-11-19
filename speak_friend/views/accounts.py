@@ -555,7 +555,8 @@ class LoginView(object):
     def get(self):
         appstruct = {'came_from': get_referrer(self.request)}
         domain_name = get_domain(self.request)
-        local_request = self.request.host == domain_name
+        local_request = self.request.host == domain_name or \
+                        appstruct['came_from'] == '/'
         if not local_request:
             self.request.session['came_from'] = appstruct['came_from']
         if 'login' in self.request.params:
