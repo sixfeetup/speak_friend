@@ -13,7 +13,7 @@ from speak_friend.utils import get_domain
 logger = logging.getLogger(__name__)
 
 DEFAULT_PRIMARY_COLOR = '#3A4E9F'
-DEFAULT_SECONDARY_COLOR = '#929292'
+DEFAULT_SECONDARY_COLOR = '#939292'
 
 
 class SFTemplateAPI(TemplateAPI):
