@@ -58,10 +58,15 @@ class CreateDomain(object):
     def __init__(self, request):
         self.request = request
         self.domain_form = make_domain_form(request)
+        self.return_url = self.request.route_url('list_domains')
 
     def post(self):
         if self.request.method != "POST":
             return HTTPMethodNotAllowed()
+        if 'cancel' in self.request.POST:
+            self.request.session.flash('Domain creation cancelled',
+                                        queue='info')
+            return HTTPFound(location=self.return_url)
         if 'submit' not in self.request.POST:
             return self.get()
 
@@ -81,8 +86,7 @@ class CreateDomain(object):
 
         self.request.session.flash('Domain successfully created!',
                                    queue='success')
-        url = self.request.route_url('list_domains')
-        return HTTPFound(location=url)
+        return HTTPFound(location=self.return_url)
 
     def get(self, success=False):
         if success:
@@ -120,7 +124,7 @@ class EditDomain(object):
             return HTTPMethodNotAllowed()
         if 'cancel' in self.request.POST:
             self.request.session.flash('Domain edit cancelled',
-                                       queue='success')
+                                       queue='info')
             return HTTPFound(location=self.return_url)
         if 'submit' not in self.request.POST:
             return self.get()
