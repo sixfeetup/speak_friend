@@ -93,4 +93,4 @@ def set_username_validator(config, validator_class=None):
     def initialize_validator():
         config.registry.username_validator_class = validator_class
 
-    config.action('password_validator', initialize_validator)
+    config.action('username_validator', initialize_validator)

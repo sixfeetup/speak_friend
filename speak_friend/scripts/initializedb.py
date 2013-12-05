@@ -6,6 +6,7 @@ import transaction
 from sixfeetup.bowab.scripts.initializedb import main as bowab_main
 
 from speak_friend.configuration import set_password_context
+from speak_friend.configuration import set_username_validator
 from speak_friend.models.profiles import UserProfile
 
 
@@ -20,6 +21,7 @@ def main(argv=sys.argv):
     settings = config.registry.settings
 
     config.add_directive('set_password_context', set_password_context)
+    config.add_directive('set_username_validator', set_username_validator)
     if 'speak_friend.admin_username' not in settings:
         print("No admin user name specified. Skipping.")
         sys.exit(0)

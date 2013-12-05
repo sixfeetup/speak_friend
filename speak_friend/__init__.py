@@ -20,6 +20,7 @@ from pyramid_beaker import session_factory_from_settings
 
 
 from sixfeetup.bowab.configuration import require_csrf
+from sixfeetup.bowab.db import init_sa
 
 from speak_friend.configuration import get_user
 from speak_friend.configuration import set_password_context
