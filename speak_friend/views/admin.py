@@ -140,7 +140,7 @@ class EditDomain(object):
                 'target_domainname': self.target_domainname
             }
 
-        for attr in ['name','primary_color', 'secondary_color']:
+        for attr in ['name', 'primary_color', 'secondary_color']:
             if getattr(self.target_domain, attr, None) != appstruct[attr]:
                 setattr(self.target_domain, attr, appstruct[attr])
         if self.target_domain.password_valid != appstruct['password_valid']:
@@ -172,7 +172,7 @@ class DeleteDomain(object):
         msg_queue = 'error'
         try:
             query = self.request.db_session.query(DomainProfile).filter(
-                DomainProfile.name==target_domainname)
+                DomainProfile.name == target_domainname)
             target_domain = query.one()
             domain_found = True
         except MultipleResultsFound:
@@ -300,7 +300,8 @@ class UserSearch(object):
 class RequestUserPassword(object):
     def __init__(self, request):
         self.request = request
-        self.path = 'speak_friend:templates/email/admin_password_reset_notification.pt'
+        template_name = 'admin_password_reset_notification.pt'
+        self.path = 'speak_friend:templates/email/%s' % template_name
         settings = request.registry.settings
         self.subject = "%s: Reset password" % settings['site_name']
         self.sender = settings['site_from']
@@ -308,7 +309,7 @@ class RequestUserPassword(object):
 
     def get_target_user(self, username):
         query = self.request.db_session.query(UserProfile)
-        query = query.filter(UserProfile.username==username)
+        query = query.filter(UserProfile.username == username)
         user = query.first()
         return user
 
@@ -332,8 +333,9 @@ class RequestUserPassword(object):
                           recipients=[user.full_email],
                           html=response.unicode_body)
         mailer.send(message)
-        flash_msg = "A link to reset %s's password has been sent to their email."
-        self.request.session.flash(flash_msg % user.username, queue='success')
+        msg = "A link to reset %s's password has been sent to their email."
+        self.request.session.flash(msg % user.username, queue='success')
+
 
 @view_defaults(route_name='disable_user')
 class DisableUser(object):
@@ -346,7 +348,8 @@ class DisableUser(object):
 
     def get_target_user(self, username):
         user_query = self.request.db_session.query(UserProfile)
-        user_query = user_query.filter(UserProfile.username==self.target_username)
+        user_query = user_query.filter(
+            UserProfile.username == self.target_username)
         user = user_query.first()
         return user
 
@@ -367,8 +370,8 @@ class DisableUser(object):
             return self.get()
         controls = self.request.POST.items()
         try:
-            appstruct = self.form.validate(controls)
-        except ValidationFailure,e:
+            self.form.validate(controls)
+        except ValidationFailure, e:
             data = {
                 'forms': [self.form],
                 'rendered_form': e.render(),
