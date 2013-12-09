@@ -275,3 +275,4 @@ class IPasswordReset(IUserActivity):
     """ An event that is emitted whenever a user successfully
     resets their password.
     """
+    notify_user = Attribute('Should the user be notified')

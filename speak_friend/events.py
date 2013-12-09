@@ -1,5 +1,6 @@
+from pyramid.path import DottedNameResolver
+
 from zope.interface import implementer
-from zope.interface import Interface
 
 from speak_friend.interfaces import IUserActivity
 from speak_friend.interfaces import IAccountCreated
@@ -249,8 +250,22 @@ class PasswordReset(UserActivity):
     """
 
     activity = u'reset_password'
+    notify_user = True
 
-    def __init__(self, request, user,
-                 actor=None, **activity_detail):
+    def __init__(self, request, user, actor=None, **activity_detail):
         super(PasswordReset, self).__init__(request, user,
               actor, **activity_detail)
+
+
+def get_pwreset_class(registry):
+    """Looks up the password reset class to use within a Pyramid
+    configuration registry. It will return the PasswordReset class
+    if none is set.
+    """
+    pwreset_class = PasswordReset
+    if hasattr(registry, 'settings'):
+        pwreset_class_path = registry.settings.get(
+            'speak_friend.pwreset_class', pwreset_class)
+        resolver = DottedNameResolver()
+        pwreset_class = resolver.maybe_resolve(pwreset_class_path)
+    return pwreset_class

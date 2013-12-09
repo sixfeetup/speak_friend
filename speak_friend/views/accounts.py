@@ -27,8 +27,8 @@ from speak_friend.events import LoggedIn
 from speak_friend.events import LoggedOut
 from speak_friend.events import LoginFailed
 from speak_friend.events import PasswordRequested
-from speak_friend.events import PasswordReset
 from speak_friend.events import ProfileChanged
+from speak_friend.events import get_pwreset_class
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.profiles import make_password_reset_form
@@ -330,7 +330,8 @@ class ChangePassword(object):
             self.request.session.new_csrf_token()
             self.request.session.save()
             self.frm = make_password_change_form(self.request)
-            self.request.registry.notify(PasswordReset(self.request,
+            pwreset_class = get_pwreset_class(self.request.registry)
+            self.request.registry.notify(pwreset_class(self.request,
                                                        self.target_user))
         else:
             self.request.session.flash('Incorrect password.',
@@ -454,7 +455,8 @@ class ResetPassword(object):
             self.request.session.new_csrf_token()
             self.request.session['came_from'] = reset_token.came_from
             self.request.session.save()
-            self.request.registry.notify(PasswordReset(self.request,
+            pwreset_class = get_pwreset_class(self.request.registry)
+            self.request.registry.notify(pwreset_class(self.request,
                                                        reset_token.user))
             self.request.registry.notify(LoggedIn(self.request,
                                                   reset_token.user,

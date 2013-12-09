@@ -192,9 +192,12 @@ def notify_password_request(event):
 
 
 def confirm_password_reset(event):
-    """Send confirmation email to user after their password is reset.
+    """Send confirmation email to user after their password is reset
+    if the notify_user flag is set to True (the default).
     """
     logger = getLogger('speak_friend.user_activity')
+    if not event.notify_user:
+        return
     path = 'speak_friend:templates/email/password_reset_confirmation.pt'
     settings = event.request.registry.settings
     subject = '%s: Password reset' % settings['site_name']
