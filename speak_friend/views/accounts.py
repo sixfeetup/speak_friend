@@ -281,7 +281,11 @@ class ChangePassword(object):
         if self.target_user is None:
             raise HTTPNotFound()
         self.login_view = LoginView(request, max_attempts)
-        self.frm = make_password_change_form(request)
+        self.admin_change = (
+            request.user.is_superuser and
+            request.user.username != self.target_username
+        )
+        self.frm = make_password_change_form(request, self.admin_change)
 
     def get(self):
         return {
@@ -311,13 +315,18 @@ class ChangePassword(object):
                 'target_username': self.target_username,
             }
 
-        password = appstruct['password']
-        if password == colander.null:
-            password = ''
+        if self.admin_change:
+            valid_pass = True
+        else:
+            password = appstruct['password']
+            if password == colander.null:
+                password = ''
 
-        valid_pass = self.login_view.verify_password(password,
-                                                     self.target_user.password_hash,
-                                                     self.target_user)
+            valid_pass = self.login_view.verify_password(
+                password,
+                self.target_user.password_hash,
+                self.target_user,
+            )
 
         new_hash = self.login_view.pass_ctx.encrypt(appstruct['new_password'])
 
@@ -329,7 +338,8 @@ class ChangePassword(object):
             # Invalidate the current token
             self.request.session.new_csrf_token()
             self.request.session.save()
-            self.frm = make_password_change_form(self.request)
+            self.frm = make_password_change_form(
+                self.request, self.admin_change)
             pwreset_class = get_pwreset_class(self.request.registry)
             self.request.registry.notify(pwreset_class(self.request,
                                                        self.target_user))
@@ -337,6 +347,7 @@ class ChangePassword(object):
             self.request.session.flash('Incorrect password.',
                                        queue='error')
         return self.get()
+
 
 def token_expired(request):
     cp = ControlPanel(request)

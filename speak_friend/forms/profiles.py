@@ -535,7 +535,10 @@ class PasswordChange(CSRFSchema):
     new_password = SchemaNode(
         String(),
         widget=StrengthValidatingPasswordWidget(),
-        description='* Minimum of 8 characters and must include one non-alpha character.',
+        description=(
+            '* Minimum of 8 characters and must include one non-alpha '
+            'character.'
+        ),
         validator=create_password_validator
     )
     came_from = SchemaNode(
@@ -546,8 +549,10 @@ class PasswordChange(CSRFSchema):
     )
 
 
-def make_password_change_form(request):
+def make_password_change_form(request, admin_change=False):
     schema = PasswordChange()
+    if admin_change:
+        del schema['password']
     password_reset_form = Form(
         schema=schema.bind(request=request),
         bootstrap_form_style='form-vertical',

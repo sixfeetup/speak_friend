@@ -19,7 +19,7 @@
       <tal:edit-title tal:condition="api.is_active_tab('edit_profile')">
         Edit Profile for ${target_username}</tal:edit-title>
       <tal:pw-title tal:condition="api.is_active_tab('change_password')">
-        Modify Your Password</tal:pw-title>
+        Modify Password for ${target_username}</tal:pw-title>
     </metal:title>
     
     <metal:content fill-slot="content">

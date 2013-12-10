@@ -36,7 +36,6 @@ from speak_friend.events import UserActivity
 from speak_friend.forms.controlpanel import authentication_schema
 from speak_friend.forms.controlpanel import domain_defaults_schema
 from speak_friend.forms.controlpanel import email_notification_schema
-from speak_friend.security import ChangePasswordFactory
 from speak_friend.security import EditProfileFactory
 from speak_friend.security import RootFactory
 from speak_friend.security import groupfinder
@@ -145,7 +144,7 @@ def includeme(config):
                     http_cache=0,
                     renderer='templates/edit_profile.pt')
     config.add_route('change_password', '/change_password/{username}/',
-                     factory=ChangePasswordFactory)
+                     factory=EditProfileFactory)
     config.add_view(accounts.ChangePassword, attr="get", request_method='GET',
                     route_name='change_password',
                     permission='edit',
