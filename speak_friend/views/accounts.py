@@ -343,6 +343,9 @@ class ChangePassword(object):
             pwreset_class = get_pwreset_class(self.request.registry)
             self.request.registry.notify(pwreset_class(self.request,
                                                        self.target_user))
+            if self.admin_change:
+                return HTTPFound(
+                    location=self.request.route_url('user_search'))
         else:
             self.request.session.flash('Incorrect password.',
                                        queue='error')
