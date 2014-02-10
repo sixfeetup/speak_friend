@@ -23,14 +23,14 @@ activities = Table(
 )
 activities.implicit_returning = False
 
-authorize_checkid = op.inline_literal(u'authorize_checkid')
-
 
 def upgrade():
     sql = activities.insert()
+    authorize_checkid = op.inline_literal(u'authorize_checkid')
     op.execute(sql.values({'activity': authorize_checkid}))
 
 
 def downgrade():
     sql = activities.delete()
+    authorize_checkid = op.inline_literal(u'authorize_checkid')
     op.execute(sql.values({'activity': authorize_checkid}))
