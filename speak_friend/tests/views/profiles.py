@@ -92,7 +92,7 @@ class ViewTests(SFBaseCase):
         request.db_session = MockSession(store=[user])
         request.matchdict['username'] = 'testuser'
         request.user = user
-        request.referer = '/'
+        request.referrer = '/'
         view = EditProfile(request, MAX_DOMAIN_ATTEMPTS)
         view.target_username = 'test'
         view.current_username = 'test'

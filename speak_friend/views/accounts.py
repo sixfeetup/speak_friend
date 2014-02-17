@@ -253,8 +253,8 @@ class EditProfile(object):
 
     def get(self):
         appstruct = self.target_user.make_appstruct()
-        if self.request.referer:
-            appstruct['came_from'] = self.request.referer
+        if self.request.referrer:
+            appstruct['came_from'] = self.request.referrer
         if self.request.user.is_superuser:
             appstruct['user_disabled'] = self.target_user.admin_disabled
             appstruct['is_superuser'] = self.target_user.is_superuser
