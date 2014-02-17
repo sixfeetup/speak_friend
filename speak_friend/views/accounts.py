@@ -242,8 +242,8 @@ class EditProfile(object):
         if self.request.user.is_superuser and not failed:
             if 'user_search' in appstruct['came_from']:
                 # The search form is a GET, so strip the CSRF out.
-                url = replace_url_csrf(appstruct['came_from'],
-                                      self.request.session)
+                url = replace_url_csrf(
+                    appstruct['came_from'], self.request.session)
                 redirect = HTTPFound(url)
             else:
                 redirect = HTTPFound(self.request.route_url('user_search'))

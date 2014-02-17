@@ -2,8 +2,6 @@ from pyramid import testing
 from webob.multidict import MultiDict
 from speak_friend.views.accounts import CreateProfile, EditProfile
 
-from mock import patch
-
 from sixfeetup.bowab.tests.mocks import MockSession
 
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
