@@ -8,7 +8,7 @@ def create_user(username):
         'Lname',
         'test@test.com',
         'asdfklhjadsfklhjasf',
-        'sd',
+        None,
         0,
         False,
     )

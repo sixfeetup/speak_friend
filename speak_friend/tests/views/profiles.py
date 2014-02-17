@@ -1,6 +1,8 @@
+from passlib.apps import ldap_context
+
 from pyramid import testing
 from webob.multidict import MultiDict
-from speak_friend.views.accounts import CreateProfile, EditProfile
+from speak_friend.views.accounts import CreateProfile, EditProfile, LoginView
 
 from sixfeetup.bowab.tests.mocks import MockSession
 
@@ -98,3 +100,44 @@ class ViewTests(SFBaseCase):
         view.current_username = 'test'
         info = view.get()
         self.assertTrue('rendered_form' in info)
+
+    def test_login_view(self):
+        """
+        Test the user login view.
+        """
+        request = self.request
+
+        request.referrer = '/'
+        request.path = request.path_info = "/login/"
+        self.config.add_route('login', '/login/')
+        request.matched_route = self.config.get_routes_mapper(
+            ).get_route('login')
+
+        self.config.registry.password_context = ldap_context
+        user = create_user('testuser')
+        secret = 'secret'
+        encrypted = self.config.registry.password_context.encrypt(secret)
+        user.password_hash = encrypted
+        request.user = user
+
+        request.session.save = lambda: None
+        request['REMOTE_ADDR'] = '127.0.0.2'
+        request.db_session = MockSession(store=[user])
+        request.matchdict['username'] = 'testuser'
+        view = LoginView(request, MAX_DOMAIN_ATTEMPTS)
+        view.target_username = 'test'
+        view.current_username = 'test'
+
+        info = view.get()
+        self.assertTrue('rendered_form' in info)
+
+        view.request.POST.update(
+            submit='1',
+            came_from=request.referrer,
+            csrf_token=request.session.get_csrf_token(),
+            login=user.username, password=secret)
+        post = view.post()
+        self.assertIn(
+            'Location', post.headers, 'Missing redirect location')
+        self.assertEqual(
+            post.headers['Location'], '/', 'Wrong redirect location')

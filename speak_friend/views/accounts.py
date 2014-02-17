@@ -332,6 +332,7 @@ class ChangePassword(object):
 
         if valid_pass:
             self.target_user.password_hash = new_hash
+            self.target_user.password_salt = None
             self.request.db_session.add(self.target_user)
             self.request.session.flash('Account successfully modified!',
                                        queue='success')
