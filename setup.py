@@ -16,7 +16,6 @@ requires = [
     'py-bcrypt',
     'colander',
     'deform',
-    'deform_bootstrap',
     'python-openid',
     'psycopg2',
     'SQLAlchemy',

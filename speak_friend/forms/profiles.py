@@ -33,9 +33,8 @@ password_registry.set_css_resources('password', None,
 
 # set a template renderer that loads both deform and speak_friend templates
 deform_path = resource_filename('deform', 'templates')
-deform_bootstrap_path = resource_filename('deform_bootstrap', 'templates')
 speak_friend_path = resource_filename('speak_friend', 'templates')
-search_path = (speak_friend_path, deform_bootstrap_path, deform_path)
+search_path = (speak_friend_path, deform_path)
 renderer = ZPTRendererFactory(search_path)
 
 

@@ -9,8 +9,6 @@
           <link rel="stylesheet" media="screen" type="text/css"
                 tal:attributes="href python: request.static_url(css_path)" />
         </tal:resources>
-        <link rel="stylesheet" type="text/css" media="screen" charset="utf-8"
-              href="${request.static_url('deform_bootstrap:static/deform_bootstrap.css')}" />
         <link rel="stylesheet" type="text/css" media="screen"
               href="${request.static_url('speak_friend:static/css/bootstrap.min.css')}" />
         <link rel="stylesheet" type="text/css" media="screen"
@@ -26,9 +24,6 @@
           <script type="text/javascript"
                   tal:attributes="src python: request.static_url(js_path)"></script>
         </tal:resources>
-        <tal:deform-bootstrap-js condition="api.js_resources">
-            <script src="${request.static_url('deform_bootstrap:static/deform_bootstrap.js')}"></script>
-        </tal:deform-bootstrap-js>
         <metal:extend-js define-slot="extend-js">
         </metal:extend-js>
         <script src="${request.static_url('speak_friend:static/js/bootstrap.min.js')}"></script>

@@ -61,7 +61,6 @@ def null_adapter(obj, request):
 
 def includeme(config):
     # Dependencies
-    config.include('deform_bootstrap')
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
     config.include('pyramid_beaker')
@@ -284,10 +283,6 @@ def includeme(config):
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
-    config.add_static_view(
-        'deform_bootstrap_static', 'deform_bootstrap:static',
-        cache_max_age=3600
-    )
     config.add_static_view('bowab_static', 'sixfeetup.bowab:static')
 
     # Put last, so that app routes are not swallowed
