@@ -64,6 +64,7 @@ def includeme(config):
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
     config.include('pyramid_beaker')
+    config.include('pyramid_chameleon')
     config.include('sixfeetup.bowab')
     config.include('pyramid_controlpanel')
 
