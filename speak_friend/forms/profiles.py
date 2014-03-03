@@ -98,10 +98,10 @@ class UserEmail(object):
     """Validator to check email existence in UserProfiles
 
     If ``msg`` is supplied, it will be the error message to be used when
-    raising `colander.Invalid`; otherwise, defaults to 'No user with that email address'
-
-    The ``should_exist`` keyword argument specifies whether the validator checks for the
-    email existing or not in the table. It defaults to `True`
+    raising `colander.Invalid`; otherwise, defaults to 'No user with that email
+    address' The ``should_exist`` keyword argument specifies whether the
+    validator checks for the email existing or not in the table. It defaults to
+    `True`
     """
     def __init__(self, msg=None, should_exist=True, for_edit=False,
                  db_session=None):
@@ -118,7 +118,7 @@ class UserEmail(object):
         if self.for_edit and value == node.current_value:
             return True
         query = self.db_session.query(UserProfile)
-        query = query.filter(UserProfile.email==value)
+        query = query.filter(UserProfile.email == value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
@@ -158,7 +158,7 @@ class DomainName(object):
         if self.for_edit and value == node.current_value:
             return True
         query = self.db_session.query(DomainProfile)
-        query = query.filter(DomainProfile.name==value)
+        query = query.filter(DomainProfile.name == value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
@@ -177,12 +177,13 @@ def create_domain_validator(node, kw):
 class UserName(object):
     """Validator to check username existence in UserProfiles
 
-    The ``should_exist`` keyword argument specifies whether the validator checks for the
-    username existing or not in the table. It defaults to `False`
+    The ``should_exist`` keyword argument specifies whether the validator
+    checks for the username existing or not in the table. It defaults to
+    `False`
     """
     def __init__(self, should_exist=False, db_session=None):
         self.should_exist = should_exist
-        if should_exist == True:
+        if should_exist is True:
             self.msg = "Username does not exist."
         else:
             self.msg = "Username already exists."
@@ -190,7 +191,7 @@ class UserName(object):
 
     def __call__(self, node, value):
         query = self.db_session.query(UserProfile)
-        query = query.filter(UserProfile.username==value)
+        query = query.filter(UserProfile.username == value)
         exists = bool(query.count())
         if exists != self.should_exist:
             raise Invalid(node, self.msg)
@@ -213,7 +214,7 @@ def create_username_validator(node, kw):
 
 
 def usage_policy_validator(value):
-    return value == True
+    return value is True
 
 
 @deferred
@@ -248,7 +249,8 @@ class Profile(CSRFSchema):
     password = SchemaNode(
         String(),
         widget=StrengthValidatingPasswordWidget(),
-        description='* Minimum of 8 characters and must include one non-alpha character.',
+        description=
+        '* Minimum of 8 characters and must include one non-alpha character.',
         validator=create_password_validator,
     )
     came_from = SchemaNode(
@@ -265,10 +267,8 @@ class EditProfileSchema(CSRFSchema):
         missing='',
         widget=TextInputWidget(template='readonly/textinput'),
     )
-    first_name = SchemaNode(String(),
-                           required=False)
-    last_name = SchemaNode(String(),
-                          required=False)
+    first_name = SchemaNode(String(), required=False)
+    last_name = SchemaNode(String(), required=False)
     email = SchemaNode(
         String(),
         title=u'Email Address',
@@ -336,8 +336,9 @@ def make_profile_form(request, edit=False):
             agree_to_policy = SchemaNode(
                 Bool(),
                 title='I agree to the site policy.',
-                validator=Function(usage_policy_validator,
-                                   message='Agreement with the site policy is required.'),
+                validator=Function(
+                    usage_policy_validator,
+                    message='Agreement with the site policy is required.'),
             )
             captcha = SchemaNode(
                 String(),
@@ -382,7 +383,9 @@ class Domain(CSRFSchema):
     primary_color = SchemaNode(
         String(),
         title="Primary Color",
-        description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
+        description=
+        "Provide a valid hexidecimal color value, including the '#'. If left "
+        "empty, the site default value will be used",
         required=False,
         missing='',
         widget=deferred_primary_color_widget,
@@ -390,7 +393,9 @@ class Domain(CSRFSchema):
     secondary_color = SchemaNode(
         String(),
         title="Secondary Color",
-        description="Provide a valid hexidecimal color value, including the '#'. If left empty, the site default value will be used",
+        description=
+        "Provide a valid hexidecimal color value, including the '#'. If left "
+        "empty, the site default value will be used",
         required=False,
         missing='',
         widget=deferred_secondary_color_widget,
@@ -405,7 +410,7 @@ def make_domain_form(request, domain=None):
         'speak_friend.secondary_color', DEFAULT_SECONDARY_COLOR)
 
     if domain is not None:
-        edit=True
+        edit = True
         if domain.primary_color:
             primary_color = domain.primary_color
         if domain.secondary_color:
@@ -569,7 +574,9 @@ class UserSearch(CSRFSchema):
     query = SchemaNode(
         String(),
         missing='',
-        description="Enter all or the start of a user's first name, last name, email address or username"
+        description=
+        "Enter all or the start of a user's first name, last name, email "
+        "address or username"
     )
     column = SchemaNode(
         String(),
@@ -588,8 +595,7 @@ def make_user_search_form(request):
     buttons = [Button('search', title='Search')]
     if 'query' in request.GET:
         buttons += [Button('clear_search', title='Clear Search',
-                           type='submit', css_class='btn'
-        )]
+                           type='submit', css_class='btn')]
 
     user_search_form = Form(
         method="GET",
@@ -616,8 +622,7 @@ def make_disable_user_form(request):
     disable_user_form = Form(
         schema=schema.bind(request=request),
         buttons=(Button('submit', title='Yes'),
-                 Button('cancel', title='No')
-        ),
+                 Button('cancel', title='No')),
         formid='disable-form',
     )
     return disable_user_form
