@@ -24,11 +24,12 @@ from speak_friend.models.profiles import DomainProfile
 
 # set a resource registry that contains resources for the password widget
 password_registry = ResourceRegistry()
-password_registry.set_js_resources('password', None,
-                                   'js/zxcvbn-async.js',
-                                   'js/password_strength.js')
-password_registry.set_css_resources('password', None,
-                                    'css/password_strength.css')
+password_registry.set_js_resources(
+    'password', None,
+    'speak_friend:static/js/zxcvbn-async.js',
+    'speak_friend:static/js/password_strength.js')
+password_registry.set_css_resources(
+    'password', None, 'speak_friend:static/css/password_strength.css')
 
 
 # set a template renderer that loads both deform and speak_friend templates
