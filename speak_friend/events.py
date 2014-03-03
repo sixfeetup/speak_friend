@@ -165,7 +165,7 @@ class LoggedIn(UserActivity):
     def __init__(self, request, user,
                  actor=None, **activity_detail):
         if u'ip_address' not in activity_detail:
-            activity_detail[u'ip_address'] = request['REMOTE_ADDR']
+            activity_detail[u'ip_address'] = request.environ['REMOTE_ADDR']
         super(LoggedIn, self).__init__(request, user,
               actor, **activity_detail)
 
