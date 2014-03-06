@@ -7,14 +7,10 @@ from openid.yadis.constants import YADIS_CONTENT_TYPE
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.exceptions import ConfigurationError
-from pyramid.exceptions import Forbidden
-from pyramid.events import BeforeRender
 from pyramid.events import NewResponse
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.renderers import JSON
 from pyramid.security import NO_PERMISSION_REQUIRED
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from pyramid_beaker import session_factory_from_settings
 
@@ -28,7 +24,6 @@ from speak_friend.configuration import set_password_validator
 from speak_friend.configuration import set_username_validator
 from speak_friend.events import AccountCreated
 from speak_friend.events import AccountLocked
-from speak_friend.events import LoginFailed
 from speak_friend.events import PasswordRequested
 from speak_friend.events import PasswordReset
 from speak_friend.events import ProfileChanged
@@ -66,10 +61,10 @@ def null_adapter(obj, request):
 
 def includeme(config):
     # Dependencies
-    config.include('deform_bootstrap')
     config.include('pyramid_exclog')
     config.include('pyramid_mailer')
     config.include('pyramid_beaker')
+    config.include('pyramid_chameleon')
     config.include('sixfeetup.bowab')
     config.include('pyramid_controlpanel')
 
@@ -289,10 +284,6 @@ def includeme(config):
     config.add_static_view('speak_friend_static', 'speak_friend:static',
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
-    config.add_static_view(
-        'deform_bootstrap_static', 'deform_bootstrap:static',
-        cache_max_age=3600
-    )
     config.add_static_view('bowab_static', 'sixfeetup.bowab:static')
 
     # Put last, so that app routes are not swallowed

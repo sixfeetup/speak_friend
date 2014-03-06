@@ -67,7 +67,7 @@ class TestUserActivity(BaseInterface):
         if None not in ACTIVITIES:
             ACTIVITIES.append(None)
         req = testing.DummyRequest(referrer='http://foo.com')
-        req['REMOTE_ADDR'] = '192.168.1.1'
+        req.environ['REMOTE_ADDR'] = '192.168.1.1'
         user = create_user('sfupadmin')
         req.user = user
         super(TestUserActivity, self).test_provides(req, user,

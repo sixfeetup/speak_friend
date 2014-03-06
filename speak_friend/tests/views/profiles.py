@@ -121,7 +121,7 @@ class ViewTests(SFBaseCase):
         request.user = user
 
         request.session.save = lambda: None
-        request['REMOTE_ADDR'] = '127.0.0.2'
+        request.environ['REMOTE_ADDR'] = '127.0.0.2'
         request.db_session = MockSession(store=[user])
         request.matchdict['username'] = 'testuser'
         view = LoginView(request, MAX_DOMAIN_ATTEMPTS)

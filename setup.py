@@ -11,12 +11,12 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'pyramid',
     'pyramid_tm',
+    'pyramid_chameleon',
     'waitress',
     'passlib',
     'py-bcrypt',
     'colander',
     'deform',
-    'deform_bootstrap',
     'python-openid',
     'psycopg2',
     'SQLAlchemy',

@@ -16,6 +16,7 @@ class SFBaseCase(TestCase):
             'bowab.recaptcha_private_key': 'foo',
             'bowab.recaptcha_public_key': 'foo',
         })
+        self.config.include('pyramid_chameleon')
         self.config.add_route('yadis', '/xrds.xml')
         self.request = testing.DummyRequest()
         self.request.user = create_user('sfupadmin')
