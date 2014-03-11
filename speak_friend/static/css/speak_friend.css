@@ -171,6 +171,9 @@ label.required:after {
 #profile-form #req-deformField9 {
     display: none;
 }
+.picker__frame {
+    max-width: 400px;
+}
 /* control panel */
 .form-horizontal .form-group > input,
 .form-horizontal .form-group .help-block,
