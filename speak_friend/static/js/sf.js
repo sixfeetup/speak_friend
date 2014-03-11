@@ -105,12 +105,8 @@
         form.submit()
     });
 
-    // display single checkboxes next to their labels
-    var checks = $("input[type='checkbox']:only-child").length;
-    for(i = 0; i < checks; i++) {
-         $("input[type='checkbox']:only-child").eq(i).parent(".controls").css("display","inline");
-         $("input[type='checkbox']:only-child").eq(i).parent(".controls").siblings("label").css("display","inline");
-    }
+    // display Required help text inline
+    $(".help-block:contains('Required')").removeClass("help-block").addClass("help-inline");
 }); })(jQuery);
 
 

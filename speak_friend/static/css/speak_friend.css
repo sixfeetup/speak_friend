@@ -145,6 +145,18 @@ label.required:after {
 .form-group .checkbox input[type="checkbox"] {
     float: none;
 }
+.form-group.has-error .control-label,
+.form-group.has-error .help-block,
+.form-group.has-error .help-inline {
+    color: #B94A48;
+}
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+    border-color: #B94A48;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    color: #B94A48;
+}
 #profile-form #item-deformField8.error label,
 #profile-form #item-deformField8.error .controls {
     display: inline;
