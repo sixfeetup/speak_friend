@@ -129,6 +129,19 @@ input[type="color"],
     min-width: 115px;
 }
 
+.form-group.item-user_disabled label,
+.form-group.item-user_disabled .checkbox,
+.form-group.item-is_superuser label,
+.form-group.item-is_superuser .checkbox,
+.form-group.item-agree_to_policy label,
+.form-group.item-agree_to_policy .checkbox,
+.form-group.item-remember_me label,
+.form-group.item-remember_me .checkbox {
+    display: inline;
+}
+.form-group .checkbox input[type="checkbox"] {
+    float: none;
+}
 #profile-form #item-deformField8.error label,
 #profile-form #item-deformField8.error .controls {
     display: inline;
