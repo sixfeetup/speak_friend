@@ -185,3 +185,43 @@ label.required:after {
 #overlay {
     display: none;
 }
+
+/* pagination */
+.pager {
+    list-style: none outside none;
+    margin-bottom: 18px;
+    margin-left: 0;
+    text-align: center;
+}
+.pager:before, .pager:after {
+    content: "";
+    display: table;
+}
+.pager:after {
+    clear: both;
+}
+.pager li {
+    display: inline;
+}
+.pager a {
+    background-color: #FFFFFF;
+    border: 1px solid #DDDDDD;
+    border-radius: 15px;
+    display: inline-block;
+    padding: 5px 14px;
+}
+.pager a:hover {
+    background-color: #F5F5F5;
+    text-decoration: none;
+}
+.pager .next a {
+    float: right;
+}
+.pager .previous a {
+    float: left;
+}
+.pager .disabled a, .pager .disabled a:hover {
+    background-color: #FFFFFF;
+    color: #999999;
+    cursor: default;
+}
