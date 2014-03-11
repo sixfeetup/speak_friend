@@ -132,6 +132,9 @@ label.required:after {
     content: " *";
     color: #ff0000;
 }
+.form-group {
+    margin-bottom: 10px;
+}
 .form-group.item-user_disabled label,
 .form-group.item-user_disabled .checkbox,
 .form-group.item-is_superuser label,
@@ -176,7 +179,13 @@ label.required:after {
     margin-left: 180px;
     display: block;
 }
-.deformSeqItem.row {
+.form-horizontal .col-xs-11 {
+    float: left;
+}
+.form-horizontal .help-block {
+    margin-top: 9px;
+}
+.form-horizontal .deformSeqItem.row {
     margin-left: 0;
 }
 .deformSeq .panel-heading {
