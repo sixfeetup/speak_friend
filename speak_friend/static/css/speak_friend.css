@@ -128,7 +128,10 @@ input[type="color"],
 .userActions {
     min-width: 115px;
 }
-
+label.required:after {
+    content: " *";
+    color: #ff0000;
+}
 .form-group.item-user_disabled label,
 .form-group.item-user_disabled .checkbox,
 .form-group.item-is_superuser label,
