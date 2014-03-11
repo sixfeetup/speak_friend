@@ -179,6 +179,9 @@ label.required:after {
 .deformSeqItem.row {
     margin-left: 0;
 }
+.deformSeq .panel-heading {
+    display: none;
+}
 #overlay {
     display: none;
 }

@@ -28,7 +28,6 @@ class ContactUs(CSRFSchema):
         title="came_from",
     )
     title='Contact Us',
-    description='Have a question or want to tell us something? Let us know.',
 
 
 def make_contact_us_form(request):
@@ -36,6 +35,5 @@ def make_contact_us_form(request):
     contact_us_form = Form(
         schema=schema.bind(request=request),
         buttons=('submit',),
-        bootstrap_form_style='form-vertical',
     )
     return contact_us_form
