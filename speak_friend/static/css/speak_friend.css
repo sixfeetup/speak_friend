@@ -178,7 +178,7 @@ label.required:after {
 .form-horizontal .form-group > input,
 .form-horizontal .form-group .help-block,
 .form-horizontal .form-group:last-child,
-.form-horizontal .deformSeq {
+.form-horizontal .deform-seq {
     margin-left: 180px;
     display: block;
 }
@@ -188,10 +188,10 @@ label.required:after {
 .form-horizontal .help-block {
     margin-top: 9px;
 }
-.form-horizontal .deformSeqItem.row {
+.form-horizontal .deform-seq-item.row {
     margin-left: 0;
 }
-.deformSeq .panel-heading {
+.deform-seq .panel-heading {
     display: none;
 }
 #overlay {
