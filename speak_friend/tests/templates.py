@@ -1,4 +1,30 @@
+from sixfeetup.bowab.tests import mocks
+
 from speak_friend.tests.common import SFBaseCase
+
+
+class MockSession(mocks.MockSession):
+    """
+    Differentiate between DomainProfiles and UserActivities.
+    """
+
+    def __init__(self, store=None):
+        super(MockSession, self).__init__(store=store)
+        self.query = MockQuery(store=self._store)
+
+
+class MockQuery(mocks.MockQuery):
+    """
+    Differentiate between DomainProfiles and UserActivities.
+    """
+
+    def __call__(self, model):
+        """
+        Differentiate between DomainProfiles and UserActivities.
+        """
+        if model.__name__ == 'UserActivity':
+            return mocks.MockQuery(self._store[:1])(model)
+        return mocks.MockQuery(self._store[1:])
 
 
 class SFTemplateAPITests(SFBaseCase):
@@ -54,7 +80,6 @@ class SFTemplateAPITests(SFBaseCase):
         from speak_friend.models import profiles
         self.request.user = None
         foo_domain = profiles.DomainProfile(name='foo.com', password_valid=-1)
-        from sixfeetup.bowab.tests import mocks
         self.request.db_session = mocks.MockSession([foo_domain])
         self.request.referrer = 'http://{0}/'.format(foo_domain.name)
         self.assertTrue(
@@ -86,7 +111,6 @@ class SFTemplateAPITests(SFBaseCase):
         from speak_friend.models import profiles
         self.request.user = None
         foo_domain = profiles.DomainProfile(name='foo.com', password_valid=-1)
-        from sixfeetup.bowab.tests import mocks
         self.request.db_session = mocks.MockSession([foo_domain])
         self.request.GET['came_from'] = 'http://{0}/'.format(foo_domain.name)
         self.assertTrue(
@@ -118,7 +142,6 @@ class SFTemplateAPITests(SFBaseCase):
         from speak_friend.models import profiles
         self.request.user = None
         foo_domain = profiles.DomainProfile(name='foo.com', password_valid=-1)
-        from sixfeetup.bowab.tests import mocks
         self.request.db_session = mocks.MockSession([foo_domain])
         self.request.POST['came_from'] = 'http://{0}/'.format(foo_domain.name)
         self.api.rendering_val = self.request.POST
@@ -131,3 +154,39 @@ class SFTemplateAPITests(SFBaseCase):
         self.assertEqual(
             self.api.last_checkid_domain.name, foo_domain.name,
             'Wrong domain from came_from for existing domain')
+
+    def test_session_non_existent_domain(self):
+        """
+        No API domain for Beaker sessions for non-existent domain objects.
+        """
+        from speak_friend.models import reports
+        foo_activity = reports.UserActivity(
+            user=self.request.user, activity='authorize_checkid',
+            came_from='http://foo.com', came_from_fqdn='foo.com')
+        self.request.db_session = MockSession([foo_activity])
+        self.assertTrue(
+            hasattr(self.api, 'last_checkid_domain'),
+            'Missing API domain attribute')
+        self.assertIsNone(
+            self.api.last_checkid_domain, 'Wrong domain from session')
+
+    def test_session_existing_domain(self):
+        """
+        API domain for Beaker sessions for existing domain objects.
+        """
+        from speak_friend.models import profiles
+        from speak_friend.models import reports
+        foo_domain = profiles.DomainProfile(name='foo.com', password_valid=-1)
+        foo_activity = reports.UserActivity(
+            user=self.request.user, activity='authorize_checkid',
+            came_from='http://foo.com', came_from_fqdn='foo.com')
+        self.request.db_session = MockSession([foo_activity, foo_domain])
+        self.assertTrue(
+            hasattr(self.api, 'last_checkid_domain'),
+            'Missing API domain attribute')
+        self.assertIsNotNone(
+            self.api.last_checkid_domain,
+            'Missing domain from session for existing domain')
+        self.assertEqual(
+            self.api.last_checkid_domain.name, foo_domain.name,
+            'Wrong domain from session for existing domain')
