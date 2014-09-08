@@ -5,6 +5,7 @@ from openid.extensions import sreg
 from openid.server.server import Server
 from openid.server.server import MalformedReturnURL
 from openid.server.server import ProtocolError
+from openid.server.server import UntrustedReturnURL
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
@@ -60,7 +61,7 @@ class OpenIDProvider(object):
                     request_params['openid.claimed_id'] = user_url
         try:
             openid_request = self.openid_server.decodeRequest(request_params)
-        except (MalformedReturnURL, ProtocolError) as e:
+        except (MalformedReturnURL, ProtocolError, UntrustedReturnURL) as e:
             logger.info(
                 'Unable to decode request: %s %s',
                 e.__class__,

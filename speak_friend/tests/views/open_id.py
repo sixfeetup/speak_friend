@@ -33,3 +33,15 @@ class OpenIdViewTests(SFBaseCase):
             'openid.return_to': 'http://google.com',
         })
         self.assertEqual(result, '')
+
+    def test_openid_process_untrusted(self):
+        provider = OpenIDProvider(self.request)
+        result = provider.process({
+            'openid.mode': 'checkid_setup',
+            'openid.realm': 'http://sfari.org',
+            'openid.ns': 'http://specs.openid.net/auth/2.0',
+            'openid.identity': 'http://example.com/jsmith',
+            'openid.claimed_id': 'http://example.com/jsmith',
+            'openid.return_to': 'http://youwonthelottery.com',
+        })
+        self.assertEqual(result, '')
