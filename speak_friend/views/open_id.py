@@ -61,7 +61,8 @@ class OpenIDProvider(object):
                     request_params['openid.claimed_id'] = user_url
         try:
             openid_request = self.openid_server.decodeRequest(request_params)
-        except (MalformedReturnURL, ProtocolError, UntrustedReturnURL) as e:
+        # MalformedReturnURL, UntrustedReturnURL, etc.
+        except ProtocolError as e:
             logger.info(
                 'Unable to decode request: %s %s',
                 e.__class__,
