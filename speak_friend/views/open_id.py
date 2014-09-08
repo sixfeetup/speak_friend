@@ -3,6 +3,8 @@ import logging
 from openid.consumer import discover
 from openid.extensions import sreg
 from openid.server.server import Server
+from openid.server.server import MalformedReturnURL
+from openid.server.server import ProtocolError
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPMethodNotAllowed
@@ -56,7 +58,15 @@ class OpenIDProvider(object):
                                                       username=username)
                     request_params['openid.identity'] = user_url
                     request_params['openid.claimed_id'] = user_url
-        openid_request = self.openid_server.decodeRequest(request_params)
+        try:
+            openid_request = self.openid_server.decodeRequest(request_params)
+        except (MalformedReturnURL, ProtocolError) as e:
+            logger.info(
+                'Unable to decode request: %s %s',
+                e.__class__,
+                e.openid_message
+            )
+            return ''
         logger.debug('Decoded request: %s', openid_request)
 
         if openid_request is None:
