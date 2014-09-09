@@ -35,16 +35,16 @@ class PasswordToolsTests(TestCase):
         # self.settings = DEFAULT_PASSWORD_SETTINGS.copy()
         self.validator = PasswordValidator()
         self.passwords = {
-            'alpha_lower': ['abcdef', [6,0,0,0,0]],
-            'alpha_upper': ['ABCDEF', [0,6,0,0,0]],
-            'alpha_mixed': ['abcDEF', [3,3,0,0,0]],
-            'numeric': ['123456',[0,0,6,0,6]],
-            'alphanumeric_lower': ['123abc', [3,0,3,0,3]],
-            'alphanumeric_upper': ['123ABC', [0,3,3,0,3]],
-            'alphanumeric_mixed': ['12aAbB', [2,2,2,0,2]],
-            'special': ['!#@{%^', [0,0,0,6,6]],
-            'complex': ['yRo8$D', [2,2,1,1,2]],
-            'long_complex': ['nYfJ6UUt$8y4j+]W', [5,5,3,3,6]]
+            'alpha_lower': ['abcdef', [6, 0, 0, 0, 0]],
+            'alpha_upper': ['ABCDEF', [0, 6, 0, 0, 0]],
+            'alpha_mixed': ['abcDEF', [3, 3, 0, 0, 0]],
+            'numeric': ['123456', [0, 0, 6, 0, 6]],
+            'alphanumeric_lower': ['123abc', [3, 0, 3, 0, 3]],
+            'alphanumeric_upper': ['123ABC', [0, 3, 3, 0, 3]],
+            'alphanumeric_mixed': ['12aAbB', [2, 2, 2, 0, 2]],
+            'special': ['!#@{%^', [0, 0, 0, 6, 6]],
+            'complex': ['yRo8$D', [2, 2, 1, 1, 2]],
+            'long_complex': ['nYfJ6UUt$8y4j+]W', [5, 5, 3, 3, 6]]
         }
 
     def decompose_charcounts(self, password):
@@ -54,7 +54,7 @@ class PasswordToolsTests(TestCase):
         """
         out = []
         counts = self.validator._get_chartype_counts(password)
-        for key in ['min_lower', 'min_upper', 'min_numeric', 'min_special', 
+        for key in ['min_lower', 'min_upper', 'min_numeric', 'min_special',
                     'min_non_alpha']:
             out.append(counts[key])
         return out
@@ -316,7 +316,6 @@ class PasswordPluginTests(PasswordHashingBaseCase):
         expected_schemes = ('sha256_crypt', 'ldap_salted_md5')
         actual_schemes = context.schemes()
         self.assertEqual(expected_schemes, actual_schemes)
-
 
     def test_default_context(self):
         from passlib.apps import ldap_context
