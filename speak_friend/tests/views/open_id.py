@@ -18,6 +18,8 @@ class OpenIdViewTests(SFBaseCase):
         provider = OpenIDProvider(self.request)
         result = provider.process({
             'openid.mode': 'checkid_setup',
+            'openid.realm': 'http://sfari.org',
+            'openid.ns': 'http://specs.openid.net/auth/2.0',
             'openid.identity': 'http://example.com/jsmith',
             'openid.claimed_id': 'http://example.com/jsmith',
             'openid.return_to': '//google.com/foo',
@@ -28,6 +30,8 @@ class OpenIdViewTests(SFBaseCase):
         provider = OpenIDProvider(self.request)
         result = provider.process({
             'openid.mode': 'not_real_mode',
+            'openid.realm': 'http://sfari.org',
+            'openid.ns': 'http://specs.openid.net/auth/2.0',
             'openid.identity': 'http://example.com/jsmith',
             'openid.claimed_id': 'http://example.com/jsmith',
             'openid.return_to': 'http://google.com',
