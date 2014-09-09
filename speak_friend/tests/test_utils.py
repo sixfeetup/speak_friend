@@ -32,4 +32,3 @@ class UtilsTests(SFBaseCase):
     def test_get_domain_with_port(self):
         domain = get_domain('http://foo.com:123')
         self.assertTrue(domain == 'foo.com')
-
