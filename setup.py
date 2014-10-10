@@ -34,10 +34,15 @@ requires = [
     'alembic',
     ]
 
-tests_require = requires + [
-    'nose',
+testing_deps = [
+    'pytest',
+    'pytest-cov',
     'coverage',
+    'testfixtures',
+    'mock',
 ]
+
+tests_require = requires + testing_deps
 
 setup(
       name='speak_friend',
@@ -60,7 +65,7 @@ setup(
       install_requires=requires,
       tests_require=tests_require,
       test_suite="nose.collector",
-      extras_require={'test': ['coverage', 'mock']},
+      extras_require={'test': testing_deps},
       entry_points="""\
       [paste.app_factory]
       main = speak_friend:main
