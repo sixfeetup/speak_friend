@@ -190,11 +190,12 @@ class UserName(object):
         self.db_session = db_session
 
     def __call__(self, node, value):
-        query = self.db_session.query(UserProfile)
-        query = query.filter(UserProfile.username == value)
-        exists = bool(query.count())
-        if exists != self.should_exist:
-            raise Invalid(node, self.msg)
+        if self.db_session is not None:
+            query = self.db_session.query(UserProfile)
+            query = query.filter(UserProfile.username == value)
+            exists = bool(query.count())
+            if exists != self.should_exist:
+                raise Invalid(node, self.msg)
 
 
 @deferred
