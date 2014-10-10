@@ -183,7 +183,7 @@ class UserName(object):
     """
     def __init__(self, should_exist=False, db_session=None):
         self.should_exist = should_exist
-        if should_exist is True:
+        if should_exist:
             self.msg = "Username does not exist."
         else:
             self.msg = "Username already exists."
@@ -403,7 +403,7 @@ class Domain(CSRFSchema):
 
 
 def make_domain_form(request, domain=None):
-    edit=False
+    edit = False
     primary_color = default_primary_color = request.registry.settings.get(
         'speak_friend.primary_color', DEFAULT_PRIMARY_COLOR)
     secondary_color = default_secondary_color = request.registry.settings.get(
