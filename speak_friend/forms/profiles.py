@@ -61,7 +61,7 @@ def deferred_secondary_color_widget(node, kw):
     return build_color_widget(color, default)
 
 
-segment_re = re.compile(r'[a-zA-Z0-9_\-\*]{0,63}')
+segment_re = re.compile(r'[a-zA-Z0-9_*-]{0,63}')
 
 
 class FQDN(object):
@@ -117,11 +117,12 @@ class UserEmail(object):
         # when the form is created (based on the authenticated username)
         if self.for_edit and value == node.current_value:
             return True
-        query = self.db_session.query(UserProfile)
-        query = query.filter(UserProfile.email == value)
-        exists = bool(query.count())
-        if exists != self.should_exist:
-            raise Invalid(node, self.msg)
+        if self.db_session is not None:
+            query = self.db_session.query(UserProfile)
+            query = query.filter(UserProfile.email == value)
+            exists = bool(query.count())
+            if exists != self.should_exist:
+                raise Invalid(node, self.msg)
 
 
 @deferred
@@ -157,11 +158,12 @@ class DomainName(object):
         # must set current_value to target domain name in edit form
         if self.for_edit and value == node.current_value:
             return True
-        query = self.db_session.query(DomainProfile)
-        query = query.filter(DomainProfile.name == value)
-        exists = bool(query.count())
-        if exists != self.should_exist:
-            raise Invalid(node, self.msg)
+        if self.db_session is not None:
+            query = self.db_session.query(DomainProfile)
+            query = query.filter(DomainProfile.name == value)
+            exists = bool(query.count())
+            if exists != self.should_exist:
+                raise Invalid(node, self.msg)
 
 
 @deferred
