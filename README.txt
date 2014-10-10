@@ -214,6 +214,7 @@ Exception Handling
 This package can integrate the pyramid_exclog and mailinglogger packages to automatically send email notifications when an exception is generated. To do so, include the following logging config:
 
 .. code-block:: ini
+
    :linenos:
    # Begin logging configuration
    
@@ -263,6 +264,7 @@ http://docs.pylonsproject.org/projects/pyramid_beaker/en/latest/index.html#sessi
 The recommended values are:
 
 .. code-block:: ini
+
     :linenos:
     session.type = ext:database
     session.url = postgresql+psycopg2://dbuser:dbpass@dbhost/dbname
