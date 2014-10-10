@@ -14,6 +14,7 @@ def create_user(username):
     )
     return profile
 
+
 class MockPasswordValidator(object):
     def __init__(self, settings={}):
         self.settings = settings

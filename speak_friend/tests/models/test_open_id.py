@@ -9,15 +9,7 @@ from sixfeetup.bowab.tests.mocks import MockQuery
 from speak_friend.models.open_id import SFOpenIDStore, Association, Nonce
 
 
-__all__ = [ 'OpenIDStoreTest', 'AssociationTests' ]
-
-
-def mock_filter(**kwargs):
-    if 'server_url' in kwargs:
-        assocs = [assoc for assoc in self.store
-                  if assoc.server_url == kwargs['server_url']]
-        if len(assocs) == 1:
-            return assocs[0]
+__all__ = ['OpenIDStoreTest', 'AssociationTests']
 
 
 class OpenIDStoreTest(TestCase):

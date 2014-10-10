@@ -9,5 +9,5 @@ from speak_friend.tests.common import SFBaseCase
 class SubscriberTests(SFBaseCase):
     def test_xrds_header(self):
         event = NewResponse(self.request, self.request.response)
-        new_response = add_yadis_header(event)
+        add_yadis_header(event)
         self.assertIn(YADIS_HEADER_NAME, event.response.headers)
