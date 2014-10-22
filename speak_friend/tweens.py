@@ -71,6 +71,8 @@ def initial_login_factory(handler, registry):
         if not request.user:
             return response
         domain_name = get_domain(request)
+        if not domain_name:
+            return response
         now = datetime.utcnow()
         utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
         try:
