@@ -73,8 +73,6 @@ def initial_login_factory(handler, registry):
         domain_name = get_domain(request)
         if not domain_name:
             return response
-        now = datetime.utcnow()
-        utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
         try:
             query = request.user.activity_query(request.db_session,
                                                 u'login')
@@ -113,7 +111,8 @@ def openid_factory(handler, registry):
            request.session['openid_request'] and \
            'auth_userid' in request.session:
             provider = OpenIDProvider(request)
-            openid_response = provider.process(request.session['openid_request'])
+            openid_response = provider.process(
+                request.session['openid_request'])
             if not openid_response:
                 # The provider couldn't extract a valid OpenID request
                 return response
@@ -155,8 +154,6 @@ def valid_referrer_factory(handler, registry):
     def valid_referrer_tween(request):
         """Verify the referring domain is valid.
         """
-        logger = logging.getLogger('speakfriend.valid_referrer_tween')
-
         response = handler(request)
 
         if 'location' in response.headers:
@@ -165,8 +162,8 @@ def valid_referrer_factory(handler, registry):
                                                   domain_name)
             local_request = request.host == domain_name
             if not local_request and domain is None and domain_name:
-                msg = 'Invalid requesting domain, not redirecting: %s' % domain_name
-                request.session.flash(msg, queue='error')
+                msg = 'Invalid requesting domain, not redirecting: %s'
+                request.session.flash(msg % domain_name, queue='error')
                 response.headers.pop('location')
                 response = HTTPFound(request.route_url('home'),
                                      headers=response.headers)
