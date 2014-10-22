@@ -66,10 +66,10 @@ def initial_login_factory(handler, registry):
     def initial_login_tween(request):
         """Verify the user has logged into a referring site at least once.
         """
+        logger = logging.getLogger('speak_friend.initial_login_tween')
         response = handler(request)
         if not request.user:
             return response
-        logger = logging.getLogger('speak_friend.initial_login_tween')
         domain_name = get_domain(request)
         now = datetime.utcnow()
         utc_now = now.replace(tzinfo=FixedOffsetTimezone(offset=0))
