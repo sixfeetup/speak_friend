@@ -1,0 +1,16 @@
+<metal:main use-macro="load: base.pt">
+    <metal:title fill-slot="page-title">Authorize Application</metal:title>
+    
+    <metal:content fill-slot="content">
+      <p>The application <b>${display_name}</b> (${domain}) is requesting permission to access your account.</p>
+      <p>The application will be able to obtain:</p>
+      <ul>
+          <li>Username</li>
+          <li>E-mail Address</li>
+          <li>First and Last Name</li>
+          <li>Whether or not you are an administrator</li>
+      </ul>
+      <p>Do you want to allow this?</p>
+      <div tal:content="structure form_html">authorization form</div>
+    </metal:content>
+</metal:main>

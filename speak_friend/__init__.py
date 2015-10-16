@@ -38,6 +38,7 @@ from speak_friend.views import accounts
 from speak_friend.views import admin
 from speak_friend.views import contactus
 from speak_friend.views import open_id
+from speak_friend.views import oauth2_api
 from speak_friend.views import error
 from speak_friend.subscribers import add_yadis_header
 from speak_friend.subscribers import confirm_account_created
@@ -285,6 +286,46 @@ def includeme(config):
                            cache_max_age=3600)
     config.add_static_view('deform_static', 'deform:static')
     config.add_static_view('bowab_static', 'sixfeetup.bowab:static')
+    config.add_route('create_client_secret', '/oauth2/create_secret')
+    config.add_view(
+        oauth2_api.create_secret,
+        route_name='create_client_secret',
+        request_method='POST',
+        permission=NO_PERMISSION_REQUIRED,
+        renderer='templates/create_client_secret.pt',
+    )
+    config.add_route('authorize_client', '/oauth2/authorize_client')
+    config.add_view(
+        oauth2_api.authorize_client,
+        route_name='authorize_client',
+        request_method='GET',
+        permission='view',
+        renderer='templates/authorize_client.pt',
+    )
+    config.add_route('process_authorization', '/oauth2/process_authorization')
+    config.add_view(
+        oauth2_api.process_authorization,
+        route_name='process_authorization',
+        request_method='POST',
+        permission=NO_PERMISSION_REQUIRED,
+        renderer='json',
+    )
+    config.add_route('request_token', '/oauth2/request_token/{code}')
+    config.add_view(
+        oauth2_api.request_access_token,
+        route_name='request_token',
+        request_method='POST',
+        permission=NO_PERMISSION_REQUIRED,
+        renderer='json',
+    )
+    config.add_route('get_user_details', '/oauth2/get_user_details')
+    config.add_view(
+        oauth2_api.get_user_details,
+        route_name='get_user_details',
+        request_method='POST',
+        permission=NO_PERMISSION_REQUIRED,
+        renderer='json',
+    )
 
     # Put last, so that app routes are not swallowed
     config.add_route('user_profile', '/{username}')
