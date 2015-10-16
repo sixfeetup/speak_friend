@@ -41,6 +41,7 @@ class ListDomains(object):
         for domain in domain_records:
             domain_dict = {
                 'name': domain.name,
+                'display_name': domain.display_name,
                 'password_valid': domain.get_password_valid(self.cp),
                 'edit_url': self.request.route_url('edit_domain',
                                                    domain_name=domain.name),
@@ -140,7 +141,8 @@ class EditDomain(object):
                 'target_domainname': self.target_domainname
             }
 
-        for attr in ['name', 'primary_color', 'secondary_color']:
+        for attr in ['name', 'primary_color', 'secondary_color',
+                     'display_name']:
             if getattr(self.target_domain, attr, None) != appstruct[attr]:
                 setattr(self.target_domain, attr, appstruct[attr])
         if self.target_domain.password_valid != appstruct['password_valid']:

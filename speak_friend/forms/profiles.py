@@ -369,6 +369,11 @@ def make_profile_form(request, edit=False):
 
 
 class Domain(CSRFSchema):
+    display_name = SchemaNode(
+        String(),
+        title="Name",
+        description="A user-friendly name to identify the domain",
+    )
     name = SchemaNode(
         String(),
         title="Domain Name",
