@@ -7,5 +7,10 @@
     
     <metal:content metal:fill-slot="content">
         <div tal:content="structure rendered_form">form</div>
+        <hr>
+        <h2>OAuth2 API Secret</h2>
+        <p>Create or replace the client secret for this application.</p>
+        <p class="alert alert-warning">Be sure to coordinate with the application's maintainer before replacing the secret.</p>
+        <div tal:content="structure secret_form">form</div>
     </metal:content>
 </metal:main>

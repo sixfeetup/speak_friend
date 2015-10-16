@@ -19,6 +19,7 @@ from webhelpers import paginate
 
 from pyramid_controlpanel.views import ControlPanel
 
+from speak_friend.forms.oauth2_api import make_client_secret_form
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.forms.profiles import make_disable_user_form
@@ -42,6 +43,7 @@ class ListDomains(object):
             domain_dict = {
                 'name': domain.name,
                 'display_name': domain.display_name,
+                'client_secret': domain.client_secret,
                 'password_valid': domain.get_password_valid(self.cp),
                 'edit_url': self.request.route_url('edit_domain',
                                                    domain_name=domain.name),
@@ -109,13 +111,19 @@ class EditDomain(object):
             raise HTTPNotFound()
         self.domain_form = make_domain_form(request,
                                             domain=self.target_domain)
+        self.secret_form = make_client_secret_form(request)
         self.return_url = self.request.route_url('list_domains')
 
     def get(self):
         appstruct = self.target_domain.make_appstruct()
+        self.secret_form.action = self.request.route_url('create_client_secret')
+        form_html = self.secret_form.render({
+            'domain': self.target_domainname,
+        })
         data = {
-            'forms': [self.domain_form],
+            'forms': [self.domain_form, self.secret_form],
             'rendered_form': self.domain_form.render(appstruct),
+            'secret_form': form_html,
             'target_domainname': self.target_domainname
         }
         return data
