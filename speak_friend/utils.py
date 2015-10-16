@@ -1,7 +1,14 @@
+import string
+from hashlib import sha256
+from random import SystemRandom
 from urllib import urlencode
 from urlparse import parse_qsl, urlsplit, urlunsplit
 
 from pyramid.interfaces import IRequest
+
+
+UNICODE_ASCII_CHARACTERS = (string.ascii_letters.decode('ascii') +
+    string.digits.decode('ascii'))
 
 
 def get_referrer(request):
@@ -46,3 +53,13 @@ def get_xrds_url(request):
     else:
         xrds_url = request.route_url('yadis')
     return xrds_url
+
+
+def hash_string(original_str):
+    """hash a string for database storage"""
+    return sha256(original_str).hexdigest()
+
+
+def random_ascii_string(length):
+    random = SystemRandom()
+    return ''.join([random.choice(UNICODE_ASCII_CHARACTERS) for x in xrange(length)])
