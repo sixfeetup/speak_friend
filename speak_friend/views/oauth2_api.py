@@ -1,3 +1,4 @@
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.httpexceptions import HTTPMethodNotAllowed
@@ -45,8 +46,7 @@ def authorize_client(context, request):
             'display_name': domain.display_name,
             'form_html': form_html,
         }
-    request.response.status = 403
-    return {'error': 'Redirect URL not valid for referring domain'}
+    return HTTPForbidden('Redirect URL not valid for referring domain')
 
 
 def process_authorization(context, request):
