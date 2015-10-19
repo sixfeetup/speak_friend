@@ -575,7 +575,12 @@ class LoginView(object):
         host_without_port = self.request.host.split(':')[0]
         local_request = host_without_port == domain_name or \
                         appstruct['came_from'] == '/'
-        if not local_request:
+        if local_request:
+            if self.request.matched_route.name == 'authorize_client':
+                # for OAuth2 requests, go back to our authorization page
+                # instead of back to the client application
+                self.request.session['came_from'] = self.request.url
+        else:
             self.request.session['came_from'] = appstruct['came_from']
         if 'login' in self.request.params:
             appstruct['login'] = self.request.params['login']
@@ -658,6 +663,9 @@ class LoginView(object):
 
         local_request = came_from.startswith(self.request.host_url)
 
+        if local_request and 'authorize_client' in came_from:
+            # redirect to the OAuth2 client application
+            return HTTPFound(location=came_from, headers=headers)
         if came_from and not local_request:
             return HTTPFound(location=appstruct['came_from'], headers=headers)
         else:
