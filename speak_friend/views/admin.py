@@ -143,9 +143,13 @@ class EditDomain(object):
         try:
             appstruct = self.domain_form.validate(controls)  # call validate
         except ValidationFailure, e:
+            form_html = self.secret_form.render({
+                'domain': self.target_domainname,
+            })
             return {
-                'forms': [self.domain_form],
+                'forms': [self.domain_form, self.secret_form],
                 'rendered_form': e.render(),
+                'secret_form': form_html,
                 'target_domainname': self.target_domainname
             }
 
