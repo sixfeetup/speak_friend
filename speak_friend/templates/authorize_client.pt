@@ -8,7 +8,6 @@
           <li>Username</li>
           <li>E-mail Address</li>
           <li>First and Last Name</li>
-          <li>Whether or not you are an administrator</li>
       </ul>
       <p>Do you want to allow this?</p>
       <div tal:content="structure form_html">authorization form</div>

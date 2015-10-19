@@ -114,7 +114,6 @@ def get_user_details(context, request):
             'email': user.email,
             'given_name': user.first_name,
             'surname': user.last_name,
-            'admin': user.is_superuser,
         }
     request.response.status = 404
     return {'error': 'user not found'}
