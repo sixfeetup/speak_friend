@@ -2,7 +2,7 @@
     <metal:title fill-slot="page-title">Authorize Application</metal:title>
     
     <metal:content fill-slot="content">
-      <p>The application <b>${display_name}</b> (${domain}) is requesting permission to access your account.</p>
+      <p>The application <b tal:condition="display_name" tal:content="display_name">client</b> (${domain}) is requesting permission to access your account.</p>
       <p>The application will be able to obtain:</p>
       <ul>
           <li>Username</li>
