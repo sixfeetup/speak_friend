@@ -8,7 +8,7 @@ from speak_friend.oauth_provider import SFOauthProvider
 from speak_friend.forms.oauth2_api import make_client_authorization_form
 
 
-# OAuth2 authentication views
+# add secret to domain profile
 def create_secret(context, request):
     '''Generate and display a new secret for the client application'''
     if request.method != 'POST':
@@ -24,6 +24,7 @@ def create_secret(context, request):
     }
 
 
+# OAuth2 authentication views
 def authorize_client(context, request):
     '''Request permission for the application to act as the user'''
     provider = SFOauthProvider(request.db_session)
