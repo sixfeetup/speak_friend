@@ -14,7 +14,7 @@ def create_secret(context, request):
     if request.method != 'POST':
         return HTTPMethodNotAllowed()
     provider = SFOauthProvider(request.db_session)
-    client_id = request.POST.get('domain')
+    client_id = request.POST.get('domain', '')
     domain = provider.domain_with_id(client_id)
     secret = provider.create_client_secret(domain)
     return {
@@ -28,8 +28,8 @@ def create_secret(context, request):
 def authorize_client(context, request):
     '''Request permission for the application to act as the user'''
     provider = SFOauthProvider(request.db_session)
-    client_id = request.GET.get('domain')
-    redirect_uri = request.GET.get('redirect_uri')
+    client_id = request.GET.get('domain', '')
+    redirect_uri = request.GET.get('redirect_uri', '')
     # store in the session for 'process_authorization' below
     request.session['oauth2_redirect_uri'] = redirect_uri
     request.session['oauth2_client_id'] = client_id
@@ -78,8 +78,8 @@ def request_access_token(context, request):
     if request.method != 'POST':
         return HTTPMethodNotAllowed()
     provider = SFOauthProvider(request.db_session)
-    client_id = request.POST.get('domain')
-    client_secret = request.POST.get('secret')
+    client_id = request.POST.get('domain', '')
+    client_secret = request.POST.get('secret', '')
     request_auth_code = request.matchdict['code']
     client_valid = provider.validate_client_secret(client_id, client_secret)
     code_valid = provider.validate_auth_code(client_id, request_auth_code)
@@ -102,8 +102,8 @@ def get_user_details(context, request):
     if request.method != 'POST':
         return HTTPMethodNotAllowed()
     provider = SFOauthProvider(request.db_session)
-    client_id = request.POST.get('domain')
-    token = request.POST.get('token')
+    client_id = request.POST.get('domain', '')
+    token = request.POST.get('token', '')
     username = provider.user_for_access_token(client_id, token)
     if not username:
         request.response.status = 403
