@@ -30,9 +30,11 @@ def authorize_client(context, request):
     provider = SFOauthProvider(request.db_session)
     client_id = request.GET.get('domain', '')
     redirect_uri = request.GET.get('redirect_uri', '')
+    response_type = request.GET.get('response_type', 'code')
     # store in the session for 'process_authorization' below
     request.session['oauth2_redirect_uri'] = redirect_uri
     request.session['oauth2_client_id'] = client_id
+    request.session['oauth2_response_type'] = response_type
     valid = provider.validate_redirect_uri(
         request,
         redirect_uri
@@ -52,24 +54,40 @@ def authorize_client(context, request):
 
 def process_authorization(context, request):
     '''Send a temporary authorization code to the client application'''
+    loc_template = '{redirect_uri}?code={code}'
     allowed = 'submit' in request.POST
     if allowed:
         # user allowed access
         provider = SFOauthProvider(request.db_session)
         username = authenticated_userid(request)
-        client_id = request.session.get('oauth2_client_id')
-        auth_code = provider.generate_authorization_code()
+        client_id = request.session.get('oauth2_client_id', '')
+        response_type = request.session.get('oauth2_response_type', 'code')
         try:
-            provider.persist_authorization_code(client_id, username, auth_code)
+            if response_type == 'token':
+                # place-holder auth code for direct token requests
+                transient_code = provider.generate_authorization_code()
+                response_code = provider.generate_access_token()
+                provider.persist_authorization_code(
+                    client_id, username, transient_code
+                )
+                provider.persist_access_token(
+                    client_id, transient_code, response_code
+                )
+                loc_template = '{redirect_uri}#token={code}'
+            else:
+                response_code = provider.generate_authorization_code()
+                provider.persist_authorization_code(
+                    client_id, username, response_code
+                )
         except:
             return HTTPInternalServerError()
     else:
-        auth_code = 'none'
+        response_code = 'none'
     params = {
-        'code': auth_code,
+        'code': response_code,
         'redirect_uri': request.session.get('oauth2_redirect_uri', ''),
     }
-    loc = '{redirect_uri}?code={code}'.format(**params)
+    loc = loc_template.format(**params)
     return HTTPFound(location=loc)
 
 
@@ -110,6 +128,8 @@ def get_user_details(context, request):
         return {'error': 'access token not valid for domain'}
     user = request.db_session.query(UserProfile).get(username)
     if user:
+        request.response.headers['Access-Control-Allow-Method'] = 'POST'
+        request.response.headers['Access-Control-Allow-Origin'] = '*'
         return {
             'username': username,
             'email': user.email,
