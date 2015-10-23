@@ -54,14 +54,17 @@ def authorize_client(context, request):
 
 def process_authorization(context, request):
     '''Send a temporary authorization code to the client application'''
-    loc_template = '{redirect_uri}?code={code}'
+    response_type = request.session.get('oauth2_response_type', 'code')
+    if response_type == 'token':
+        loc_template = '{redirect_uri}#token={code}'
+    else:
+        loc_template = '{redirect_uri}?code={code}'
     allowed = 'submit' in request.POST
     if allowed:
         # user allowed access
         provider = SFOauthProvider(request.db_session)
         username = authenticated_userid(request)
         client_id = request.session.get('oauth2_client_id', '')
-        response_type = request.session.get('oauth2_response_type', 'code')
         try:
             if response_type == 'token':
                 # place-holder auth code for direct token requests
@@ -73,7 +76,6 @@ def process_authorization(context, request):
                 provider.persist_access_token(
                     client_id, transient_code, response_code
                 )
-                loc_template = '{redirect_uri}#token={code}'
             else:
                 response_code = provider.generate_authorization_code()
                 provider.persist_authorization_code(
