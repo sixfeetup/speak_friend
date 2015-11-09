@@ -2,6 +2,7 @@
 import datetime
 from speak_friend.models.authorizations import OAuthAuthorization
 from speak_friend.models.profiles import DomainProfile
+from speak_friend.models.profiles import UserProfile
 from speak_friend.utils import get_domain
 from speak_friend.utils import hash_string
 from speak_friend.utils import random_ascii_string
@@ -136,3 +137,18 @@ class SFOauthProvider(object):
         authz = self._authorization_for_access_token(client_id, token)
         if authz:
             return authz.username
+
+    def validate_user_with_access_token(self, username, token):
+        """Look for an authorization based on token and username"""
+        if len(token) < self.token_length or token == UNDEFINED_SECRET:
+            return False
+        now = datetime.datetime.utcnow()
+        authz = self.db_session.query(OAuthAuthorization).filter(
+            OAuthAuthorization.username == username,
+            OAuthAuthorization.access_token == token,
+            OAuthAuthorization.valid_until > now,
+        ).first()
+        user = self.db_session.query(UserProfile).filter(
+            UserProfile.username == username
+        ).first()
+        return bool(authz) and not user.locked and not user.admin_disabled

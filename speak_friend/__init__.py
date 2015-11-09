@@ -326,6 +326,14 @@ def includeme(config):
         permission=NO_PERMISSION_REQUIRED,
         renderer='json',
     )
+    config.add_route('validate_user_token', '/validate_user_token')
+    config.add_view(
+        oauth2_api.validate_user_token,
+        route_name='validate_user_token',
+        request_method='POST',
+        permission=NO_PERMISSION_REQUIRED,
+        renderer='json',
+    )
 
     # Put last, so that app routes are not swallowed
     config.add_route('user_profile', '/{username}')
