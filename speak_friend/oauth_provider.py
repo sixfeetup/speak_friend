@@ -16,8 +16,9 @@ class SFOauthProvider(object):
     token_expires_in = 10  # days
     auth_code_expires_in = 3  # minutes
 
-    def __init__(self, db_session=None):
+    def __init__(self, db_session=None, tokens_expire=True):
         self.db_session = db_session
+        self.tokens_expire = tokens_expire
 
     @property
     def token_expiration(self):
@@ -124,7 +125,10 @@ class SFOauthProvider(object):
         """Look for an authorization based on token and domain"""
         if len(token) < self.token_length or token == UNDEFINED_SECRET:
             return False
-        now = datetime.datetime.utcnow()
+        if self.tokens_expire:
+            now = datetime.datetime.utcnow()
+        else:
+            now = datetime.datetime.utcfromtimestamp(0)
         authz = self.db_session.query(OAuthAuthorization).filter(
             OAuthAuthorization.client_id == client_id,
             OAuthAuthorization.access_token == token,
@@ -142,7 +146,10 @@ class SFOauthProvider(object):
         """Look for an authorization based on token and username"""
         if len(token) < self.token_length or token == UNDEFINED_SECRET:
             return False
-        now = datetime.datetime.utcnow()
+        if self.tokens_expire:
+            now = datetime.datetime.utcnow()
+        else:
+            now = datetime.datetime.utcfromtimestamp(0)
         authz = self.db_session.query(OAuthAuthorization).filter(
             OAuthAuthorization.username == username,
             OAuthAuthorization.access_token == token,
