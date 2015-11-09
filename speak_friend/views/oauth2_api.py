@@ -146,7 +146,7 @@ def validate_user_token(context, request):
     '''validate a user using an access token'''
     if request.method != 'POST':
         return HTTPMethodNotAllowed()
-    provider = SFOauthProvider(request.db_session)
+    provider = SFOauthProvider(request.db_session, tokens_expire=False)
     username = request.POST.get('user', '')
     token = request.POST.get('token', '')
     valid = provider.validate_user_with_access_token(username, token)
