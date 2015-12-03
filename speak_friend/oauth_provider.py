@@ -146,6 +146,11 @@ class SFOauthProvider(object):
         """Look for an authorization based on token and username"""
         if len(token) < self.token_length or token == UNDEFINED_SECRET:
             return False
+        user = self.db_session.query(UserProfile).filter(
+            UserProfile.username == username
+        ).first()
+        if user.locked or user.admin_disabled:
+            return False
         if self.tokens_expire:
             now = datetime.datetime.utcnow()
         else:
@@ -155,7 +160,4 @@ class SFOauthProvider(object):
             OAuthAuthorization.access_token == token,
             OAuthAuthorization.valid_until > now,
         ).first()
-        user = self.db_session.query(UserProfile).filter(
-            UserProfile.username == username
-        ).first()
-        return bool(authz) and not user.locked and not user.admin_disabled
+        return bool(authz)
