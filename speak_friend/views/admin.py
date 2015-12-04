@@ -23,6 +23,7 @@ from speak_friend.forms.oauth2_api import make_client_secret_form
 from speak_friend.forms.profiles import make_domain_form
 from speak_friend.forms.profiles import make_user_search_form
 from speak_friend.forms.profiles import make_disable_user_form
+from speak_friend.models.authorizations import OAuthAuthorization
 from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
@@ -196,6 +197,10 @@ class DeleteDomain(object):
 
         if domain_found:
             self.request.db_session.delete(target_domain)
+            authzn_query = self.request.db_session.query(OAuthAuthorization)
+            authzn_query.filter(
+                OAuthAuthorization.client_id == target_domainname,
+            ).delete()
             msg = 'The domain %s was successfully deleted'
             msg_queue = 'success'
 
