@@ -153,6 +153,30 @@ def includeme(config):
                     decorator=[require_csrf],
                     http_cache=0,
                     renderer='templates/edit_profile.pt')
+    config.add_route('authorizations', '/authorizations/{username}/',
+                     factory=EditProfileFactory)
+    config.add_view(accounts.ManageAuthorizations, attr="get",
+                    request_method='GET',
+                    route_name='authorizations',
+                    permission='edit',
+                    http_cache=0,
+                    renderer='templates/edit_profile.pt')
+    config.add_view(accounts.ManageAuthorizations, attr="post",
+                    request_method='POST',
+                    route_name='authorizations',
+                    permission='edit',
+                    decorator=[require_csrf],
+                    http_cache=0,
+                    renderer='templates/edit_profile.pt')
+    config.add_route('remove_authzn',
+                     '/remove_authorization/{username}/{access_token}',
+                     factory=EditProfileFactory)
+    config.add_view(accounts.remove_authzn,
+                    request_method='GET',
+                    route_name='remove_authzn',
+                    permission='edit',
+                    http_cache=0,
+                    renderer='templates/edit_profile.pt')
     config.add_route('token_expired', '/token_expired')
     config.add_view(accounts.token_expired, route_name='token_expired',
                     permission=NO_PERMISSION_REQUIRED,

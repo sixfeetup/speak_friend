@@ -12,6 +12,10 @@
                tal:define="activeClass api.is_active_tab('change_password')"
                tal:attributes="href request.route_url('change_password', username=userid);
                                class string:${activeClass} btn">Set Password</a>
+            <a id='manage-authorizations-link'
+               tal:define="activeClass api.is_active_tab('authorizations')"
+               tal:attributes="href request.route_url('authorizations', username=userid);
+                               class string:${activeClass} btn">Authorizations</a>
           </div>
     </metal:nav>
 
@@ -20,9 +24,22 @@
         Edit Profile for ${target_username}</tal:edit-title>
       <tal:pw-title tal:condition="api.is_active_tab('change_password')">
         Modify Password for ${target_username}</tal:pw-title>
+      <tal:pw-title tal:condition="api.is_active_tab('authorizations')">
+        Manage Authorizations for ${target_username}</tal:pw-title>
     </metal:title>
     
     <metal:content fill-slot="content">
+      <div tal:define="authorizations authzns | nothing" tal:condition="authorizations">
+          <p>The following applications have access to your account via an access token.</p>
+          <table class="table table-striped table-bordered">
+              <tr><th>Application and Token</th><th>Remove</th></tr>
+              <tr tal:repeat="authzn authorizations">
+                  <td><b>${authzn['name']}</b><br>
+                      <code>${authzn['token']}</code></td>
+                  <td><a class="btn" href="/remove_authorization/${target_username}/${authzn['token']}">Remove</a></td>
+              </tr>
+          </table>
+      </div>
       <div id="edit-profile"
            tal:content="structure rendered_form">form</div>
       <metal:extra-content define-slot="extra-content" />

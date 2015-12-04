@@ -31,12 +31,17 @@ from speak_friend.events import ProfileChanged
 from speak_friend.events import get_pwreset_class
 from speak_friend.forms.controlpanel import MAX_DOMAIN_ATTEMPTS
 from speak_friend.forms.controlpanel import authentication_schema
+from speak_friend.forms.profiles import make_new_authorization_form
 from speak_friend.forms.profiles import make_password_reset_form
 from speak_friend.forms.profiles import make_password_reset_request_form
 from speak_friend.forms.profiles import make_password_change_form
 from speak_friend.forms.profiles import make_profile_form, make_login_form
+from speak_friend.models.authorizations import OAuthAuthorization
+from speak_friend.models.profiles import DomainProfile
 from speak_friend.models.profiles import ResetToken
 from speak_friend.models.profiles import UserProfile
+from speak_friend.oauth_provider import SFOauthProvider
+from speak_friend.oauth_provider import UNDEFINED_SECRET
 from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 from speak_friend.utils import replace_url_csrf
@@ -351,6 +356,85 @@ class ChangePassword(object):
             self.request.session.flash('Incorrect password.',
                                        queue='error')
         return self.get()
+
+
+
+@view_defaults(route_name='authorizations')
+class ManageAuthorizations(object):
+    def __init__(self, request):
+        self.request = request
+        self.target_username = request.matchdict['username']
+        query = self.request.db_session.query(UserProfile)
+        self.target_user = query.get(self.target_username)
+        if self.target_user is None:
+            raise HTTPNotFound()
+        self.admin_change = (
+            request.user.is_superuser and
+            request.user.username != self.target_username
+        )
+        self.frm = make_new_authorization_form(request)
+
+    def _get_authorizations(self):
+        authzn_query = self.request.db_session.query(OAuthAuthorization)
+        authzns = authzn_query.filter(
+            OAuthAuthorization.username == self.target_username,
+        ).all()
+        authorizations = []
+        for authzn in authzns:
+            entry = {
+                'name': authzn.client_id,
+                'token': authzn.access_token,
+            }
+            if entry['token'] == UNDEFINED_SECRET:
+                continue
+            dom_query = self.request.db_session.query(DomainProfile)
+            dom = dom_query.filter(
+                DomainProfile.name == authzn.client_id
+            ).first()
+            if dom:
+                entry['name'] = dom.display_name
+            authorizations.append(entry)
+        return authorizations
+
+    def get(self):
+        return {
+            'forms': [self.frm],
+            'authzns': self._get_authorizations(),
+            'rendered_form': self.frm.render(),
+            'target_username': self.target_username,
+        }
+
+    def post(self):
+        if self.request.method != "POST":
+            return HTTPMethodNotAllowed()
+        if 'submit' not in self.request.POST:
+            return self.get()
+        provider = SFOauthProvider(self.request.db_session)
+        try:
+            description = self.request.POST.get('description', None)
+            code = provider.generate_authorization_code()
+            provider.persist_authorization_code(
+                description,
+                self.target_username,
+                code,
+            )
+            token = provider.generate_access_token()
+            provider.persist_access_token(description, code, token)
+        except:
+            request.reponse.status = 500
+        return self.get()
+
+
+def remove_authzn(request):
+    username = request.matchdict['username']
+    token = request.matchdict['access_token']
+    query = request.db_session.query(OAuthAuthorization)
+    query.filter(
+        OAuthAuthorization.username == username,
+        OAuthAuthorization.access_token == token,
+    ).delete()
+    url = request.route_url('authorizations', username=username)
+    return HTTPFound(location=url)
 
 
 def token_expired(request):

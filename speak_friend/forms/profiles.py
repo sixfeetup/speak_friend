@@ -2,7 +2,7 @@ import re
 from pkg_resources import resource_filename
 
 from colander import Bool, MappingSchema, SchemaNode, String, Integer, Invalid
-from colander import All, Email, Function, null, deferred
+from colander import All, Email, Function, null, deferred, Regex
 from deform import Button, Form
 from deform import ZPTRendererFactory
 from deform.widget import CheckedInputWidget
@@ -634,3 +634,21 @@ def make_disable_user_form(request):
         formid='disable-form',
     )
     return disable_user_form
+
+
+class Authorization(CSRFSchema):
+    description = SchemaNode(
+        String(),
+        title=u'Add an authorization',
+        description=u'Application Name or Description',
+        # validator=Regex(r'\S', msg="Be nice!")
+    )
+
+
+def make_new_authorization_form(request):
+    schema = Authorization()
+    new_authoization_form = Form(
+        schema=schema.bind(request=request),
+        buttons=(Button(u'submit', title=u'Create'),),
+    )
+    return new_authoization_form
