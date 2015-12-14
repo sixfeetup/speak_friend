@@ -149,5 +149,8 @@ def validate_user_token(context, request):
     provider = SFOauthProvider(request.db_session, tokens_expire=False)
     username = request.POST.get('user', '')
     token = request.POST.get('token', '')
-    valid = provider.validate_user_with_access_token(username, token)
+    try:
+        valid = provider.validate_user_with_access_token(username, token)
+    except:
+        valid = False
     return {'valid': valid}
