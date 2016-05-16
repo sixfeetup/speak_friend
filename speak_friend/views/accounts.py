@@ -45,6 +45,7 @@ from speak_friend.oauth_provider import UNDEFINED_SECRET
 from speak_friend.utils import get_domain
 from speak_friend.utils import get_referrer
 from speak_friend.utils import replace_url_csrf
+from speak_friend.utils import url_is_valid
 
 
 @view_defaults(route_name='create_profile')
@@ -757,7 +758,12 @@ class LoginView(object):
             return HTTPFound(location=url, headers=headers)
 
 
-def logout(request, return_to=None):
+def logout(request):
+    return_to = None
+    if request.method == 'GET':
+        return_to = request.GET.getone('return_to')
+        if not url_is_valid(return_to):
+            return_to = None
     if return_to is None:
         referrer = get_referrer(request)
     else:
