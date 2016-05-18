@@ -760,7 +760,7 @@ class LoginView(object):
 
 def logout(request):
     return_to = None
-    if request.method == 'GET':
+    if 'return_to' in request.GET:
         return_to = request.GET.getone('return_to')
         if not url_is_valid(return_to):
             return_to = None
