@@ -758,8 +758,7 @@ class LoginView(object):
             return HTTPFound(location=url, headers=headers)
 
 
-def logout(request):
-    return_to = None
+def logout(request, return_to = None):
     if 'return_to' in request.GET:
         return_to = request.GET.getone('return_to')
         if not url_is_valid(return_to):
