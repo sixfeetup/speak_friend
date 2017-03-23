@@ -238,7 +238,7 @@ class Profile(CSRFSchema):
     username = SchemaNode(
         String(),
         validator=create_username_validator,
-        description='* We suggest using your first and last name.',
+        description='* We suggest using your first and last name separated by an underscore (ex: first_last)',
     )
     first_name = SchemaNode(String())
     last_name = SchemaNode(String())
